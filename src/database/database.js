@@ -50,6 +50,10 @@ function createUser(userId) {
             lastWork: 0,
             lastBeg: 0,
             inventory: {},
+            quests: {
+            date: "",
+            daily: []
+            },
             stats: {
                 games: 0,
                 wins: 0,
