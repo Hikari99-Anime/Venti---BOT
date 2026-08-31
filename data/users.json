@@ -1,0 +1,28 @@
+{
+  "743028655097380895": {
+    "balance": 2767,
+    "bank": 0,
+    "xp": 76,
+    "level": 1,
+    "last_daily": 0,
+    "last_work": 0,
+    "last_beg": 0,
+    "created_at": 1787996951405,
+    "inventory": {
+      "blue_fish": 2
+    },
+    "farm": {
+      "plots": [
+        {
+          "id": 1,
+          "unlocked": true,
+          "seed": null,
+          "plantedAt": null,
+          "readyAt": null
+        }
+      ]
+    },
+    "lastDaily": 1788177702757,
+    "dailyStreak": 1
+  }
+}

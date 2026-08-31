@@ -1,0 +1,14 @@
+{
+  "name": "venti",
+  "version": "1.0.0",
+  "description": "Venti - Aesthetic Discord Minigame & Economy Bot",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.22.1",
+    "dotenv": "^17.2.1"
+  }
+}
