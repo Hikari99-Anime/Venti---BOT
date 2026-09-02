@@ -1,12 +1,16 @@
 {
   "743028655097380895": {
     "id": "743028655097380895",
-    "balance": 1278,
-    "bank": 510,
-    "xp": 73,
+    "balance": 1022,
+    "bank": 0,
+    "bankData": {
+      "lastInterest": 1788351513880,
+      "totalInterest": 6
+    },
+    "xp": 13,
     "level": 1,
     "dailyStreak": 1,
-    "lastDaily": 1788347182183,
+    "lastDaily": 1788351470450,
     "lastWork": 0,
     "lastBeg": 0,
     "inventory": {
@@ -15,8 +19,7 @@
         "durability": 18,
         "maxDurability": 20
       },
-      "small_fish": 1,
-      "blue_fish": 1
+      "small_fish": 1
     },
     "tools": {
       "fishingRod": {
@@ -46,20 +49,20 @@
       "work": 0,
       "fish": 2,
       "farm": 0,
-      "harvest": 0,
-      "quest": 0
+      "quest": 0,
+      "harvest": 4
     },
     "quests": {
       "date": "2026-09-02",
       "daily": [
         {
           "id": "fish",
-          "progress": 1,
+          "progress": 2,
           "claimed": false
         },
         {
           "id": "farm",
-          "progress": 0,
+          "progress": 4,
           "claimed": false
         },
         {
@@ -69,16 +72,17 @@
         }
       ]
     },
-    "achievements": {},
-    "createdAt": 1788347176388,
-    "bankData": {
-      "lastInterest": 1788348459253,
-      "totalInterest": 10
-    }
+    "achievements": {
+      "first_fish": {
+        "unlocked": true,
+        "unlockedAt": 1788351976355
+      }
+    },
+    "createdAt": 1788351422410
   },
   "398030689905278977": {
     "id": "398030689905278977",
-    "balance": 764,
+    "balance": 1000,
     "bank": 0,
     "bankData": {
       "lastInterest": 0,
@@ -126,6 +130,6 @@
       "daily": []
     },
     "achievements": {},
-    "createdAt": 1788349068575
+    "createdAt": 1788351479676
   }
 }
