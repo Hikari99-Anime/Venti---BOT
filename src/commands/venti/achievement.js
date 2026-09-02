@@ -1,3 +1,4 @@
+
 const {
     EmbedBuilder,
     ActionRowBuilder,
@@ -7,9 +8,9 @@ const {
 const User =
     require("../../database/models/User");
 
-// ==========================================
+// ═══════════════════════════════════════
 // 🏆 ACHIEVEMENTS
-// ==========================================
+// ═══════════════════════════════════════
 
 const ACHIEVEMENTS = {
     all: {
@@ -48,9 +49,9 @@ const ACHIEVEMENTS = {
     }
 };
 
-// ==========================================
+// ═══════════════════════════════════════
 // 📋 ACHIEVEMENT DATA
-// ==========================================
+// ═══════════════════════════════════════
 
 const DATA = [
     {
@@ -60,6 +61,7 @@ const DATA = [
         name: "First Catch",
         description: "Bắt con cá đầu tiên.",
         target: 1,
+
         getProgress: user =>
             Number(
                 user.stats?.fish || 0
@@ -73,6 +75,7 @@ const DATA = [
         name: "Fisherman",
         description: "Bắt 100 con cá.",
         target: 100,
+
         getProgress: user =>
             Number(
                 user.stats?.fish || 0
@@ -86,6 +89,7 @@ const DATA = [
         name: "Master Fisher",
         description: "Bắt 500 con cá.",
         target: 500,
+
         getProgress: user =>
             Number(
                 user.stats?.fish || 0
@@ -97,8 +101,10 @@ const DATA = [
         category: "farming",
         emoji: "🌱",
         name: "First Harvest",
-        description: "Thu hoạch lần đầu tiên.",
+        description:
+            "Thu hoạch lần đầu tiên.",
         target: 1,
+
         getProgress: user =>
             Number(
                 user.stats?.farm || 0
@@ -110,8 +116,10 @@ const DATA = [
         category: "farming",
         emoji: "🌾",
         name: "Farmer",
-        description: "Thu hoạch 100 lần.",
+        description:
+            "Thu hoạch 100 lần.",
         target: 100,
+
         getProgress: user =>
             Number(
                 user.stats?.farm || 0
@@ -123,8 +131,10 @@ const DATA = [
         category: "farming",
         emoji: "👨‍🌾",
         name: "Master Farmer",
-        description: "Thu hoạch 500 lần.",
+        description:
+            "Thu hoạch 500 lần.",
         target: 500,
+
         getProgress: user =>
             Number(
                 user.stats?.farm || 0
@@ -136,8 +146,10 @@ const DATA = [
         category: "economy",
         emoji: "💰",
         name: "Rich",
-        description: "Có 10,000 Mora.",
+        description:
+            "Có 10,000 Mora.",
         target: 10000,
+
         getProgress: user =>
             Number(
                 user.balance || 0
@@ -149,8 +161,10 @@ const DATA = [
         category: "economy",
         emoji: "💎",
         name: "Wealthy",
-        description: "Có 100,000 Mora.",
+        description:
+            "Có 100,000 Mora.",
         target: 100000,
+
         getProgress: user =>
             Number(
                 user.balance || 0
@@ -162,8 +176,10 @@ const DATA = [
         category: "economy",
         emoji: "👑",
         name: "Millionaire",
-        description: "Có 1,000,000 Mora.",
+        description:
+            "Có 1,000,000 Mora.",
         target: 1000000,
+
         getProgress: user =>
             Number(
                 user.balance || 0
@@ -175,8 +191,10 @@ const DATA = [
         category: "quest",
         emoji: "📜",
         name: "Quest Beginner",
-        description: "Hoàn thành 1 quest.",
+        description:
+            "Hoàn thành 1 quest.",
         target: 1,
+
         getProgress: user =>
             Number(
                 user.stats?.quest || 0
@@ -188,8 +206,10 @@ const DATA = [
         category: "quest",
         emoji: "🗺️",
         name: "Quest Hunter",
-        description: "Hoàn thành 10 quest.",
+        description:
+            "Hoàn thành 10 quest.",
         target: 10,
+
         getProgress: user =>
             Number(
                 user.stats?.quest || 0
@@ -201,8 +221,10 @@ const DATA = [
         category: "quest",
         emoji: "🏅",
         name: "Quest Master",
-        description: "Hoàn thành 50 quest.",
+        description:
+            "Hoàn thành 50 quest.",
         target: 50,
+
         getProgress: user =>
             Number(
                 user.stats?.quest || 0
@@ -214,8 +236,10 @@ const DATA = [
         category: "daily",
         emoji: "🔥",
         name: "7 Day Streak",
-        description: "Đạt daily streak 7 ngày.",
+        description:
+            "Đạt daily streak 7 ngày.",
         target: 7,
+
         getProgress: user =>
             Number(
                 user.dailyStreak || 0
@@ -227,8 +251,10 @@ const DATA = [
         category: "daily",
         emoji: "🔥",
         name: "30 Day Streak",
-        description: "Đạt daily streak 30 ngày.",
+        description:
+            "Đạt daily streak 30 ngày.",
         target: 30,
+
         getProgress: user =>
             Number(
                 user.dailyStreak || 0
@@ -240,8 +266,10 @@ const DATA = [
         category: "level",
         emoji: "⭐",
         name: "Adventurer",
-        description: "Đạt Level 5.",
+        description:
+            "Đạt Level 5.",
         target: 5,
+
         getProgress: user =>
             Number(
                 user.level || 1
@@ -253,8 +281,10 @@ const DATA = [
         category: "level",
         emoji: "🌟",
         name: "Experienced",
-        description: "Đạt Level 10.",
+        description:
+            "Đạt Level 10.",
         target: 10,
+
         getProgress: user =>
             Number(
                 user.level || 1
@@ -266,8 +296,10 @@ const DATA = [
         category: "level",
         emoji: "✨",
         name: "Master Adventurer",
-        description: "Đạt Level 25.",
+        description:
+            "Đạt Level 25.",
         target: 25,
+
         getProgress: user =>
             Number(
                 user.level || 1
@@ -275,9 +307,9 @@ const DATA = [
     }
 ];
 
-// ==========================================
+// ═══════════════════════════════════════
 // 🔍 CHECK ACHIEVEMENTS
-// ==========================================
+// ═══════════════════════════════════════
 
 function checkAchievements(
     userId,
@@ -287,14 +319,16 @@ function checkAchievements(
         ...(user.achievements || {})
     };
 
-    const unlocked = [];
+    let changed = false;
 
     for (
         const achievement of DATA
     ) {
         const progress =
-            achievement.getProgress(
-                user
+            Number(
+                achievement.getProgress(
+                    user
+                ) || 0
             );
 
         if (
@@ -304,7 +338,7 @@ function checkAchievements(
             if (
                 !achievements[
                     achievement.id
-                ]
+                ]?.unlocked
             ) {
                 achievements[
                     achievement.id
@@ -314,16 +348,12 @@ function checkAchievements(
                         Date.now()
                 };
 
-                unlocked.push(
-                    achievement
-                );
+                changed = true;
             }
         }
     }
 
-    if (
-        unlocked.length > 0
-    ) {
+    if (changed) {
         User.update(
             userId,
             {
@@ -332,28 +362,46 @@ function checkAchievements(
         );
     }
 
-    return unlocked;
+    return achievements;
 }
 
-// ==========================================
-// 📊 PROGRESS
-// ==========================================
+// ═══════════════════════════════════════
+// 📊 PROGRESS BAR
+// ═══════════════════════════════════════
 
 function progressBar(
     current,
     target
 ) {
+    const safeCurrent =
+        Math.max(
+            0,
+            Number(
+                current || 0
+            )
+        );
+
+    const safeTarget =
+        Math.max(
+            1,
+            Number(
+                target || 1
+            )
+        );
+
     const percent =
         Math.min(
-            current / target,
+            safeCurrent /
+                safeTarget,
             1
         );
 
-    const length = 8;
+    const length = 10;
 
     const filled =
         Math.round(
-            percent * length
+            percent *
+                length
         );
 
     return (
@@ -361,10 +409,15 @@ function progressBar(
             filled
         ) +
         "⬜".repeat(
-            length - filled
+            length -
+            filled
         )
     );
 }
+
+// ═══════════════════════════════════════
+// 🏆 FORMAT ACHIEVEMENT
+// ═══════════════════════════════════════
 
 function formatAchievement(
     achievement,
@@ -380,34 +433,62 @@ function formatAchievement(
             ]?.unlocked
         );
 
-    const current =
-        Math.min(
+    const rawProgress =
+        Number(
             achievement.getProgress(
                 user
-            ),
+            ) || 0
+        );
+
+    const current =
+        Math.min(
+            rawProgress,
             achievement.target
         );
 
+    const emoji =
+        achievement.emoji ||
+        "🏆";
+
+    // ─────────────────────────────
+    // UNLOCKED
+    // ─────────────────────────────
+
     if (unlocked) {
-        return (
-            `✅ ${achievement.emoji} **${achievement.name}**\n` +
-            `> ${achievement.description}\n`
-        );
+        return [
+            `● \`${emoji}\` **${achievement.name}**`,
+            `> ${achievement.description}`,
+            `> 🟢 **Đã hoàn thành**`
+        ].join("\n");
     }
 
-    return (
-        `🔒 ${achievement.emoji} **${achievement.name}**\n` +
-        `> ${achievement.description}\n` +
+    // ─────────────────────────────
+    // LOCKED
+    // ─────────────────────────────
+
+    const percent =
+        Math.floor(
+            Math.min(
+                current /
+                    achievement.target,
+                1
+            ) * 100
+        );
+
+    return [
+        `● \`${emoji}\` **${achievement.name}**`,
+        `> ${achievement.description}`,
         `> ${progressBar(
             current,
             achievement.target
-        )} **${current.toLocaleString()} / ${achievement.target.toLocaleString()}**\n`
-    );
+        )}`,
+        `> 📊 **${current.toLocaleString()} / ${achievement.target.toLocaleString()}** · ${percent}%`
+    ].join("\n");
 }
 
-// ==========================================
-// 🏆 CREATE EMBED
-// ==========================================
+// ═══════════════════════════════════════
+// 📊 CREATE EMBED
+// ═══════════════════════════════════════
 
 function createEmbed(
     user,
@@ -436,6 +517,12 @@ function createEmbed(
     const total =
         filtered.length;
 
+    const categoryData =
+        ACHIEVEMENTS[
+            category
+        ] ||
+        ACHIEVEMENTS.all;
+
     const description =
         filtered
             .map(
@@ -445,38 +532,46 @@ function createEmbed(
                         user
                     )
             )
-            .join("\n");
+            .join("\n\n");
 
-    const categoryData =
-        ACHIEVEMENTS[
-            category
-        ] ||
-        ACHIEVEMENTS.all;
+    const percent =
+        total > 0
+            ? Math.floor(
+                (unlocked /
+                    total) *
+                    100
+            )
+            : 0;
 
     return new EmbedBuilder()
         .setColor(
             "#F1C40F"
         )
+
         .setTitle(
-            `${categoryData.emoji} Achievements`
+            `${categoryData.emoji} Achievement`
         )
+
         .setDescription(
-            `**${unlocked}/${total}** thành tích đã mở khóa.\n\n` +
-            description
+            [
+                `● \`🏆\` **Thành tích**`,
+                `> ${unlocked}/${total} đã mở khóa · ${percent}%`,
+                "",
+                description
+            ].join("\n")
         )
-        .setThumbnail(
-            "https://cdn.discordapp.com/embed/avatars/0.png"
-        )
+
         .setFooter({
             text:
-                "🏆 Venti • Achievement System"
+                "♡ Venti • Achievement System"
         })
+
         .setTimestamp();
 }
 
-// ==========================================
+// ═══════════════════════════════════════
 // 📋 SELECT MENU
-// ==========================================
+// ═══════════════════════════════════════
 
 function createMenu(
     selected
@@ -487,9 +582,11 @@ function createMenu(
                 .setCustomId(
                     "venti_achievement_menu"
                 )
+
                 .setPlaceholder(
-                    "🏆 Chọn danh mục thành tích..."
+                    "🏆 Chọn danh mục..."
                 )
+
                 .addOptions(
                     Object.entries(
                         ACHIEVEMENTS
@@ -497,11 +594,15 @@ function createMenu(
                         ([value, data]) => ({
                             label:
                                 data.label,
+
                             description:
                                 `Xem thành tích ${data.label}`,
+
                             value,
+
                             emoji:
                                 data.emoji,
+
                             default:
                                 selected ===
                                 value
@@ -511,9 +612,9 @@ function createMenu(
         );
 }
 
-// ==========================================
+// ═══════════════════════════════════════
 // 🚀 COMMAND
-// ==========================================
+// ═══════════════════════════════════════
 
 module.exports = {
     name:
@@ -535,20 +636,19 @@ module.exports = {
         const userId =
             message.author.id;
 
-        const user =
+        let user =
             User.getOrCreate(
                 userId
             );
 
-        // Tự động kiểm tra achievement
-        const unlocked =
-            checkAchievements(
-                userId,
-                user
-            );
+        // Kiểm tra achievement
+        checkAchievements(
+            userId,
+            user
+        );
 
-        // Lấy lại dữ liệu mới nhất
-        const updatedUser =
+        // Lấy dữ liệu mới nhất
+        user =
             User.getOrCreate(
                 userId
             );
@@ -557,10 +657,11 @@ module.exports = {
             await message.reply({
                 embeds: [
                     createEmbed(
-                        updatedUser,
+                        user,
                         "all"
                     )
                 ],
+
                 components: [
                     createMenu(
                         "all"
@@ -599,7 +700,7 @@ module.exports = {
                 const category =
                     interaction.values[0];
 
-                const currentUser =
+                let currentUser =
                     User.getOrCreate(
                         userId
                     );
@@ -609,18 +710,19 @@ module.exports = {
                     currentUser
                 );
 
-                const latestUser =
+                currentUser =
                     User.getOrCreate(
                         userId
                     );
 
-                await interaction.update({
+                return interaction.update({
                     embeds: [
                         createEmbed(
-                            latestUser,
+                            currentUser,
                             category
                         )
                     ],
+
                     components: [
                         createMenu(
                             category
@@ -640,5 +742,14 @@ module.exports = {
                 } catch {}
             }
         );
-    }
+    },
+
+    // Export để các command khác
+    // có thể check achievement
+    checkAchievements,
+    createEmbed,
+    createMenu,
+    DATA,
+    ACHIEVEMENTS
 };
+

@@ -11,6 +11,7 @@ const User =
 
 module.exports = {
     name: "profile",
+
     aliases: [
         "vprofile",
         "me",
@@ -38,7 +39,7 @@ module.exports = {
 };
 
 // ==========================================
-// 👤 PROFILE
+// 👤 PROFILE EMBED
 // ==========================================
 
 function createProfileEmbed(
@@ -47,33 +48,39 @@ function createProfileEmbed(
 ) {
     const balance =
         Number(
-            user.balance || 0
+            user?.balance || 0
         );
 
     const bank =
         Number(
-            user.bank || 0
+            user?.bank || 0
         );
 
     const level =
         Number(
-            user.level || 1
+            user?.level || 1
         );
 
     const xp =
         Number(
-            user.xp || 0
+            user?.xp || 0
         );
 
-    const xpNeeded =
-        level * 500;
-
     const stats =
-        user.stats || {};
+        user?.stats || {};
+
+    // ======================================
+    // 📊 STATS
+    // ======================================
 
     const fish =
         Number(
             stats.fish || 0
+        );
+
+    const farm =
+        Number(
+            stats.farm || 0
         );
 
     const work =
@@ -96,8 +103,26 @@ function createProfileEmbed(
             stats.losses || 0
         );
 
+    const completedQuestTotal =
+        Number(
+            stats.quest || 0
+        );
+
+    // ======================================
+    // 🔥 DAILY
+    // ======================================
+
+    const streak =
+        Number(
+            user?.dailyStreak || 0
+        );
+
+    // ======================================
+    // 📜 DAILY QUEST
+    // ======================================
+
     const quests =
-        user.quests || {};
+        user?.quests || {};
 
     const dailyQuests =
         Array.isArray(
@@ -106,15 +131,23 @@ function createProfileEmbed(
             ? quests.daily
             : [];
 
-    const completedQuests =
+    const dailyQuestCompleted =
         dailyQuests.filter(
             quest =>
-                quest.claimed
+                quest?.claimed === true
         ).length;
 
-    const streak =
-        Number(
-            user.dailyStreak || 0
+    const dailyQuestTotal =
+        dailyQuests.length;
+
+    // ======================================
+    // ⭐ XP
+    // ======================================
+
+    const xpNeeded =
+        Math.max(
+            1,
+            level * 500
         );
 
     const progress =
@@ -129,129 +162,216 @@ function createProfileEmbed(
             12
         );
 
-    const embed =
-        new EmbedBuilder()
-            .setColor(
-                "#5865F2"
-            )
-            .setAuthor({
-                name:
-                    message.author
-                        .username,
-                iconURL:
-                    message.author
-                        .displayAvatarURL({
-                            extension:
-                                "png",
-                            size: 128
-                        })
-            })
-            .setTitle(
-                "👤 Venti Profile"
-            )
-            .setThumbnail(
+    // ======================================
+    // 👤 EMBED
+    // ======================================
+
+    return new EmbedBuilder()
+        .setColor(
+            "#5865F2"
+        )
+
+        .setAuthor({
+            name:
+                message.author
+                    .globalName ||
+                message.author
+                    .username,
+
+            iconURL:
                 message.author
                     .displayAvatarURL({
                         extension:
                             "png",
-                        size: 256
+                        size:
+                            128
                     })
-            )
-            .addFields(
-                {
-                    name:
-                        "💰 Tài sản",
-                    value:
-                        `💵 Ví: **${balance.toLocaleString()} Mora**\n` +
-                        `🏦 Ngân hàng: **${bank.toLocaleString()} Mora**`,
-                    inline:
-                        true
-                },
-                {
-                    name:
-                        "⭐ Cấp độ",
-                    value:
-                        `Level **${level}**\n` +
-                        `${progressBar}\n` +
-                        `✨ ${xp.toLocaleString()} / ${xpNeeded.toLocaleString()} XP`,
-                    inline:
-                        true
-                },
-                {
-                    name:
-                        "🔥 Daily",
-                    value:
-                        `Streak: **${streak} ngày**`,
-                    inline:
-                        true
-                },
-                {
-                    name:
-                        "🎣 Fishing",
-                    value:
-                        `🐟 Đã bắt: **${fish.toLocaleString()}** con`,
-                    inline:
-                        true
-                },
-                {
-                    name:
-                        "🌱 Farming",
-                    value:
-                        "Xem trong Vfarm",
-                    inline:
-                        true
-                },
-                {
-                    name:
-                        "📜 Quest",
-                    value:
-                        `✅ Hôm nay: **${completedQuests}/${dailyQuests.length}**`,
-                    inline:
-                        true
-                },
-                {
-                    name:
-                        "🎮 Game",
-                    value:
-                        `🎮 Games: **${games.toLocaleString()}**\n` +
-                        `🏆 Wins: **${wins.toLocaleString()}**\n` +
-                        `💀 Losses: **${losses.toLocaleString()}**`,
-                    inline:
-                        true
-                },
-                {
-                    name:
-                        "💼 Work",
-                    value:
-                        `Đã làm: **${work.toLocaleString()}** lần`,
-                    inline:
-                        true
-                }
-            )
-            .setFooter({
-                text:
-                    `ID: ${message.author.id}`
-            })
-            .setTimestamp();
+        })
 
-    return embed;
+        .setTitle(
+            "👤 Venti Profile"
+        )
+
+        .setDescription(
+            [
+                "🍃 **Traveler Profile**",
+                "",
+                `👤 ${message.author}`,
+                `⭐ Level **${level}**`,
+                `✨ ${xp.toLocaleString()} / ${xpNeeded.toLocaleString()} XP`,
+                "",
+                progressBar
+            ].join("\n")
+        )
+
+        .setThumbnail(
+            message.author
+                .displayAvatarURL({
+                    extension:
+                        "png",
+                    size:
+                        256
+                })
+        )
+
+        .addFields(
+            // ==================================
+            // 💰 ECONOMY
+            // ==================================
+            {
+                name:
+                    "💰 Tài sản",
+
+                value:
+                    `💵 Ví: **${balance.toLocaleString()} Mora**\n` +
+                    `🏦 Ngân hàng: **${bank.toLocaleString()} Mora**\n` +
+                    `💎 Tổng: **${(
+                        balance +
+                        bank
+                    ).toLocaleString()} Mora**`,
+
+                inline:
+                    true
+            },
+
+            // ==================================
+            // ⭐ LEVEL
+            // ==================================
+            {
+                name:
+                    "⭐ Cấp độ",
+
+                value:
+                    `Level: **${level}**\n` +
+                    `✨ XP: **${xp.toLocaleString()}**\n` +
+                    `🎯 Cần: **${xpNeeded.toLocaleString()} XP**`,
+
+                inline:
+                    true
+            },
+
+            // ==================================
+            // 🔥 DAILY
+            // ==================================
+            {
+                name:
+                    "🔥 Daily",
+
+                value:
+                    `Streak: **${streak} ngày**`,
+
+                inline:
+                    true
+            },
+
+            // ==================================
+            // 🎣 FISHING
+            // ==================================
+            {
+                name:
+                    "🎣 Fishing",
+
+                value:
+                    `🐟 Đã bắt: **${fish.toLocaleString()} con**`,
+
+                inline:
+                    true
+            },
+
+            // ==================================
+            // 🌾 FARMING
+            // ==================================
+            {
+                name:
+                    "🌾 Farming",
+
+                value:
+                    `🌱 Đã thu hoạch: **${farm.toLocaleString()} lần**`,
+
+                inline:
+                    true
+            },
+
+            // ==================================
+            // 📜 QUEST
+            // ==================================
+            {
+                name:
+                    "📜 Quest",
+
+                value:
+                    `🏆 Tổng hoàn thành: **${completedQuestTotal.toLocaleString()}**\n` +
+                    `📅 Hôm nay: **${dailyQuestCompleted}/${dailyQuestTotal || 0}**`,
+
+                inline:
+                    true
+            },
+
+            // ==================================
+            // 🎮 GAME
+            // ==================================
+            {
+                name:
+                    "🎮 Game",
+
+                value:
+                    `🎮 Games: **${games.toLocaleString()}**\n` +
+                    `🏆 Wins: **${wins.toLocaleString()}**\n` +
+                    `💀 Losses: **${losses.toLocaleString()}**`,
+
+                inline:
+                    true
+            },
+
+            // ==================================
+            // 💼 WORK
+            // ==================================
+            {
+                name:
+                    "💼 Work",
+
+                value:
+                    `Đã làm: **${work.toLocaleString()} lần**`,
+
+                inline:
+                    true
+            }
+        )
+
+        .setFooter({
+            text:
+                `Venti • Traveler ID: ${message.author.id}`
+        })
+
+        .setTimestamp();
 }
 
 // ==========================================
-// 📊 PROGRESS BAR
+// 📊 XP PROGRESS BAR
 // ==========================================
 
 function createProgressBar(
     progress,
-    length
+    length = 12
 ) {
+    const safeProgress =
+        Math.max(
+            0,
+            Math.min(
+                Number(progress) || 0,
+                1
+            )
+        );
+
     const filled =
         Math.round(
-            progress * length
+            safeProgress *
+            length
         );
 
     const empty =
-        length - filled;
+        length -
+        filled;
 
     return (
         "🟦".repeat(
@@ -335,6 +455,7 @@ async function sendProfile(
                     user
                 )
             ],
+
             components:
                 createButtons(
                     userId
@@ -343,7 +464,8 @@ async function sendProfile(
 
     const collector =
         msg.createMessageComponentCollector({
-            time: 180000
+            time:
+                180000
         });
 
     collector.on(
@@ -356,14 +478,15 @@ async function sendProfile(
                 return interaction.reply({
                     content:
                         "❌ Đây không phải profile của bạn.",
+
                     ephemeral:
                         true
                 });
             }
 
-            // =========================
+            // ==================================
             // 🔄 REFRESH
-            // =========================
+            // ==================================
 
             if (
                 interaction.customId ===
@@ -381,6 +504,7 @@ async function sendProfile(
                             updatedUser
                         )
                     ],
+
                     components:
                         createButtons(
                             userId
@@ -388,9 +512,9 @@ async function sendProfile(
                 });
             }
 
-            // =========================
+            // ==================================
             // 🎒 INVENTORY
-            // =========================
+            // ==================================
 
             if (
                 interaction.customId ===
@@ -399,14 +523,15 @@ async function sendProfile(
                 return interaction.reply({
                     content:
                         "🎒 Dùng `Vinventory` để mở túi đồ.",
+
                     ephemeral:
                         true
                 });
             }
 
-            // =========================
+            // ==================================
             // 📜 QUEST
-            // =========================
+            // ==================================
 
             if (
                 interaction.customId ===
@@ -415,12 +540,17 @@ async function sendProfile(
                 return interaction.reply({
                     content:
                         "📜 Dùng `Vquest` để xem nhiệm vụ.",
+
                     ephemeral:
                         true
                 });
             }
         }
     );
+
+    // ==========================================
+    // ⏰ END
+    // ==========================================
 
     collector.on(
         "end",

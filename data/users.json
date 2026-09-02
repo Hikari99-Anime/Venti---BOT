@@ -3,7 +3,7 @@
     "id": "743028655097380895",
     "balance": 1278,
     "bank": 510,
-    "xp": 65,
+    "xp": 73,
     "level": 1,
     "dailyStreak": 1,
     "lastDaily": 1788347182183,
@@ -12,10 +12,11 @@
     "inventory": {
       "fishing_rod": {
         "amount": 1,
-        "durability": 19,
+        "durability": 18,
         "maxDurability": 20
       },
-      "small_fish": 1
+      "small_fish": 1,
+      "blue_fish": 1
     },
     "tools": {
       "fishingRod": {
@@ -43,14 +44,30 @@
       "wins": 0,
       "losses": 0,
       "work": 0,
-      "fish": 1,
+      "fish": 2,
       "farm": 0,
       "harvest": 0,
       "quest": 0
     },
     "quests": {
-      "date": "",
-      "daily": []
+      "date": "2026-09-02",
+      "daily": [
+        {
+          "id": "fish",
+          "progress": 1,
+          "claimed": false
+        },
+        {
+          "id": "farm",
+          "progress": 0,
+          "claimed": false
+        },
+        {
+          "id": "sell",
+          "progress": 0,
+          "claimed": false
+        }
+      ]
     },
     "achievements": {},
     "createdAt": 1788347176388,

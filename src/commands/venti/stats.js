@@ -19,22 +19,32 @@ module.exports = {
         "Xem thống kê hành trình.",
 
     async execute(message) {
+        const userId =
+            message.author.id;
+
         const user =
-            User.getOrCreate(
-                message.author.id
-            );
+            User.getOrCreate(userId);
 
         const stats =
             user.stats || {};
 
-        // 💰 Tài chính
+        // ==========================================
+        // 💰 ECONOMY
+        // ==========================================
+
         const balance =
             Number(user.balance || 0);
 
         const bank =
             Number(user.bank || 0);
 
-        // 🎮 Minigame
+        const totalMoney =
+            balance + bank;
+
+        // ==========================================
+        // 🎮 GAME
+        // ==========================================
+
         const games =
             Number(stats.games || 0);
 
@@ -51,7 +61,10 @@ module.exports = {
                 )
                 : 0;
 
-        // 🎣 Cá
+        // ==========================================
+        // 🎣 FISHING
+        // ==========================================
+
         let fish =
             Number(stats.fish || 0);
 
@@ -69,10 +82,7 @@ module.exports = {
 
             fish =
                 fishIds.reduce(
-                    (
-                        total,
-                        id
-                    ) =>
+                    (total, id) =>
                         total +
                         Number(
                             user.inventory[id] || 0
@@ -81,23 +91,32 @@ module.exports = {
                 );
         }
 
-        // 🌾 Farm
+        // ==========================================
+        // 🌾 FARM
+        // ==========================================
+
         const farm =
             Number(
-                stats.farm ||
-                user.farmCount ||
+                stats.farm ??
+                user.farmCount ??
                 0
             );
 
-        // 📜 Quest
+        // ==========================================
+        // 📜 QUEST
+        // ==========================================
+
         const quest =
             Number(
-                stats.quest ||
-                user.quest ||
+                stats.quest ??
+                user.quest ??
                 0
             );
 
-        // 🏆 Achievement
+        // ==========================================
+        // 🏆 ACHIEVEMENT
+        // ==========================================
+
         const achievements =
             user.achievements || {};
 
@@ -105,40 +124,77 @@ module.exports = {
             Object.values(
                 achievements
             ).filter(
-                a =>
-                    a &&
-                    a.unlocked
+                achievement =>
+                    achievement &&
+                    achievement.unlocked
             ).length;
 
-        // ⭐ Level
+        // ==========================================
+        // ⭐ LEVEL
+        // ==========================================
+
         const level =
-            Number(
-                user.level || 1
-            );
+            Number(user.level || 1);
 
         const xp =
-            Number(
-                user.xp || 0
-            );
+            Number(user.xp || 0);
 
         const nextXP =
             level * 500;
 
-        // 💼 Work
-        const work =
-            Number(
-                stats.work || 0
+        const xpPercent =
+            Math.min(
+                Math.round(
+                    (xp / nextXP) * 100
+                ),
+                100
             );
 
-        // 🔥 Daily
+        // ==========================================
+        // 💼 WORK
+        // ==========================================
+
+        const work =
+            Number(stats.work || 0);
+
+        // ==========================================
+        // 🔥 DAILY
+        // ==========================================
+
         const streak =
             Number(
                 user.dailyStreak || 0
             );
 
+        // ==========================================
+        // 👤 NAME
+        // ==========================================
+
         const name =
             message.author.globalName ||
             message.author.username;
+
+        // ==========================================
+        // 📊 PROGRESS BAR
+        // ==========================================
+
+        const barLength = 10;
+
+        const filled =
+            Math.round(
+                (xpPercent / 100) *
+                barLength
+            );
+
+        const progressBar =
+            "🟩".repeat(filled) +
+            "⬜".repeat(
+                barLength - filled
+            );
+
+        // ==========================================
+        // 🍃 EMBED
+        // ==========================================
 
         const embed =
             new EmbedBuilder()
@@ -159,30 +215,41 @@ module.exports = {
                 )
 
                 .setDescription(
-                    "୨୧ ───────── ୨୧\n" +
-                    "☁️ Một góc nhỏ của bạn 🍃\n" +
-                    "୨୧ ───────── ୨୧\n\n" +
+                    "୨୧ ─────────────── ୨୧\n" +
+                    "☁️ `🍃` **Một góc nhỏ của hành trình**\n" +
+                    "୨୧ ─────────────── ୨୧\n\n" +
 
-                    `💰 **Mora** · ${balance.toLocaleString()} ୨୧ 🏦 ${bank.toLocaleString()}\n` +
+                    "● `💰` **Tài chính**\n" +
+                    `> \`💵 Ví         : ${balance.toLocaleString()} Mora\`\n` +
+                    `> \`🏦 Ngân hàng  : ${bank.toLocaleString()} Mora\`\n` +
+                    `> \`💎 Tổng       : ${totalMoney.toLocaleString()} Mora\`\n\n` +
 
-                    `🎮 **Game** · W/L ${wins}/${losses} ୨୧ 🍀 ${winRate}%\n` +
+                    "● `⭐` **Tiến trình**\n" +
+                    `> \`🌟 Level      : ${level}\`\n` +
+                    `> \`✨ XP         : ${xp.toLocaleString()} / ${nextXP.toLocaleString()}\`\n` +
+                    `> \`${progressBar} ${xpPercent}%\`\n\n` +
 
-                    `🎣 **Cá** · 🐟 ${fish}\n` +
+                    "● `🎮` **Mini Game**\n" +
+                    `> \`🎮 Games      : ${games.toLocaleString()}\`\n` +
+                    `> \`🏆 Wins       : ${wins.toLocaleString()}\`\n` +
+                    `> \`💀 Losses     : ${losses.toLocaleString()}\`\n` +
+                    `> \`🍀 Win Rate   : ${winRate}%\`\n\n` +
 
-                    `🌾 **Farm** · 🌱 ${farm}\n` +
+                    "● `🎣` **Phiêu lưu**\n" +
+                    `> \`🐟 Cá đã bắt  : ${fish.toLocaleString()}\`\n` +
+                    `> \`🌾 Thu hoạch  : ${farm.toLocaleString()}\`\n` +
+                    `> \`📜 Quest      : ${quest.toLocaleString()}\`\n\n` +
 
-                    `📜 **Quest** · 📖 ${quest}\n` +
+                    "● `🏆` **Thành tựu**\n" +
+                    `> \`🏅 Đã mở khóa : ${achievementCount}\`\n` +
+                    `> \`🔥 Daily      : ${streak} ngày\`\n\n` +
 
-                    `🏆 **Thành tích** · 🏅 ${achievementCount}\n` +
+                    "● `💼` **Công việc**\n" +
+                    `> \`💼 Đã làm     : ${work.toLocaleString()} lần\`\n\n` +
 
-                    `⭐ **Level** · ${level} ୨୧ ✨ ${xp}/${nextXP}\n` +
-
-                    `💼 **Làm việc** · ${work}\n` +
-
-                    `🔥 **Daily** · ${streak} ngày\n\n` +
-
-                    "୨୧ ───────── ୨୧\n" +
-                    "🍃 Chúc bạn một ngày thật chill ☕"
+                    "୨୧ ─────────────── ୨୧\n" +
+                    "☕ `🍃` **Chúc bạn một ngày thật chill**\n" +
+                    "୨୧ ─────────────── ୨୧"
                 )
 
                 .setThumbnail(
@@ -194,7 +261,7 @@ module.exports = {
 
                 .setFooter({
                     text:
-                        "☁️ Venti · Cozy corner 🍃"
+                        "☁️ Venti • Cozy Corner 🍃"
                 })
 
                 .setTimestamp();

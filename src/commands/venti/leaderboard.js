@@ -18,7 +18,8 @@ const TYPES = {
         emoji: "💰",
         color: "#F1C40F",
         description:
-            "Những người chơi có nhiều Mora nhất."
+            "Những người chơi có nhiều Mora nhất.",
+        unit: "Mora"
     },
 
     level: {
@@ -26,7 +27,8 @@ const TYPES = {
         emoji: "⭐",
         color: "#9B59B6",
         description:
-            "Những người chơi có Level cao nhất."
+            "Những người chơi có Level cao nhất.",
+        unit: "Level"
     },
 
     fishing: {
@@ -34,7 +36,8 @@ const TYPES = {
         emoji: "🎣",
         color: "#3498DB",
         description:
-            "Những người câu được nhiều cá nhất."
+            "Những người câu được nhiều cá nhất.",
+        unit: "con cá"
     },
 
     farming: {
@@ -42,7 +45,8 @@ const TYPES = {
         emoji: "🌾",
         color: "#2ECC71",
         description:
-            "Những người thu hoạch nhiều nhất."
+            "Những người thu hoạch nhiều nông sản nhất.",
+        unit: "lần thu hoạch"
     },
 
     daily: {
@@ -50,7 +54,8 @@ const TYPES = {
         emoji: "🔥",
         color: "#E67E22",
         description:
-            "Những người có chuỗi Daily dài nhất."
+            "Những người có chuỗi Daily dài nhất.",
+        unit: "ngày"
     },
 
     quest: {
@@ -58,7 +63,8 @@ const TYPES = {
         emoji: "📜",
         color: "#1ABC9C",
         description:
-            "Những người hoàn thành nhiều quest nhất."
+            "Những người hoàn thành nhiều quest nhất.",
+        unit: "quest"
     }
 };
 
@@ -76,37 +82,45 @@ function getUsers() {
         return [];
     }
 
-    return Object.entries(data).map(
-        ([id, user]) => ({
+    return Object.entries(data)
+        .map(([id, user]) => ({
             ...(user || {}),
-
-            // users.json của bạn có trường hợp
-            // ID nằm ở key thay vì user.id
             id:
                 user?.id ||
                 id
-        })
-    );
+        }))
+        .filter(user => user.id);
 }
 
 // ==========================================
-// 🎣 COUNT FISH
+// 🎣 FISHING
 // ==========================================
 
 function getFishingCount(user) {
     const stats =
         user.stats || {};
 
-    // Nếu Vfish đã lưu stats.fish
+    /*
+     * Ưu tiên stats.fish.
+     * Vfish cần tăng stats.fish mỗi lần
+     * câu được một con cá.
+     */
+
     if (
-        typeof stats.fish ===
-        "number"
+        Number.isFinite(
+            Number(stats.fish)
+        )
     ) {
-        return stats.fish;
+        return Math.max(
+            0,
+            Number(stats.fish)
+        );
     }
 
-    // Fallback cho dữ liệu cũ:
-    // tính trực tiếp cá trong inventory
+    /*
+     * Fallback dữ liệu cũ.
+     */
+
     const inventory =
         user.inventory || {};
 
@@ -119,21 +133,17 @@ function getFishingCount(user) {
     ];
 
     return fishIds.reduce(
-        (total, itemId) => {
-            return (
-                total +
-                Number(
-                    inventory[itemId] ||
-                    0
-                )
-            );
-        },
+        (total, itemId) =>
+            total +
+            Number(
+                inventory[itemId] || 0
+            ),
         0
     );
 }
 
 // ==========================================
-// 🌾 COUNT FARM
+// 🌾 FARMING
 // ==========================================
 
 function getFarmingCount(user) {
@@ -141,65 +151,101 @@ function getFarmingCount(user) {
         user.stats || {};
 
     if (
-        typeof stats.farm ===
-        "number"
+        Number.isFinite(
+            Number(stats.farm)
+        )
     ) {
-        return stats.farm;
+        return Math.max(
+            0,
+            Number(stats.farm)
+        );
     }
 
     if (
-        typeof user.farmCount ===
-        "number"
+        Number.isFinite(
+            Number(user.farmCount)
+        )
     ) {
-        return user.farmCount;
+        return Math.max(
+            0,
+            Number(user.farmCount)
+        );
     }
 
     return 0;
 }
 
 // ==========================================
-// 📜 COUNT QUEST
+// 📜 QUEST
 // ==========================================
 
 function getQuestCount(user) {
     const stats =
         user.stats || {};
 
-    if (
-        typeof stats.quest ===
-        "number"
-    ) {
-        return stats.quest;
-    }
-
-    if (
-        typeof user.quest ===
-        "number"
-    ) {
-        return user.quest;
-    }
-
     /*
-     * Fallback cho dữ liệu quest hiện tại.
+     * QUEST LEADERBOARD CHỈ DÙNG
+     * stats.quest.
      *
-     * quests.daily:
-     * [
-     *   {
-     *      id: "fish",
-     *      progress: 0,
-     *      claimed: false
-     *   }
-     * ]
-     *
-     * Không dùng progress ở đây để tránh
-     * nhầm progress hiện tại với tổng quest.
+     * Không lấy quests.daily.progress
+     * vì progress chỉ là tiến độ quest hiện tại.
      */
+
+    if (
+        Number.isFinite(
+            Number(stats.quest)
+        )
+    ) {
+        return Math.max(
+            0,
+            Number(stats.quest)
+        );
+    }
 
     return 0;
 }
 
 // ==========================================
-// 🔢 GET SCORE
+// 🔥 DAILY
+// ==========================================
+
+function getDailyCount(user) {
+    return Math.max(
+        0,
+        Number(
+            user.dailyStreak || 0
+        )
+    );
+}
+
+// ==========================================
+// ⭐ LEVEL
+// ==========================================
+
+function getLevel(user) {
+    return Math.max(
+        1,
+        Number(
+            user.level || 1
+        )
+    );
+}
+
+// ==========================================
+// 💰 BALANCE
+// ==========================================
+
+function getBalance(user) {
+    return Math.max(
+        0,
+        Number(
+            user.balance || 0
+        )
+    );
+}
+
+// ==========================================
+// 🔢 SCORE
 // ==========================================
 
 function getScore(
@@ -208,34 +254,22 @@ function getScore(
 ) {
     switch (type) {
         case "balance":
-            return Number(
-                user.balance || 0
-            );
+            return getBalance(user);
 
         case "level":
-            return Number(
-                user.level || 1
-            );
+            return getLevel(user);
 
         case "fishing":
-            return getFishingCount(
-                user
-            );
+            return getFishingCount(user);
 
         case "farming":
-            return getFarmingCount(
-                user
-            );
+            return getFarmingCount(user);
 
         case "daily":
-            return Number(
-                user.dailyStreak || 0
-            );
+            return getDailyCount(user);
 
         case "quest":
-            return getQuestCount(
-                user
-            );
+            return getQuestCount(user);
 
         default:
             return 0;
@@ -246,9 +280,7 @@ function getScore(
 // 🥇 MEDAL
 // ==========================================
 
-function getMedal(
-    position
-) {
+function getMedal(position) {
     if (position === 1) {
         return "🥇";
     }
@@ -262,6 +294,26 @@ function getMedal(
     }
 
     return `**${position}.**`;
+}
+
+// ==========================================
+// 📌 FORMAT SCORE
+// ==========================================
+
+function formatScore(
+    score,
+    type
+) {
+    const data =
+        TYPES[type];
+
+    if (!data) {
+        return score.toLocaleString();
+    }
+
+    return (
+        `${score.toLocaleString()} ${data.unit}`
+    );
 }
 
 // ==========================================
@@ -293,7 +345,7 @@ async function getDisplayName(
 }
 
 // ==========================================
-// 📊 SORT USERS
+// 📊 SORT
 // ==========================================
 
 function sortUsers(
@@ -314,16 +366,31 @@ function sortUsers(
                     type
                 );
 
-            return (
-                scoreB -
+            if (
+                scoreB !==
                 scoreA
+            ) {
+                return (
+                    scoreB -
+                    scoreA
+                );
+            }
+
+            /*
+             * Nếu bằng điểm thì ưu tiên
+             * level cao hơn.
+             */
+
+            return (
+                getLevel(b) -
+                getLevel(a)
             );
         }
     );
 }
 
 // ==========================================
-// 🏆 BUILD LEADERBOARD
+// 🏆 BUILD TOP 10
 // ==========================================
 
 async function createLeaderboard(
@@ -339,12 +406,13 @@ async function createLeaderboard(
         );
 
     if (
-        sorted.length ===
-        0
+        !sorted.length
     ) {
-        return (
-            "🍃 Chưa có người chơi."
-        );
+        return {
+            text:
+                "🍃 Chưa có người chơi.",
+            top: []
+        };
     }
 
     const top10 =
@@ -393,17 +461,20 @@ async function createLeaderboard(
                 : "";
 
         lines.push(
-            `${medal} **${name}** — \`${score.toLocaleString()}\`${marker}`
+            `${medal} **${name}**\n` +
+            `> ${TYPES[type].emoji} ${formatScore(score, type)}${marker}`
         );
     }
 
-    return lines.join(
-        "\n"
-    );
+    return {
+        text:
+            lines.join("\n\n"),
+        top: top10
+    };
 }
 
 // ==========================================
-// 👤 GET PLAYER RANK
+// 👤 PLAYER RANK
 // ==========================================
 
 function getPlayerRank(
@@ -430,7 +501,15 @@ function getPlayerRank(
         return null;
     }
 
-    return index + 1;
+    return {
+        rank: index + 1,
+        total: sorted.length,
+        score:
+            getScore(
+                sorted[index],
+                type
+            )
+    };
 }
 
 // ==========================================
@@ -457,40 +536,88 @@ async function createEmbed(
             userId
         );
 
-    const rank =
+    const player =
         getPlayerRank(
             users,
             type,
             userId
         );
 
-    return new EmbedBuilder()
-        .setColor(
-            data.color
-        )
+    const user =
+        users.find(
+            x =>
+                x.id ===
+                userId
+        );
 
-        .setTitle(
-            `${data.emoji} Venti Leaderboard`
-        )
+    const playerScore =
+        user
+            ? getScore(
+                user,
+                type
+            )
+            : 0;
 
-        .setDescription(
-            `### ${data.label}\n` +
-            `${data.description}\n\n` +
-            `${leaderboard}\n\n` +
-            "────────────────────\n" +
-            `👤 **Hạng của bạn:** ${
-                rank
-                    ? `#${rank}`
-                    : "Chưa xếp hạng"
-            }`
-        )
+    const rankText =
+        player
+            ? `#${player.rank} / ${player.total}`
+            : "Chưa xếp hạng";
 
-        .setFooter({
-            text:
-                "Venti • Top 10 Travelers"
-        })
+    const description = [
+        `${data.description}`,
+        "",
+        `📊 **${data.label}**`,
+        "",
+        leaderboard.text,
+        "",
+        "━━━━━━━━━━━━━━━━━━━━",
+        "",
+        `👤 **Thứ hạng của bạn**`,
+        `🏆 ${rankText}`,
+        `${data.emoji} ${formatScore(
+            playerScore,
+            type
+        )}`,
+        "",
+        `👥 **Tổng người chơi:** ${users.length}`
+    ].join("\n");
 
-        .setTimestamp();
+    const embed =
+        new EmbedBuilder()
+            .setColor(
+                data.color
+            )
+            .setTitle(
+                `${data.emoji} Venti Leaderboard`
+            )
+            .setDescription(
+                description
+            )
+            .setFooter({
+                text:
+                    "Venti • Top 10 Travelers"
+            })
+            .setTimestamp();
+
+    /*
+     * Nếu user đang ở Top 10,
+     * thêm thông tin nổi bật.
+     */
+
+    if (
+        player &&
+        player.rank <= 10
+    ) {
+        embed.addFields({
+            name:
+                "🏅 Bạn đang nằm trong Top 10!",
+            value:
+                `Bạn đang đứng **#${player.rank}** trên bảng xếp hạng.`,
+            inline: false
+        });
+    }
+
+    return embed;
 }
 
 // ==========================================
@@ -506,11 +633,9 @@ function createMenu(
                 .setCustomId(
                     "venti_leaderboard_menu"
                 )
-
                 .setPlaceholder(
                     "🏆 Chọn bảng xếp hạng..."
                 )
-
                 .addOptions(
                     Object.entries(
                         TYPES
@@ -570,7 +695,6 @@ module.exports = {
                         userId
                     )
                 ],
-
                 components: [
                     createMenu(
                         "balance"
@@ -620,21 +744,29 @@ module.exports = {
                     });
                 }
 
-                await interaction.update({
-                    embeds: [
-                        await createEmbed(
-                            message.client,
-                            type,
-                            userId
-                        )
-                    ],
-
-                    components: [
-                        createMenu(
-                            type
-                        )
-                    ]
-                });
+                try {
+                    await interaction.update({
+                        embeds: [
+                            await createEmbed(
+                                message.client,
+                                type,
+                                userId
+                            )
+                        ],
+                        components: [
+                            createMenu(
+                                type
+                            )
+                        ]
+                    });
+                } catch (
+                    error
+                ) {
+                    console.error(
+                        "[leaderboard interaction]",
+                        error
+                    );
+                }
             }
         );
 
@@ -650,3 +782,4 @@ module.exports = {
         );
     }
 };
+

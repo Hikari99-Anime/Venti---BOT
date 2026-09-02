@@ -7,11 +7,14 @@ const {
     ButtonStyle
 } = require("discord.js");
 
-const User = require("../../database/models/User");
-const Item = require("../../database/models/Item");
+const User =
+    require("../../database/models/User");
+
+const Item =
+    require("../../database/models/Item");
 
 // ═══════════════════════════════════════
-// VENTI • SHOP
+// 🍃 VENTI • SHOP
 // ═══════════════════════════════════════
 
 const PLOTS = [
@@ -19,52 +22,67 @@ const PLOTS = [
         id: 2,
         name: "Ô đất #2",
         emoji: "🟫",
-        price: 1000
+        price: 1000,
+        description:
+            "Mở khóa thêm một ô đất để trồng cây."
     },
     {
         id: 3,
         name: "Ô đất #3",
         emoji: "🟫",
-        price: 3000
+        price: 3000,
+        description:
+            "Mở khóa thêm một ô đất để mở rộng trang trại."
     },
     {
         id: 4,
         name: "Ô đất #4",
         emoji: "🟫",
-        price: 7500
+        price: 7500,
+        description:
+            "Một ô đất mới cho trang trại của bạn."
     },
     {
         id: 5,
         name: "Ô đất #5",
         emoji: "🟫",
-        price: 15000
+        price: 15000,
+        description:
+            "Mở rộng trang trại với một ô đất mới."
     },
     {
         id: 6,
         name: "Ô đất #6",
         emoji: "🟫",
-        price: 30000
+        price: 30000,
+        description:
+            "Một ô đất cao cấp để tiếp tục phát triển trang trại."
     },
     {
         id: 7,
         name: "Ô đất #7",
         emoji: "🟫",
-        price: 60000
+        price: 60000,
+        description:
+            "Ô đất cuối cùng của trang trại."
     }
 ];
 
 // ═══════════════════════════════════════
-// SAFE EMOJI
+// 🛡️ SAFE EMOJI
 // ═══════════════════════════════════════
 
-function safeEmoji(emoji, fallback = "📦") {
+function safeEmoji(
+    emoji,
+    fallback = "📦"
+) {
     if (!emoji) {
         return fallback;
     }
 
-    const value = String(emoji).trim();
+    const value =
+        String(emoji).trim();
 
-    // Không cho custom emoji
     if (
         value.includes("<") ||
         value.includes(">") ||
@@ -151,10 +169,6 @@ const command = {
                         const id =
                             interaction.customId;
 
-                        // ═════════════════════
-                        // CATEGORY
-                        // ═════════════════════
-
                         if (
                             id ===
                             `shop_category_${userId}`
@@ -172,10 +186,6 @@ const command = {
                             );
                         }
 
-                        // ═════════════════════
-                        // ITEM
-                        // ═════════════════════
-
                         if (
                             id ===
                             `shop_item_${userId}`
@@ -191,10 +201,6 @@ const command = {
                             );
                         }
 
-                        // ═════════════════════
-                        // BUY
-                        // ═════════════════════
-
                         if (
                             id ===
                             `shop_buy_${userId}`
@@ -206,10 +212,6 @@ const command = {
                                 userId
                             );
                         }
-
-                        // ═════════════════════
-                        // HOME
-                        // ═════════════════════
 
                         if (
                             id ===
@@ -235,10 +237,6 @@ const command = {
                             });
                         }
 
-                        // ═════════════════════
-                        // BACK
-                        // ═════════════════════
-
                         if (
                             id ===
                             `shop_back_${userId}`
@@ -249,10 +247,6 @@ const command = {
                                 userId
                             );
                         }
-
-                        // ═════════════════════
-                        // CLOSE
-                        // ═════════════════════
 
                         if (
                             id ===
@@ -324,7 +318,7 @@ const command = {
 };
 
 // ═══════════════════════════════════════
-// HOME EMBED
+// 🏠 HOME EMBED
 // ═══════════════════════════════════════
 
 function homeEmbed(userId) {
@@ -340,28 +334,41 @@ function homeEmbed(userId) {
 
     return new EmbedBuilder()
         .setColor("#9ccfd8")
+
         .setTitle(
             "🛒 Venti Shop"
         )
+
         .setDescription(
             [
-                "🍃 Một góc nhỏ bên Windrise.",
+                "● `🌱` **Hạt giống**",
+                "> Mua hạt giống để trồng cây.",
+
                 "",
-                "🌱 Hạt giống  •  Trồng cây",
-                "🎣 Cần câu  •  Câu cá",
-                "🟫 Đất  •  Mở rộng trang trại",
+
+                "● `🎣` **Cần câu**",
+                "> Mua cần câu để câu cá.",
+
                 "",
-                `💰 Mora: **${balance.toLocaleString()}**`
+
+                "● `🟫` **Đất trang trại**",
+                "> Mở khóa thêm ô đất.",
+
+                "",
+
+                "● `💰` **Mora**",
+                `> ${balance.toLocaleString()} Mora`
             ].join("\n")
         )
+
         .setFooter({
             text:
-                "♡ Chọn một danh mục bên dưới."
+                "♡ Chọn danh mục bên dưới để xem sản phẩm."
         });
 }
 
 // ═══════════════════════════════════════
-// CATEGORY ROW
+// 📂 CATEGORY ROW
 // ═══════════════════════════════════════
 
 function categoryRow(userId) {
@@ -388,6 +395,7 @@ function categoryRow(userId) {
                         emoji:
                             "🌱"
                     },
+
                     {
                         label:
                             "Cần câu",
@@ -401,6 +409,7 @@ function categoryRow(userId) {
                         emoji:
                             "🎣"
                     },
+
                     {
                         label:
                             "Đất trang trại",
@@ -419,7 +428,7 @@ function categoryRow(userId) {
 }
 
 // ═══════════════════════════════════════
-// GET ITEMS
+// 📦 GET ITEMS
 // ═══════════════════════════════════════
 
 function getItems(
@@ -492,7 +501,168 @@ function getItems(
 }
 
 // ═══════════════════════════════════════
-// CATEGORY PAGE
+// 📋 CATEGORY EMBED
+// ═══════════════════════════════════════
+
+function createCategoryEmbed(
+    category,
+    items,
+    userId
+) {
+    const user =
+        User.getOrCreate(
+            userId
+        );
+
+    const balance =
+        Number(
+            user?.balance || 0
+        );
+
+    let title =
+        "🛒 Venti Shop";
+
+    let description =
+        "";
+
+    if (
+        category ===
+        "seeds"
+    ) {
+        title =
+            "● `🌱` Hạt giống";
+
+        description =
+            "> Những hạt giống dùng để trồng cây trong trang trại.";
+    }
+
+    if (
+        category ===
+        "rods"
+    ) {
+        title =
+            "● `🎣` Cần câu";
+
+        description =
+            " > Những chiếc cần câu giúp bạn khám phá Windrise Lake.";
+    }
+
+    if (
+        category ===
+        "plots"
+    ) {
+        title =
+            "● `🟫` Đất trang trại";
+
+        description =
+            "> Mở khóa thêm không gian cho trang trại.";
+    }
+
+    const lines = [];
+
+    for (
+        const item of items
+    ) {
+        const emoji =
+            safeEmoji(
+                item.emoji
+            );
+
+        const price =
+            getPrice(
+                item
+            );
+
+        lines.push(
+            [
+                `● \`${emoji}\` **${item.name}**`,
+                `> ${item.description || "Một vật phẩm trong cửa hàng Venti."}`,
+                `> 💰 Giá: **${price.toLocaleString()} Mora**`
+            ].join("\n")
+        );
+
+        if (
+            category ===
+            "seeds"
+        ) {
+            if (
+                item.growTime
+            ) {
+                lines.push(
+                    `> ⏳ Lớn trong: **${formatTime(item.growTime)}**`
+                );
+            }
+
+            if (
+                item.minHarvest ||
+                item.maxHarvest
+            ) {
+                lines.push(
+                    `> 🌾 Thu hoạch: **${item.minHarvest || 1} - ${item.maxHarvest || item.minHarvest || 1}**`
+                );
+            }
+        }
+
+        if (
+            category ===
+            "rods"
+        ) {
+            lines.push(
+                `> ⭐ Cấp cần: **Level ${item.rodLevel || 1}**`
+            );
+
+            lines.push(
+                `> 🛡️ Độ bền: **${item.durability || item.maxDurability || 20}**`
+            );
+        }
+
+        if (
+            category ===
+            "plots"
+        ) {
+            lines.push(
+                `> 🟫 Ô đất: **#${item.id}**`
+            );
+        }
+
+        lines.push("");
+    }
+
+    if (
+        !lines.length
+    ) {
+        lines.push(
+            "☁️ Hiện không còn sản phẩm nào trong danh mục này."
+        );
+    }
+
+    return new EmbedBuilder()
+        .setColor("#9ccfd8")
+
+        .setTitle(
+            title
+        )
+
+        .setDescription(
+            [
+                description,
+                "",
+                ...lines,
+                `● \`💰\` **Mora hiện có**`,
+                `> ${balance.toLocaleString()} Mora`,
+                "",
+                "♡ Chọn sản phẩm bên dưới để xem và mua."
+            ].join("\n")
+        )
+
+        .setFooter({
+            text:
+                "🍃 Venti Shop · Windrise"
+        });
+}
+
+// ═══════════════════════════════════════
+// 📂 CATEGORY PAGE
 // ═══════════════════════════════════════
 
 async function showCategory(
@@ -516,10 +686,14 @@ async function showCategory(
                         "#f2a7a7"
                     )
                     .setTitle(
-                        "🍃 Hết hàng"
+                        "● `🍃` Hết hàng"
                     )
                     .setDescription(
-                        "Danh mục này hiện không còn sản phẩm."
+                        [
+                            "> Danh mục này hiện không còn sản phẩm.",
+                            "",
+                            "♡ Hãy quay lại sau nhé."
+                        ].join("\n")
                     )
             ],
             components: [
@@ -528,33 +702,6 @@ async function showCategory(
                 )
             ]
         });
-    }
-
-    let title =
-        "🛒 Shop";
-
-    if (
-        category ===
-        "seeds"
-    ) {
-        title =
-            "🌱 Hạt giống";
-    }
-
-    if (
-        category ===
-        "rods"
-    ) {
-        title =
-            "🎣 Cần câu";
-    }
-
-    if (
-        category ===
-        "plots"
-    ) {
-        title =
-            "🟫 Đất trang trại";
     }
 
     const options =
@@ -577,7 +724,11 @@ async function showCategory(
                             ),
 
                         description:
-                            `${price.toLocaleString()} Mora`,
+                            `${price.toLocaleString()} Mora`
+                                .slice(
+                                    0,
+                                    100
+                                ),
 
                         value:
                             String(
@@ -594,16 +745,11 @@ async function showCategory(
 
     return interaction.update({
         embeds: [
-            new EmbedBuilder()
-                .setColor(
-                    "#9ccfd8"
-                )
-                .setTitle(
-                    title
-                )
-                .setDescription(
-                    "♡ Chọn sản phẩm bạn muốn mua."
-                )
+            createCategoryEmbed(
+                category,
+                items,
+                userId
+            )
         ],
 
         components: [
@@ -614,7 +760,7 @@ async function showCategory(
                             `shop_item_${userId}`
                         )
                         .setPlaceholder(
-                            "📦 Chọn sản phẩm..."
+                            "📦 Chọn sản phẩm để mua..."
                         )
                         .addOptions(
                             options
@@ -650,7 +796,7 @@ async function showCategory(
 }
 
 // ═══════════════════════════════════════
-// ITEM PAGE
+// 📦 ITEM PAGE
 // ═══════════════════════════════════════
 
 async function showItem(
@@ -708,6 +854,69 @@ async function showItem(
             item.emoji
         );
 
+    const lines = [
+        `● \`${emoji}\` **${item.name}**`,
+        `> ${item.description || "Một vật phẩm trong cửa hàng Venti."}`,
+        "",
+        "● `💰` **Giá**",
+        `> ${price.toLocaleString()} Mora`,
+        "",
+        "● `💳` **Mora của bạn**",
+        `> ${balance.toLocaleString()} Mora`
+    ];
+
+    if (
+        category ===
+        "seeds"
+    ) {
+        if (
+            item.growTime
+        ) {
+            lines.push(
+                "",
+                "● `⏳` **Thời gian**",
+                `> ${formatTime(item.growTime)}`
+            );
+        }
+
+        if (
+            item.minHarvest ||
+            item.maxHarvest
+        ) {
+            lines.push(
+                "",
+                "● `🌾` **Thu hoạch**",
+                `> ${item.minHarvest || 1} - ${item.maxHarvest || item.minHarvest || 1}`
+            );
+        }
+    }
+
+    if (
+        category ===
+        "rods"
+    ) {
+        lines.push(
+            "",
+            "● `⭐` **Cấp cần**",
+            `> Level ${item.rodLevel || 1}`,
+
+            "",
+            "● `🛡️` **Độ bền**",
+            `> ${item.durability || item.maxDurability || 20}`
+        );
+    }
+
+    if (
+        category ===
+        "plots"
+    ) {
+        lines.push(
+            "",
+            "● `🟫` **Ô đất**",
+            `> Ô đất #${item.id}`
+        );
+    }
+
     const embed =
         new EmbedBuilder()
             .setColor(
@@ -716,116 +925,11 @@ async function showItem(
                     : "#f2a7a7"
             )
             .setTitle(
-                `${emoji} ${item.name}`
+                `● \`${emoji}\` ${item.name}`
             )
             .setDescription(
-                item.description ||
-                "Một vật phẩm trong cửa hàng Venti."
-            )
-            .addFields(
-                {
-                    name:
-                        "💰 Giá",
-
-                    value:
-                        `${price.toLocaleString()} Mora`,
-
-                    inline:
-                        true
-                },
-                {
-                    name:
-                        "💳 Mora",
-
-                    value:
-                        `${balance.toLocaleString()} Mora`,
-
-                    inline:
-                        true
-                }
+                lines.join("\n")
             );
-
-    if (
-        category ===
-        "seeds" &&
-        item.growTime
-    ) {
-        embed.addFields({
-            name:
-                "⏳ Lớn trong",
-
-            value:
-                formatTime(
-                    item.growTime
-                ),
-
-            inline:
-                true
-        });
-    }
-
-    if (
-        category ===
-        "seeds" &&
-        (
-            item.minHarvest ||
-            item.maxHarvest
-        )
-    ) {
-        embed.addFields({
-            name:
-                "🌾 Thu hoạch",
-
-            value:
-                `${item.minHarvest || 1} - ${item.maxHarvest || item.minHarvest || 1}`,
-
-            inline:
-                true
-        });
-    }
-
-    if (
-        category ===
-        "rods"
-    ) {
-        embed.addFields({
-            name:
-                "⭐ Cấp cần",
-
-            value:
-                `Level ${item.rodLevel || 1}`,
-
-            inline:
-                true
-        });
-
-        embed.addFields({
-            name:
-                "🛡️ Độ bền",
-
-            value:
-                `${item.durability || item.maxDurability || 20}`,
-
-            inline:
-                true
-        });
-    }
-
-    if (
-        category ===
-        "plots"
-    ) {
-        embed.addFields({
-            name:
-                "🟫 Ô đất",
-
-            value:
-                `Ô đất #${item.id}`,
-
-            inline:
-                true
-        });
-    }
 
     return interaction.update({
         embeds: [
@@ -844,6 +948,11 @@ async function showItem(
                                 ? "Mua"
                                 : "Không đủ Mora"
                         )
+                        .setEmoji(
+                            canBuy
+                                ? "🛒"
+                                : "💸"
+                        )
                         .setStyle(
                             ButtonStyle.Success
                         )
@@ -858,6 +967,9 @@ async function showItem(
                         .setLabel(
                             "Quay lại"
                         )
+                        .setEmoji(
+                            "↩️"
+                        )
                         .setStyle(
                             ButtonStyle.Secondary
                         )
@@ -867,7 +979,7 @@ async function showItem(
 }
 
 // ═══════════════════════════════════════
-// BUY
+// 🛒 BUY
 // ═══════════════════════════════════════
 
 async function buyItem(
@@ -927,10 +1039,6 @@ async function buyItem(
         });
     }
 
-    // ═══════════════════════════════
-    // PLOT
-    // ═══════════════════════════════
-
     if (
         category ===
         "plots"
@@ -942,10 +1050,6 @@ async function buyItem(
             userId
         );
     }
-
-    // ═══════════════════════════════
-    // NORMAL ITEM
-    // ═══════════════════════════════
 
     const removed =
         removeBalance(
@@ -968,7 +1072,6 @@ async function buyItem(
             1
         );
     } catch (error) {
-        // Hoàn tiền nếu add item lỗi
         addBalance(
             userId,
             price
@@ -989,15 +1092,18 @@ async function buyItem(
                     "#a8d8a8"
                 )
                 .setTitle(
-                    "♡ Mua thành công"
+                    "● `♡` Mua thành công"
                 )
                 .setDescription(
                     [
-                        `${emoji} **${item.name} ×1**`,
+                        `● \`${emoji}\` **${item.name} ×1**`,
+                        `> ${item.description || "Vật phẩm đã được thêm vào túi đồ."}`,
                         "",
-                        `💰 Đã trả: **${price.toLocaleString()} Mora**`,
+                        "● `💰` **Đã trả**",
+                        `> ${price.toLocaleString()} Mora`,
                         "",
-                        "🎒 Đã thêm vào inventory."
+                        "● `🎒` **Inventory**",
+                        "> Đã thêm vật phẩm vào túi đồ."
                     ].join("\n")
                 )
         ],
@@ -1011,7 +1117,7 @@ async function buyItem(
 }
 
 // ═══════════════════════════════════════
-// BUY PLOT
+// 🟫 BUY PLOT
 // ═══════════════════════════════════════
 
 async function buyPlot(
@@ -1111,18 +1217,19 @@ async function buyPlot(
                     "#a8d8a8"
                 )
                 .setTitle(
-                    "🟫 Mở đất thành công"
+                    "● `🟫` Mở đất thành công"
                 )
                 .setDescription(
-                    `♡ Bạn đã mở khóa **Ô đất #${plotId}**.`
+                    [
+                        `● \`🟫\` **Ô đất #${plotId}**`,
+                        "> Đã được mở khóa cho trang trại.",
+                        "",
+                        "● `💰` **Đã trả**",
+                        `> -${price.toLocaleString()} Mora`,
+                        "",
+                        "♡ Chúc bạn có một mùa vụ thật tốt."
+                    ].join("\n")
                 )
-                .addFields({
-                    name:
-                        "💰 Đã trả",
-
-                    value:
-                        `-${price.toLocaleString()} Mora`
-                })
         ],
 
         components: [
@@ -1134,7 +1241,7 @@ async function buyPlot(
 }
 
 // ═══════════════════════════════════════
-// INVENTORY ADD
+// 🎒 INVENTORY
 // ═══════════════════════════════════════
 
 function addInventoryItem(
@@ -1142,7 +1249,6 @@ function addInventoryItem(
     itemId,
     amount
 ) {
-    // Ưu tiên Item.add()
     if (
         Item &&
         typeof Item.add ===
@@ -1155,7 +1261,6 @@ function addInventoryItem(
         );
     }
 
-    // Fallback User.addItem()
     if (
         User &&
         typeof User.addItem ===
@@ -1168,7 +1273,6 @@ function addInventoryItem(
         );
     }
 
-    // Fallback database trực tiếp
     const user =
         User.getOrCreate(
             userId
@@ -1217,7 +1321,7 @@ function addInventoryItem(
 }
 
 // ═══════════════════════════════════════
-// REMOVE BALANCE
+// 💸 REMOVE BALANCE
 // ═══════════════════════════════════════
 
 function removeBalance(
@@ -1292,7 +1396,7 @@ function removeBalance(
 }
 
 // ═══════════════════════════════════════
-// ADD BALANCE
+// 💰 ADD BALANCE
 // ═══════════════════════════════════════
 
 function addBalance(
@@ -1353,7 +1457,7 @@ function addBalance(
 }
 
 // ═══════════════════════════════════════
-// HOME BUTTON
+// 🏠 HOME BUTTON
 // ═══════════════════════════════════════
 
 function homeButton(
@@ -1368,6 +1472,9 @@ function homeButton(
                 .setLabel(
                     "Trang chủ"
                 )
+                .setEmoji(
+                    "🏠"
+                )
                 .setStyle(
                     ButtonStyle.Secondary
                 )
@@ -1375,7 +1482,7 @@ function homeButton(
 }
 
 // ═══════════════════════════════════════
-// PRICE
+// 💰 PRICE
 // ═══════════════════════════════════════
 
 function getPrice(
@@ -1389,7 +1496,7 @@ function getPrice(
 }
 
 // ═══════════════════════════════════════
-// TIME
+// ⏳ TIME
 // ═══════════════════════════════════════
 
 function formatTime(
@@ -1415,7 +1522,8 @@ function formatTime(
         );
 
     const remain =
-        seconds % 60;
+        seconds %
+        60;
 
     if (
         remain ===

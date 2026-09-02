@@ -1,3 +1,4 @@
+
 const {
     ActionRowBuilder,
     StringSelectMenuBuilder,
@@ -6,505 +7,988 @@ const {
     EmbedBuilder
 } = require("discord.js");
 
-const User = require("../../database/models/User");
-const Item = require("../../database/models/Item");
+const User =
+    require("../../database/models/User");
+
+const Item =
+    require("../../database/models/Item");
+
+// ==========================================
+// 💸 VENTI • MARKET
+// ==========================================
 
 module.exports = {
     name: "sell",
-    aliases: ["sellitem"],
-    description: "Bán item lấy Mora.",
 
-    async execute(message, args) {
-        const userId = message.author.id;
+    aliases: [
+        "sellitem",
+        "vsell"
+    ],
 
-        // =========================
-        // LẤY USER + INVENTORY
-        // =========================
-        const user = User.getOrCreate(userId);
+    description:
+        "Bán vật phẩm lấy Mora.",
+
+    usage:
+        "Vsell",
+
+    category:
+        "economy",
+
+    async execute(message) {
+        const userId =
+            message.author.id;
+
+        const user =
+            User.getOrCreate(
+                userId
+            );
 
         if (!user) {
-            return message.reply(
-                "❌ Không thể tải dữ liệu người dùng."
-            );
-        }
-
-        const inventory = user.inventory || {};
-
-        // =========================
-        // LẤY ITEM
-        // =========================
-        const allItems = Item.getAll();
-
-        const farmingItems = allItems.filter(
-            item =>
-                item.category === "farming" &&
-                item.sellPrice &&
-                Number(inventory[item.id] || 0) > 0
-        );
-
-        const seafoodItems = allItems.filter(
-            item =>
-                item.category === "seafood" &&
-                item.sellPrice &&
-                Number(inventory[item.id] || 0) > 0
-        );
-
-        // =========================
-        // TẠO OPTION ITEM
-        // =========================
-        function createItemOptions(items) {
-            return items
-                .slice(0, 25)
-                .map(item => {
-                    const amount = Number(
-                        inventory[item.id] || 0
-                    );
-
-                    return {
-                        label: item.name,
-                        description:
-                            `Đang có: ${amount} • Bán: ${item.sellPrice.toLocaleString()} Mora`,
-                        value: item.id,
-                        emoji: item.emoji || "📦"
-                    };
-                });
-        }
-
-        // =========================
-        // EMBED CHÍNH
-        // =========================
-        const embed = new EmbedBuilder()
-            .setColor("#57F287")
-            .setTitle("💸 Venti Market")
-            .setDescription(
-                "Chọn loại vật phẩm bạn muốn bán:"
-            )
-            .addFields(
-                {
-                    name: "🌾 Nông sản",
-                    value:
-                        `${farmingItems.length} loại có thể bán`,
-                    inline: true
-                },
-                {
-                    name: "🌊 Hải sản",
-                    value:
-                        `${seafoodItems.length} loại có thể bán`,
-                    inline: true
-                }
-            )
-            .setFooter({
-                text: "Chỉ hiển thị vật phẩm bạn đang có."
+            return message.reply({
+                content:
+                    "❌ Không thể tải dữ liệu người dùng."
             });
+        }
 
-        // =========================
-        // CATEGORY SELECT
-        // =========================
-        const categorySelect =
+        return openSellMenu(
+            message,
+            userId
+        );
+    }
+};
+
+// ==========================================
+// 🎨 SAFE EMOJI
+// ==========================================
+
+function safeEmoji(
+    emoji,
+    fallback = "📦"
+) {
+    if (!emoji) {
+        return fallback;
+    }
+
+    const value =
+        String(
+            emoji
+        ).trim();
+
+    if (
+        value.includes("<") ||
+        value.includes(">") ||
+        value.includes(":")
+    ) {
+        return fallback;
+    }
+
+    if (
+        value.length > 8
+    ) {
+        return fallback;
+    }
+
+    return value;
+}
+
+// ==========================================
+// 💰 FORMAT MONEY
+// ==========================================
+
+function money(
+    value
+) {
+    return Number(
+        value || 0
+    ).toLocaleString();
+}
+
+// ==========================================
+// 🎒 GET INVENTORY AMOUNT
+// ==========================================
+
+function getAmount(
+    inventory,
+    itemId
+) {
+    const value =
+        inventory?.[itemId];
+
+    if (
+        typeof value ===
+        "object"
+    ) {
+        return Number(
+            value?.amount || 0
+        );
+    }
+
+    return Number(
+        value || 0
+    );
+}
+
+// ==========================================
+// 📦 GET SELLABLE ITEMS
+// ==========================================
+
+function getSellableItems(
+    userId,
+    category
+) {
+    const user =
+        User.get(
+            userId
+        ) ||
+        User.getOrCreate(
+            userId
+        );
+
+    const inventory =
+        user?.inventory || {};
+
+    return Item
+        .getAll()
+        .filter(
+            item => {
+                if (
+                    item.category !==
+                    category
+                ) {
+                    return false;
+                }
+
+                if (
+                    !item.sellPrice
+                ) {
+                    return false;
+                }
+
+                return (
+                    getAmount(
+                        inventory,
+                        item.id
+                    ) > 0
+                );
+            }
+        );
+}
+
+// ==========================================
+// 🏷️ CATEGORY NAME
+// ==========================================
+
+function getCategoryName(
+    category
+) {
+    if (
+        category ===
+        "farming"
+    ) {
+        return "🌾 Nông sản";
+    }
+
+    if (
+        category ===
+        "seafood"
+    ) {
+        return "🌊 Hải sản";
+    }
+
+    return "📦 Vật phẩm";
+}
+
+// ==========================================
+// 📊 CATEGORY EMBED
+// ==========================================
+
+function createCategoryEmbed(
+    userId
+) {
+    const farmingItems =
+        getSellableItems(
+            userId,
+            "farming"
+        );
+
+    const seafoodItems =
+        getSellableItems(
+            userId,
+            "seafood"
+        );
+
+    const farmingText =
+        farmingItems.length
+            ? farmingItems
+                .slice(0, 8)
+                .map(item => {
+                    const amount =
+                        getAmount(
+                            User.get(userId)?.inventory,
+                            item.id
+                        );
+
+                    return (
+                        `> ${safeEmoji(item.emoji)} **${item.name}**\n` +
+                        `> 🎒 Số lượng: **${amount}**\n` +
+                        `> 💰 Giá bán: **${money(item.sellPrice)} Mora / cái**`
+                    );
+                })
+                .join("\n\n")
+            : "> ☁️ Bạn chưa có nông sản để bán.";
+
+    const seafoodText =
+        seafoodItems.length
+            ? seafoodItems
+                .slice(0, 8)
+                .map(item => {
+                    const amount =
+                        getAmount(
+                            User.get(userId)?.inventory,
+                            item.id
+                        );
+
+                    return (
+                        `> ${safeEmoji(item.emoji)} **${item.name}**\n` +
+                        `> 🎒 Số lượng: **${amount}**\n` +
+                        `> 💰 Giá bán: **${money(item.sellPrice)} Mora / cái**`
+                    );
+                })
+                .join("\n\n")
+            : "> ☁️ Bạn chưa có hải sản để bán.";
+
+    return new EmbedBuilder()
+        .setColor("#57F287")
+
+        .setTitle(
+            "💸 Venti Market"
+        )
+
+        .setDescription(
+            [
+                "🍃 Bán vật phẩm để nhận Mora.",
+                "",
+                "● 🌾 **Nông sản**",
+                "",
+                farmingText,
+                "",
+                "● 🌊 **Hải sản**",
+                "",
+                seafoodText,
+                "",
+                "● 💡 **Hướng dẫn**",
+                "> Chọn một danh mục bên dưới.",
+                "> Sau đó chọn vật phẩm bạn muốn bán."
+            ].join("\n")
+        )
+
+        .setFooter({
+            text:
+                "Venti Market • Chỉ hiển thị vật phẩm bạn đang có."
+        });
+}
+
+// ==========================================
+// 📂 CATEGORY SELECT
+// ==========================================
+
+function createCategorySelect(
+    userId
+) {
+    return new ActionRowBuilder()
+        .addComponents(
             new StringSelectMenuBuilder()
                 .setCustomId(
                     `sell_category_${userId}`
                 )
                 .setPlaceholder(
-                    "🌾 Chọn loại vật phẩm..."
+                    "📦 Chọn danh mục..."
                 )
                 .addOptions([
                     {
-                        label: "Nông sản",
+                        label:
+                            "Nông sản",
+
                         description:
-                            "Xem nông sản bạn đang có",
-                        value: "farming",
-                        emoji: "🌾"
+                            "Xem nông sản bạn đang có.",
+
+                        value:
+                            "farming",
+
+                        emoji:
+                            "🌾"
                     },
+
                     {
-                        label: "Hải sản",
+                        label:
+                            "Hải sản",
+
                         description:
-                            "Xem hải sản bạn đang có",
-                        value: "seafood",
-                        emoji: "🌊"
+                            "Xem cá bạn đang có.",
+
+                        value:
+                            "seafood",
+
+                        emoji:
+                            "🌊"
                     }
-                ]);
+                ])
+        );
+}
 
-        const categoryRow =
-            new ActionRowBuilder()
-                .addComponents(
-                    categorySelect
-                );
+// ==========================================
+// 📦 ITEM EMBED
+// ==========================================
 
-        const msg = await message.reply({
-            embeds: [embed],
-            components: [categoryRow]
+function createItemsEmbed(
+    userId,
+    category,
+    items
+) {
+    const user =
+        User.get(
+            userId
+        );
+
+    const inventory =
+        user?.inventory || {};
+
+    const lines = [];
+
+    lines.push(
+        `● ${getCategoryName(category)}`
+    );
+
+    lines.push("");
+
+    for (
+        const item of items
+    ) {
+        const amount =
+            getAmount(
+                inventory,
+                item.id
+            );
+
+        const total =
+            Number(
+                item.sellPrice || 0
+            ) *
+            amount;
+
+        lines.push(
+            `> ${safeEmoji(item.emoji)} **${item.name}**`
+        );
+
+        lines.push(
+            `> 🎒 Số lượng: **${amount}**`
+        );
+
+        lines.push(
+            `> 💰 Giá bán: **${money(item.sellPrice)} Mora / cái**`
+        );
+
+        lines.push(
+            `> 💵 Bán hết: **${money(total)} Mora**`
+        );
+
+        lines.push("");
+    }
+
+    lines.push(
+        "● 📌 **Lưu ý**"
+    );
+
+    lines.push(
+        "> Chọn vật phẩm bên dưới để bán."
+    );
+
+    lines.push(
+        "> Giá bán được tính theo từng cái."
+    );
+
+    return new EmbedBuilder()
+        .setColor("#57F287")
+
+        .setTitle(
+            `${getCategoryName(category)} • Venti Market`
+        )
+
+        .setDescription(
+            lines.join("\n")
+        )
+
+        .setFooter({
+            text:
+                "Venti Market • Chọn vật phẩm để tiếp tục."
         });
+}
 
-        // =========================
-        // COLLECTOR
-        // =========================
-        const collector =
-            msg.createMessageComponentCollector({
-                time: 120000
+// ==========================================
+// 📦 ITEM SELECT
+// ==========================================
+
+function createItemSelect(
+    userId,
+    items
+) {
+    const options =
+        items
+            .slice(0, 25)
+            .map(item => {
+                const user =
+                    User.get(
+                        userId
+                    );
+
+                const inventory =
+                    user?.inventory || {};
+
+                const amount =
+                    getAmount(
+                        inventory,
+                        item.id
+                    );
+
+                return {
+                    label:
+                        String(
+                            item.name
+                        ).slice(
+                            0,
+                            100
+                        ),
+
+                    description:
+                        `Có ${amount} • ${money(item.sellPrice)} Mora/cái`,
+
+                    value:
+                        String(
+                            item.id
+                        ),
+
+                    emoji:
+                        safeEmoji(
+                            item.emoji
+                        )
+                };
             });
 
-        let selectedCategory = null;
-        let selectedItem = null;
+    return new ActionRowBuilder()
+        .addComponents(
+            new StringSelectMenuBuilder()
+                .setCustomId(
+                    `sell_item_${userId}`
+                )
+                .setPlaceholder(
+                    "📦 Chọn vật phẩm muốn bán..."
+                )
+                .addOptions(
+                    options
+                )
+        );
+}
 
-        collector.on(
-            "collect",
-            async interaction => {
-                if (
-                    interaction.user.id !== userId
-                ) {
-                    return interaction.reply({
-                        content:
-                            "❌ Đây không phải menu của bạn.",
-                        ephemeral: true
-                    });
-                }
+// ==========================================
+// 🔙 BACK BUTTON
+// ==========================================
 
-                // =========================
-                // CHỌN CATEGORY
-                // =========================
+function createBackButton(
+    userId
+) {
+    return new ActionRowBuilder()
+        .addComponents(
+            new ButtonBuilder()
+                .setCustomId(
+                    `sell_back_${userId}`
+                )
+                .setLabel(
+                    "Quay lại"
+                )
+                .setEmoji(
+                    "⬅️"
+                )
+                .setStyle(
+                    ButtonStyle.Secondary
+                )
+        );
+}
+
+// ==========================================
+// 💰 SELL ITEM EMBED
+// ==========================================
+
+function createSellItemEmbed(
+    item,
+    amount
+) {
+    const price =
+        Number(
+            item.sellPrice || 0
+        );
+
+    const allPrice =
+        price *
+        amount;
+
+    return new EmbedBuilder()
+        .setColor("#FFD166")
+
+        .setTitle(
+            `${safeEmoji(item.emoji)} ${item.name}`
+        )
+
+        .setDescription(
+            [
+                `● ${safeEmoji(item.emoji)} **Thông tin vật phẩm**`,
+                "",
+                `> 📦 Tên: **${item.name}**`,
+                `> 🎒 Đang có: **${amount}**`,
+                `> 💰 Giá bán: **${money(price)} Mora / cái**`,
+                `> 💵 Bán toàn bộ: **${money(allPrice)} Mora**`,
+                "",
+                "● 🛒 **Chọn số lượng**",
+                "> 💰 Bán 1 cái",
+                "> 💰 Bán 5 cái",
+                "> 💸 Bán toàn bộ"
+            ].join("\n")
+        )
+
+        .setFooter({
+            text:
+                "Venti Market • Giá bán tính theo từng cái."
+        });
+}
+
+// ==========================================
+// 🔘 SELL BUTTONS
+// ==========================================
+
+function createSellButtons(
+    userId,
+    amount
+) {
+    return new ActionRowBuilder()
+        .addComponents(
+            new ButtonBuilder()
+                .setCustomId(
+                    `sell_one_${userId}`
+                )
+                .setLabel(
+                    "Bán 1"
+                )
+                .setEmoji(
+                    "💰"
+                )
+                .setStyle(
+                    ButtonStyle.Primary
+                )
+                .setDisabled(
+                    amount < 1
+                ),
+
+            new ButtonBuilder()
+                .setCustomId(
+                    `sell_five_${userId}`
+                )
+                .setLabel(
+                    "Bán 5"
+                )
+                .setEmoji(
+                    "💰"
+                )
+                .setStyle(
+                    ButtonStyle.Success
+                )
+                .setDisabled(
+                    amount < 5
+                ),
+
+            new ButtonBuilder()
+                .setCustomId(
+                    `sell_all_${userId}`
+                )
+                .setLabel(
+                    "Bán tất cả"
+                )
+                .setEmoji(
+                    "💸"
+                )
+                .setStyle(
+                    ButtonStyle.Danger
+                )
+                .setDisabled(
+                    amount < 1
+                ),
+
+            new ButtonBuilder()
+                .setCustomId(
+                    `sell_back_item_${userId}`
+                )
+                .setLabel(
+                    "Quay lại"
+                )
+                .setEmoji(
+                    "⬅️"
+                )
+                .setStyle(
+                    ButtonStyle.Secondary
+                )
+        );
+}
+
+// ==========================================
+// 🏠 OPEN MENU
+// ==========================================
+
+async function openSellMenu(
+    message,
+    userId
+) {
+    const msg =
+        await message.reply({
+            embeds: [
+                createCategoryEmbed(
+                    userId
+                )
+            ],
+
+            components: [
+                createCategorySelect(
+                    userId
+                )
+            ]
+        });
+
+    const collector =
+        msg.createMessageComponentCollector({
+            time:
+                120000
+        });
+
+    let selectedCategory =
+        null;
+
+    let selectedItem =
+        null;
+
+    collector.on(
+        "collect",
+        async interaction => {
+            if (
+                interaction.user.id !==
+                userId
+            ) {
+                return interaction.reply({
+                    content:
+                        "❌ Đây không phải menu của bạn.",
+
+                    ephemeral:
+                        true
+                });
+            }
+
+            try {
+                const id =
+                    interaction.customId;
+
+                // ==================================
+                // CATEGORY
+                // ==================================
+
                 if (
-                    interaction.customId ===
+                    id ===
                     `sell_category_${userId}`
                 ) {
                     selectedCategory =
                         interaction.values[0];
 
-                    // Lấy inventory mới nhất
-                    const currentUser =
-                        User.get(userId);
-
-                    const currentInventory =
-                        currentUser?.inventory || {};
-
-                    const allItems =
-                        Item.getAll();
-
                     const items =
-                        allItems.filter(
-                            item =>
-                                item.category ===
-                                    selectedCategory &&
-                                item.sellPrice &&
-                                Number(
-                                    currentInventory[
-                                        item.id
-                                    ] || 0
-                                ) > 0
+                        getSellableItems(
+                            userId,
+                            selectedCategory
                         );
 
-                    if (!items.length) {
+                    if (
+                        !items.length
+                    ) {
                         return interaction.reply({
                             content:
                                 selectedCategory ===
                                 "farming"
                                     ? "🌾 Bạn chưa có nông sản nào để bán."
                                     : "🌊 Bạn chưa có hải sản nào để bán.",
-                            ephemeral: true
+
+                            ephemeral:
+                                true
                         });
                     }
 
-                    const options =
-                        items
-                            .slice(0, 25)
-                            .map(item => {
-                                const amount =
-                                    Number(
-                                        currentInventory[
-                                            item.id
-                                        ] || 0
-                                    );
-
-                                return {
-                                    label:
-                                        item.name,
-                                    description:
-                                        `🎒 Có ${amount} • 💰 ${item.sellPrice.toLocaleString()} Mora`,
-                                    value:
-                                        item.id,
-                                    emoji:
-                                        item.emoji ||
-                                        "📦"
-                                };
-                            });
-
-                    const itemSelect =
-                        new StringSelectMenuBuilder()
-                            .setCustomId(
-                                `sell_item_${userId}`
-                            )
-                            .setPlaceholder(
-                                "📦 Chọn vật phẩm muốn bán..."
-                            )
-                            .addOptions(
-                                options
-                            );
-
-                    const itemRow =
-                        new ActionRowBuilder()
-                            .addComponents(
-                                itemSelect
-                            );
-
-                    const backButton =
-                        new ButtonBuilder()
-                            .setCustomId(
-                                `sell_back_${userId}`
-                            )
-                            .setLabel("Quay lại")
-                            .setEmoji("⬅️")
-                            .setStyle(
-                                ButtonStyle.Secondary
-                            );
-
-                    const buttonRow =
-                        new ActionRowBuilder()
-                            .addComponents(
-                                backButton
-                            );
-
-                    const categoryName =
-                        selectedCategory ===
-                        "farming"
-                            ? "🌾 Nông sản"
-                            : "🌊 Hải sản";
-
-                    const newEmbed =
-                        new EmbedBuilder()
-                            .setColor("#57F287")
-                            .setTitle(
-                                categoryName
-                            )
-                            .setDescription(
-                                "Chọn vật phẩm muốn bán:"
-                            )
-                            .setFooter({
-                                text:
-                                    "Số lượng được cập nhật khi mở danh sách."
-                            });
-
                     return interaction.update({
-                        embeds: [newEmbed],
+                        embeds: [
+                            createItemsEmbed(
+                                userId,
+                                selectedCategory,
+                                items
+                            )
+                        ],
+
                         components: [
-                            itemRow,
-                            buttonRow
+                            createItemSelect(
+                                userId,
+                                items
+                            ),
+
+                            createBackButton(
+                                userId
+                            )
                         ]
                     });
                 }
 
-                // =========================
-                // CHỌN ITEM
-                // =========================
+                // ==================================
+                // ITEM
+                // ==================================
+
                 if (
-                    interaction.customId ===
+                    id ===
                     `sell_item_${userId}`
                 ) {
                     selectedItem =
                         interaction.values[0];
 
                     const item =
-                        Item.get(selectedItem);
+                        Item.get(
+                            selectedItem
+                        );
 
                     if (!item) {
                         return interaction.reply({
                             content:
                                 "❌ Item không tồn tại.",
-                            ephemeral: true
+
+                            ephemeral:
+                                true
                         });
                     }
 
-                    // Lấy inventory mới nhất
                     const currentUser =
-                        User.get(userId);
-
-                    const amount =
-                        Number(
-                            currentUser?.inventory?.[
-                                selectedItem
-                            ] || 0
+                        User.get(
+                            userId
                         );
 
-                    if (amount <= 0) {
+                    const amount =
+                        getAmount(
+                            currentUser?.inventory,
+                            selectedItem
+                        );
+
+                    if (
+                        amount <= 0
+                    ) {
                         return interaction.reply({
                             content:
                                 `🎒 Bạn không còn **${item.name}**.`,
-                            ephemeral: true
+
+                            ephemeral:
+                                true
                         });
                     }
 
-                    const embed =
-                        new EmbedBuilder()
-                            .setColor("#FFD166")
-                            .setTitle(
-                                `${item.emoji || "📦"} ${item.name}`
-                            )
-                            .setDescription(
-                                "Chọn số lượng muốn bán:"
-                            )
-                            .addFields(
-                                {
-                                    name:
-                                        "🎒 Đang có",
-                                    value:
-                                        `${amount}`,
-                                    inline: true
-                                },
-                                {
-                                    name:
-                                        "💰 Giá bán",
-                                    value:
-                                        `${item.sellPrice.toLocaleString()} Mora`,
-                                    inline: true
-                                },
-                                {
-                                    name:
-                                        "💵 Bán tất cả",
-                                    value:
-                                        `${(
-                                            item.sellPrice *
-                                            amount
-                                        ).toLocaleString()} Mora`,
-                                    inline: true
-                                }
-                            );
-
-                    const buttons =
-                        new ActionRowBuilder()
-                            .addComponents(
-                                new ButtonBuilder()
-                                    .setCustomId(
-                                        `sell_one_${userId}`
-                                    )
-                                    .setLabel("Bán 1")
-                                    .setEmoji("💰")
-                                    .setStyle(
-                                        ButtonStyle.Primary
-                                    ),
-
-                                new ButtonBuilder()
-                                    .setCustomId(
-                                        `sell_five_${userId}`
-                                    )
-                                    .setLabel("Bán 5")
-                                    .setEmoji("💰")
-                                    .setStyle(
-                                        ButtonStyle.Success
-                                    ),
-
-                                new ButtonBuilder()
-                                    .setCustomId(
-                                        `sell_all_${userId}`
-                                    )
-                                    .setLabel(
-                                        "Bán tất cả"
-                                    )
-                                    .setEmoji("💸")
-                                    .setStyle(
-                                        ButtonStyle.Danger
-                                    ),
-
-                                new ButtonBuilder()
-                                    .setCustomId(
-                                        `sell_back_item_${userId}`
-                                    )
-                                    .setLabel(
-                                        "Quay lại"
-                                    )
-                                    .setEmoji("⬅️")
-                                    .setStyle(
-                                        ButtonStyle.Secondary
-                                    )
-                            );
-
                     return interaction.update({
-                        embeds: [embed],
-                        components: [buttons]
+                        embeds: [
+                            createSellItemEmbed(
+                                item,
+                                amount
+                            )
+                        ],
+
+                        components: [
+                            createSellButtons(
+                                userId,
+                                amount
+                            )
+                        ]
                     });
                 }
 
-                // =========================
-                // QUAY LẠI CATEGORY
-                // =========================
+                // ==================================
+                // BACK CATEGORY
+                // ==================================
+
                 if (
-                    interaction.customId ===
+                    id ===
                     `sell_back_${userId}`
                 ) {
-                    return showCategory(
-                        interaction
-                    );
+                    selectedCategory =
+                        null;
+
+                    selectedItem =
+                        null;
+
+                    return interaction.update({
+                        embeds: [
+                            createCategoryEmbed(
+                                userId
+                            )
+                        ],
+
+                        components: [
+                            createCategorySelect(
+                                userId
+                            )
+                        ]
+                    });
                 }
 
-                // =========================
-                // QUAY LẠI ITEM
-                // =========================
+                // ==================================
+                // BACK ITEM
+                // ==================================
+
                 if (
-                    interaction.customId ===
+                    id ===
                     `sell_back_item_${userId}`
                 ) {
-                    return showItems(
-                        interaction,
-                        selectedCategory
-                    );
+                    if (
+                        !selectedCategory
+                    ) {
+                        return interaction.update({
+                            embeds: [
+                                createCategoryEmbed(
+                                    userId
+                                )
+                            ],
+
+                            components: [
+                                createCategorySelect(
+                                    userId
+                                )
+                            ]
+                        });
+                    }
+
+                    const items =
+                        getSellableItems(
+                            userId,
+                            selectedCategory
+                        );
+
+                    if (
+                        !items.length
+                    ) {
+                        return interaction.update({
+                            embeds: [
+                                createCategoryEmbed(
+                                    userId
+                                )
+                            ],
+
+                            components: [
+                                createCategorySelect(
+                                    userId
+                                )
+                            ]
+                        });
+                    }
+
+                    return interaction.update({
+                        embeds: [
+                            createItemsEmbed(
+                                userId,
+                                selectedCategory,
+                                items
+                            )
+                        ],
+
+                        components: [
+                            createItemSelect(
+                                userId,
+                                items
+                            ),
+
+                            createBackButton(
+                                userId
+                            )
+                        ]
+                    });
                 }
 
-                // =========================
-                // BÁN
-                // =========================
+                // ==================================
+                // SELL
+                // ==================================
+
                 if (
-                    interaction.customId.startsWith(
-                        `sell_one_${userId}`
-                    ) ||
-                    interaction.customId.startsWith(
-                        `sell_five_${userId}`
-                    ) ||
-                    interaction.customId.startsWith(
-                        `sell_all_${userId}`
-                    )
+                    id ===
+                    `sell_one_${userId}` ||
+                    id ===
+                    `sell_five_${userId}` ||
+                    id ===
+                    `sell_all_${userId}`
                 ) {
+                    if (
+                        !selectedItem
+                    ) {
+                        return interaction.reply({
+                            content:
+                                "❌ Chưa chọn vật phẩm.",
+
+                            ephemeral:
+                                true
+                        });
+                    }
+
                     const item =
-                        Item.get(selectedItem);
+                        Item.get(
+                            selectedItem
+                        );
 
                     if (!item) {
                         return interaction.reply({
                             content:
                                 "❌ Item không tồn tại.",
-                            ephemeral: true
+
+                            ephemeral:
+                                true
                         });
                     }
 
-                    // Lấy inventory mới nhất
                     const currentUser =
-                        User.get(userId);
-
-                    const currentAmount =
-                        Number(
-                            currentUser?.inventory?.[
-                                selectedItem
-                            ] || 0
+                        User.get(
+                            userId
                         );
 
-                    if (currentAmount <= 0) {
+                    const currentAmount =
+                        getAmount(
+                            currentUser?.inventory,
+                            selectedItem
+                        );
+
+                    if (
+                        currentAmount <= 0
+                    ) {
                         return interaction.reply({
                             content:
                                 `🎒 Bạn không còn **${item.name}**.`,
-                            ephemeral: true
+
+                            ephemeral:
+                                true
                         });
                     }
 
-                    let sellAmount = 1;
+                    let sellAmount =
+                        1;
 
                     if (
-                        interaction.customId.startsWith(
-                            `sell_five_${userId}`
-                        )
+                        id ===
+                        `sell_five_${userId}`
                     ) {
-                        sellAmount = 5;
+                        sellAmount =
+                            5;
                     }
 
                     if (
-                        interaction.customId.startsWith(
-                            `sell_all_${userId}`
-                        )
+                        id ===
+                        `sell_all_${userId}`
                     ) {
                         sellAmount =
                             currentAmount;
@@ -517,54 +1001,85 @@ module.exports = {
                         return interaction.reply({
                             content:
                                 `🎒 Bạn chỉ có **${currentAmount} ${item.name}**.`,
-                            ephemeral: true
+
+                            ephemeral:
+                                true
                         });
                     }
 
                     const total =
-                        item.sellPrice *
+                        Number(
+                            item.sellPrice || 0
+                        ) *
                         sellAmount;
 
-                    Item.remove(
-                        userId,
-                        selectedItem,
-                        sellAmount
-                    );
+                    // ==================================
+                    // REMOVE ITEM
+                    // ==================================
+
+                    const removed =
+                        Item.remove(
+                            userId,
+                            selectedItem,
+                            sellAmount
+                        );
+
+                    if (
+                        removed ===
+                        false
+                    ) {
+                        return interaction.reply({
+                            content:
+                                "❌ Không thể trừ vật phẩm.",
+
+                            ephemeral:
+                                true
+                        });
+                    }
+
+                    // ==================================
+                    // ADD MORA
+                    // ==================================
 
                     User.addBalance(
                         userId,
                         total
                     );
 
+                    const latestUser =
+                        User.get(
+                            userId
+                        );
+
                     const remaining =
-                        currentAmount -
-                        sellAmount;
+                        getAmount(
+                            latestUser?.inventory,
+                            selectedItem
+                        );
 
                     const successEmbed =
                         new EmbedBuilder()
-                            .setColor("#57F287")
+                            .setColor(
+                                "#57F287"
+                            )
+
                             .setTitle(
-                                "💸 Bán thành công!"
+                                "● 💸 Bán thành công"
                             )
+
                             .setDescription(
-                                `${item.emoji || "📦"} **${item.name}** ×${sellAmount}`
+                                [
+                                    `> ${safeEmoji(item.emoji)} **${item.name} ×${sellAmount}**`,
+                                    "",
+                                    `● 💰 **Giao dịch**`,
+                                    `> 💵 Nhận được: **+${money(total)} Mora**`,
+                                    `> 🎒 Còn lại: **${remaining}**`,
+                                    "",
+                                    "● 🍃 **Venti Market**",
+                                    "> Giao dịch đã được hoàn tất."
+                                ].join("\n")
                             )
-                            .addFields(
-                                {
-                                    name:
-                                        "💰 Mora nhận được",
-                                    value:
-                                        `+${total.toLocaleString()} Mora`,
-                                    inline: true
-                                },
-                                {
-                                    name:
-                                        "🎒 Còn lại",
-                                    value:
-                                        `${remaining}`,
-                                    inline: true
-                                }
-                            )
+
                             .setFooter({
                                 text:
                                     "Venti Market"
@@ -574,249 +1089,54 @@ module.exports = {
                         embeds: [
                             successEmbed
                         ],
+
                         components: []
                     });
                 }
-            }
-        );
 
-        // =========================
-        // CATEGORY SCREEN
-        // =========================
-        async function showCategory(
-            interaction
-        ) {
-            const select =
-                new StringSelectMenuBuilder()
-                    .setCustomId(
-                        `sell_category_${userId}`
-                    )
-                    .setPlaceholder(
-                        "🌾 Chọn loại vật phẩm..."
-                    )
-                    .addOptions([
-                        {
-                            label:
-                                "Nông sản",
-                            description:
-                                "Xem nông sản bạn đang có",
-                            value:
-                                "farming",
-                            emoji:
-                                "🌾"
-                        },
-                        {
-                            label:
-                                "Hải sản",
-                            description:
-                                "Xem hải sản bạn đang có",
-                            value:
-                                "seafood",
-                            emoji:
-                                "🌊"
-                        }
-                    ]);
-
-            const row =
-                new ActionRowBuilder()
-                    .addComponents(
-                        select
-                    );
-
-            const currentUser =
-                User.get(userId);
-
-            const currentInventory =
-                currentUser?.inventory || {};
-
-            const allItems =
-                Item.getAll();
-
-            const farmingCount =
-                allItems.filter(
-                    item =>
-                        item.category ===
-                            "farming" &&
-                        Number(
-                            currentInventory[
-                                item.id
-                            ] || 0
-                        ) > 0
-                ).length;
-
-            const seafoodCount =
-                allItems.filter(
-                    item =>
-                        item.category ===
-                            "seafood" &&
-                        Number(
-                            currentInventory[
-                                item.id
-                            ] || 0
-                        ) > 0
-                ).length;
-
-            const embed =
-                new EmbedBuilder()
-                    .setColor("#57F287")
-                    .setTitle(
-                        "💸 Venti Market"
-                    )
-                    .setDescription(
-                        "Chọn loại vật phẩm bạn muốn bán:"
-                    )
-                    .addFields(
-                        {
-                            name:
-                                "🌾 Nông sản",
-                            value:
-                                `${farmingCount} loại`,
-                            inline: true
-                        },
-                        {
-                            name:
-                                "🌊 Hải sản",
-                            value:
-                                `${seafoodCount} loại`,
-                            inline: true
-                        }
-                    );
-
-            return interaction.update({
-                embeds: [embed],
-                components: [row]
-            });
-        }
-
-        // =========================
-        // ITEM SCREEN
-        // =========================
-        async function showItems(
-            interaction,
-            category
-        ) {
-            const currentUser =
-                User.get(userId);
-
-            const currentInventory =
-                currentUser?.inventory || {};
-
-            const items =
-                Item.getAll().filter(
-                    item =>
-                        item.category ===
-                            category &&
-                        item.sellPrice &&
-                        Number(
-                            currentInventory[
-                                item.id
-                            ] || 0
-                        ) > 0
+            } catch (error) {
+                console.error(
+                    "[sell interaction]",
+                    error
                 );
 
-            if (!items.length) {
+                if (
+                    interaction.replied ||
+                    interaction.deferred
+                ) {
+                    return interaction.followUp({
+                        content:
+                            "🍃 Có lỗi xảy ra trong Market.",
+
+                        ephemeral:
+                            true
+                    }).catch(
+                        () => {}
+                    );
+                }
+
                 return interaction.reply({
                     content:
-                        "🎒 Bạn không còn item nào trong danh mục này.",
-                    ephemeral: true
-                });
+                        "🍃 Có lỗi xảy ra trong Market.",
+
+                    ephemeral:
+                        true
+                }).catch(
+                    () => {}
+                );
             }
-
-            const options =
-                items
-                    .slice(0, 25)
-                    .map(item => {
-                        const amount =
-                            Number(
-                                currentInventory[
-                                    item.id
-                                ] || 0
-                            );
-
-                        return {
-                            label:
-                                item.name,
-                            description:
-                                `🎒 Có ${amount} • 💰 ${item.sellPrice.toLocaleString()} Mora`,
-                            value:
-                                item.id,
-                            emoji:
-                                item.emoji ||
-                                "📦"
-                        };
-                    });
-
-            const select =
-                new StringSelectMenuBuilder()
-                    .setCustomId(
-                        `sell_item_${userId}`
-                    )
-                    .setPlaceholder(
-                        "📦 Chọn vật phẩm muốn bán..."
-                    )
-                    .addOptions(
-                        options
-                    );
-
-            const row =
-                new ActionRowBuilder()
-                    .addComponents(
-                        select
-                    );
-
-            const back =
-                new ActionRowBuilder()
-                    .addComponents(
-                        new ButtonBuilder()
-                            .setCustomId(
-                                `sell_back_${userId}`
-                            )
-                            .setLabel(
-                                "Quay lại"
-                            )
-                            .setEmoji(
-                                "⬅️"
-                            )
-                            .setStyle(
-                                ButtonStyle.Secondary
-                            )
-                    );
-
-            return interaction.update({
-                embeds: [
-                    new EmbedBuilder()
-                        .setColor(
-                            "#57F287"
-                        )
-                        .setTitle(
-                            category ===
-                                "farming"
-                                ? "🌾 Nông sản"
-                                : "🌊 Hải sản"
-                        )
-                        .setDescription(
-                            "Chọn vật phẩm muốn bán:"
-                        )
-                ],
-                components: [
-                    row,
-                    back
-                ]
-            });
         }
+    );
 
-        // =========================
-        // HẾT THỜI GIAN
-        // =========================
-        collector.on(
-            "end",
-            async () => {
-                try {
-                    await msg.edit({
-                        components: []
-                    });
-                } catch (err) {}
-            }
-        );
-    }
-};
+    collector.on(
+        "end",
+        async () => {
+            try {
+                await msg.edit({
+                    components: []
+                });
+            } catch {}
+        }
+    );
+}
+

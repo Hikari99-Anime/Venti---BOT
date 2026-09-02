@@ -1,27 +1,66 @@
-const database = require("../../database/database");
+
+const database =
+    require("../../database/database");
+
 const {
     EmbedBuilder
 } = require("discord.js");
 
 module.exports = {
-    name: "leaderboard",
-    aliases: ["lb", "top"],
-    description: "Xem bảng xếp hạng Mora.",
+
+    name:
+        "leaderboard",
+
+    aliases: [
+        "lb",
+        "top"
+    ],
+
+    description:
+        "Xem bảng xếp hạng Mora.",
 
     async execute(message) {
+
         const users =
-            database.getAllUsers()
+            database
+                .getAllUsers()
                 .sort(
                     (a, b) =>
-                        b.balance - a.balance
+                        Number(
+                            b.balance || 0
+                        ) -
+                        Number(
+                            a.balance || 0
+                        )
                 )
                 .slice(0, 10);
 
+        // =====================================
+        // ❌ NO DATA
+        // =====================================
+
         if (!users.length) {
-            return message.reply(
-                "🍃 Chưa có dữ liệu leaderboard."
-            );
+
+            return message.reply({
+
+                embeds: [
+
+                    new EmbedBuilder()
+
+                        .setColor(
+                            "#f2a7a7"
+                        )
+
+                        .setDescription(
+                            "● `🍃` **Chưa có dữ liệu leaderboard.**"
+                        )
+                ]
+            });
         }
+
+        // =====================================
+        // 🏆 BUILD RANKING
+        // =====================================
 
         const lines = [];
 
@@ -30,49 +69,108 @@ module.exports = {
             i < users.length;
             i++
         ) {
-            const user = users[i];
+
+            const user =
+                users[i];
 
             const discordUser =
                 await message.client.users
-                    .fetch(user.id)
-                    .catch(() => null);
+                    .fetch(
+                        user.id
+                    )
+                    .catch(
+                        () => null
+                    );
 
             const name =
                 discordUser?.username ||
                 "Unknown Traveler";
 
-            const medal =
-                i === 0
-                    ? "🥇"
-                    : i === 1
-                        ? "🥈"
-                        : i === 2
-                            ? "🥉"
-                            : `\`${i + 1}\``;
+            const balance =
+                Number(
+                    user.balance || 0
+                );
+
+            // =================================
+            // 🏅 RANK SYMBOL
+            // =================================
+
+            let rank;
+
+            if (i === 0) {
+
+                rank =
+                    "`🥇`";
+
+            } else if (i === 1) {
+
+                rank =
+                    "`🥈`";
+
+            } else if (i === 2) {
+
+                rank =
+                    "`🥉`";
+
+            } else {
+
+                rank =
+                    `\`${i + 1}.\``;
+            }
+
+            // =================================
+            // 👤 PLAYER
+            // =================================
 
             lines.push(
-                `${medal} **${name}** — 💰 ${user.balance.toLocaleString()}`
+
+                `● ${rank} **${name}**\n` +
+
+                `> \`💰\` +${balance.toLocaleString(
+                    "vi-VN"
+                )} Mora`
             );
         }
 
+        // =====================================
+        // 🏆 EMBED
+        // =====================================
+
         const embed =
             new EmbedBuilder()
-                .setColor("#8FD3FF")
-                .setAuthor({
-                    name: "Venti • Mora Leaderboard"
-                })
-                .setDescription(
-                    lines.join("\n")
+
+                .setColor(
+                    "#8FD3FF"
                 )
+
+                .setTitle(
+                    "`🏆` Mora Leaderboard"
+                )
+
+                .setDescription(
+                    [
+                        "● `🍃` **Top 10 người chơi giàu nhất**",
+                        "",
+                        lines.join(
+                            "\n\n"
+                        )
+                    ].join("\n")
+                )
+
                 .setFooter({
                     text:
-                        "🍃 May the wind guide your fortune."
+                        "Venti • May the wind guide your fortune."
                 })
+
                 .setTimestamp();
 
         return message.reply({
-            embeds: [embed]
+
+            embeds: [
+                embed
+            ]
+
         });
     }
 };
-    
+

@@ -45,6 +45,23 @@ const CATEGORIES = {
 // 📦 LẤY ITEM
 // ==========================================
 
+function getAmount(value) {
+    if (typeof value === "number") {
+        return value;
+    }
+
+    if (
+        value &&
+        typeof value === "object"
+    ) {
+        return Number(
+            value.amount || 0
+        );
+    }
+
+    return 0;
+}
+
 function getCategoryItems(
     user,
     category
@@ -68,12 +85,16 @@ function getCategoryItems(
                 ...item,
 
                 amount:
-                    Number(
-                        inventory[id] || 0
+                    getAmount(
+                        inventory[id]
                     )
             };
         })
-        .filter(Boolean);
+        .filter(
+            item =>
+                item &&
+                item.amount > 0
+        );
 }
 
 // ==========================================
@@ -95,19 +116,31 @@ function createEmbed(
 
     let content;
 
-    if (
-        items.length === 0
-    ) {
+    if (!items.length) {
         content =
-            "☁️ Chưa có vật phẩm nào.\n" +
-            "🍃 Hãy khám phá Mondstadt nhé!";
+            [
+                "● `☁️`",
+
+                "> Chưa có vật phẩm nào.",
+
+                "● `🍃`",
+
+                "> Hãy khám phá Mondstadt nhé!"
+            ].join("\n");
     } else {
         content =
             items
-                .map(item =>
-                    `${item.emoji || "📦"} **${item.name}** · ×${item.amount}`
-                )
-                .join("\n");
+                .map(item => {
+                    const emoji =
+                        item.emoji ||
+                        "📦";
+
+                    return [
+                        `● \`${emoji}\` **×${item.amount}**`,
+                        `> ${item.name}`
+                    ].join("\n");
+                })
+                .join("\n\n");
     }
 
     const total =
@@ -116,7 +149,7 @@ function createEmbed(
         ).reduce(
             (sum, amount) =>
                 sum +
-                Number(amount || 0),
+                getAmount(amount),
             0
         );
 
@@ -137,16 +170,16 @@ function createEmbed(
         )
 
         .setDescription(
-            "୨୧ ───────── ୨୧\n" +
-            `        ${data.name}\n` +
-            "୨୧ ───────── ୨୧\n\n" +
-
-            content +
-
-            "\n\n" +
-            "୨୧ ───────── ୨୧\n" +
-            `☁️ Tổng vật phẩm · **${total}**\n` +
-            "🍃 Một chiếc túi nhỏ của bạn."
+            [
+                `● \`${data.name.split(" ")[0]}\` **${data.name.substring(
+                    data.name.indexOf(" ") + 1
+                )}**`,
+                "",
+                content,
+                "",
+                "● `🎒` **Tổng vật phẩm**",
+                `> ${total} vật phẩm`
+            ].join("\n")
         )
 
         .setFooter({
@@ -229,6 +262,10 @@ function createButtons() {
                     "Làm mới"
                 )
 
+                .setEmoji(
+                    "🔄"
+                )
+
                 .setStyle(
                     ButtonStyle.Secondary
                 ),
@@ -240,6 +277,10 @@ function createButtons() {
 
                 .setLabel(
                     "Đóng"
+                )
+
+                .setEmoji(
+                    "✖️"
                 )
 
                 .setStyle(
