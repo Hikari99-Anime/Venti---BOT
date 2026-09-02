@@ -1,37 +1,84 @@
+
 const fs = require("fs");
 const path = require("path");
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "users.json");
 
+// ==========================================
+// 📂 INIT
+// ==========================================
+
 if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.mkdirSync(DATA_DIR, {
+        recursive: true
+    });
 }
 
 if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, "{}", "utf8");
-}
-
-function load() {
-    try {
-        return JSON.parse(
-            fs.readFileSync(DATA_FILE, "utf8")
-        );
-    } catch {
-        return {};
-    }
-}
-
-function save(data) {
     fs.writeFileSync(
         DATA_FILE,
-        JSON.stringify(data, null, 2),
+        "{}",
         "utf8"
     );
 }
 
+// ==========================================
+// 📂 LOAD
+// ==========================================
+
+function load() {
+    try {
+        const raw = fs.readFileSync(
+            DATA_FILE,
+            "utf8"
+        );
+
+        return JSON.parse(raw || "{}");
+    } catch (error) {
+        console.error(
+            "[database load]",
+            error
+        );
+
+        return {};
+    }
+}
+
+// ==========================================
+// 💾 SAVE
+// ==========================================
+
+function save(data) {
+    try {
+        fs.writeFileSync(
+            DATA_FILE,
+            JSON.stringify(
+                data,
+                null,
+                2
+            ),
+            "utf8"
+        );
+
+        return true;
+    } catch (error) {
+        console.error(
+            "[database save]",
+            error
+        );
+
+        return false;
+    }
+}
+
+// ==========================================
+// 👤 USER
+// ==========================================
+
 function getUser(userId) {
     const data = load();
+
     return data[userId] || null;
 }
 
@@ -41,26 +88,71 @@ function createUser(userId) {
     if (!data[userId]) {
         data[userId] = {
             id: userId,
+
+            // 💰 Economy
             balance: 1000,
             bank: 0,
+
+            // ⭐ Level
             xp: 0,
             level: 1,
+
+            // ⏰ Cooldowns
             dailyStreak: 0,
             lastDaily: 0,
             lastWork: 0,
             lastBeg: 0,
+
+            // 🎒 Inventory
             inventory: {},
-            quests: {
-            date: "",
-            daily: []
+
+            // 🔧 Tools
+            tools: {
+                fishingRod: {
+                    level: 1,
+                    durability: 50
+                },
+
+                hoe: {
+                    level: 1,
+                    durability: 50
+                }
             },
+
+            // 🌱 Farm
+            farm: {
+                plots: [
+                    {
+                        id: 1,
+                        unlocked: true,
+                        seed: null,
+                        plantedAt: null,
+                        readyAt: null
+                    }
+                ]
+            },
+
+            // 📊 Stats
             stats: {
                 games: 0,
                 wins: 0,
                 losses: 0,
                 work: 0,
-                fish: 0
+                fish: 0,
+                farm: 0,
+                harvest: 0,
+                quest: 0
             },
+
+            // 📜 Quests
+            quests: {
+                date: "",
+                daily: []
+            },
+
+            // 🏆 Achievements
+            achievements: {},
+
             createdAt: Date.now()
         };
 
@@ -70,129 +162,643 @@ function createUser(userId) {
     return data[userId];
 }
 
-function updateUser(userId, updates) {
+function getOrCreate(userId) {
+    return (
+        getUser(userId) ||
+        createUser(userId)
+    );
+}
+
+// ==========================================
+// ✏️ UPDATE
+// ==========================================
+
+function updateUser(
+    userId,
+    updates
+) {
     const data = load();
 
     if (!data[userId]) {
         createUser(userId);
-        return updateUser(userId, updates);
     }
 
-    data[userId] = {
-        ...data[userId],
+    const freshData = load();
+
+    freshData[userId] = {
+        ...freshData[userId],
         ...updates
     };
 
-    save(data);
+    save(freshData);
 
-    return data[userId];
+    return freshData[userId];
 }
 
-function getOrCreate(userId) {
-    return getUser(userId) || createUser(userId);
-}
+// ==========================================
+// 💰 BALANCE
+// ==========================================
 
-function addBalance(userId, amount) {
-    const user = getOrCreate(userId);
+function addBalance(
+    userId,
+    amount
+) {
+    amount = Number(amount);
 
-    user.balance += amount;
-
-    updateUser(userId, {
-        balance: user.balance
-    });
-
-    return user.balance;
-}
-
-function removeBalance(userId, amount) {
-    const user = getOrCreate(userId);
-
-    if (user.balance < amount) {
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
         return false;
     }
 
-    user.balance -= amount;
+    const user =
+        getOrCreate(userId);
 
-    updateUser(userId, {
-        balance: user.balance
-    });
+    const balance =
+        Number(user.balance || 0) +
+        amount;
+
+    updateUser(
+        userId,
+        {
+            balance
+        }
+    );
+
+    return balance;
+}
+
+function removeBalance(
+    userId,
+    amount
+) {
+    amount = Number(amount);
+
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
+        return false;
+    }
+
+    const user =
+        getOrCreate(userId);
+
+    const balance =
+        Number(user.balance || 0);
+
+    if (balance < amount) {
+        return false;
+    }
+
+    const newBalance =
+        balance - amount;
+
+    updateUser(
+        userId,
+        {
+            balance: newBalance
+        }
+    );
 
     return true;
 }
 
-function addXP(userId, amount) {
-    const user = getOrCreate(userId);
+// ==========================================
+// 🏦 BANK
+// ==========================================
 
-    user.xp += amount;
+function getBank(userId) {
+    const user =
+        getOrCreate(userId);
 
-    let level = user.level;
+    return Number(
+        user.bank || 0
+    );
+}
 
-    while (user.xp >= level * 500) {
-        user.xp -= level * 500;
-        level++;
+function addBank(
+    userId,
+    amount
+) {
+    amount = Number(amount);
+
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
+        return false;
     }
 
-    updateUser(userId, {
-        xp: user.xp,
-        level
-    });
+    const user =
+        getOrCreate(userId);
+
+    const bank =
+        Number(user.bank || 0) +
+        amount;
+
+    updateUser(
+        userId,
+        {
+            bank
+        }
+    );
+
+    return bank;
+}
+
+function removeBank(
+    userId,
+    amount
+) {
+    amount = Number(amount);
+
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
+        return false;
+    }
+
+    const user =
+        getOrCreate(userId);
+
+    const bank =
+        Number(user.bank || 0);
+
+    if (bank < amount) {
+        return false;
+    }
+
+    const newBank =
+        bank - amount;
+
+    updateUser(
+        userId,
+        {
+            bank: newBank
+        }
+    );
+
+    return true;
+}
+
+// ==========================================
+// 🔄 TRANSFER BALANCE → BANK
+// ==========================================
+
+function deposit(
+    userId,
+    amount
+) {
+    amount = Number(amount);
+
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
+        return false;
+    }
+
+    const user =
+        getOrCreate(userId);
+
+    const balance =
+        Number(user.balance || 0);
+
+    if (balance < amount) {
+        return false;
+    }
+
+    updateUser(
+        userId,
+        {
+            balance:
+                balance - amount,
+
+            bank:
+                Number(user.bank || 0) +
+                amount
+        }
+    );
+
+    return true;
+}
+
+// ==========================================
+// 🔄 BANK → BALANCE
+// ==========================================
+
+function withdraw(
+    userId,
+    amount
+) {
+    amount = Number(amount);
+
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
+        return false;
+    }
+
+    const user =
+        getOrCreate(userId);
+
+    const bank =
+        Number(user.bank || 0);
+
+    if (bank < amount) {
+        return false;
+    }
+
+    updateUser(
+        userId,
+        {
+            bank:
+                bank - amount,
+
+            balance:
+                Number(user.balance || 0) +
+                amount
+        }
+    );
+
+    return true;
+}
+
+// ==========================================
+// ⭐ XP
+// ==========================================
+
+function addXP(
+    userId,
+    amount
+) {
+    amount = Number(amount);
+
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
+        return null;
+    }
+
+    const user =
+        getOrCreate(userId);
+
+    let xp =
+        Number(user.xp || 0) +
+        amount;
+
+    let level =
+        Number(user.level || 1);
+
+    let leveledUp = false;
+
+    while (
+        xp >= level * 500
+    ) {
+        xp -=
+            level * 500;
+
+        level++;
+
+        leveledUp = true;
+    }
+
+    updateUser(
+        userId,
+        {
+            xp,
+            level
+        }
+    );
 
     return {
-        xp: user.xp,
-        level
+        xp,
+        level,
+        leveledUp
     };
 }
 
-function addItem(userId, itemId, amount = 1) {
-    const user = getOrCreate(userId);
+// ==========================================
+// 🎒 ITEMS
+// ==========================================
 
-    if (!user.inventory[itemId]) {
-        user.inventory[itemId] = 0;
+function addItem(
+    userId,
+    itemId,
+    amount = 1
+) {
+    amount = Number(amount);
+
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
+        return false;
     }
 
-    user.inventory[itemId] += amount;
+    const user =
+        getOrCreate(userId);
 
-    updateUser(userId, {
-        inventory: user.inventory
-    });
+    const inventory = {
+        ...(user.inventory || {})
+    };
 
-    return user.inventory[itemId];
+    inventory[itemId] =
+        Number(
+            inventory[itemId] || 0
+        ) + amount;
+
+    updateUser(
+        userId,
+        {
+            inventory
+        }
+    );
+
+    return inventory[itemId];
 }
 
-function removeItem(userId, itemId, amount = 1) {
-    const user = getOrCreate(userId);
+function removeItem(
+    userId,
+    itemId,
+    amount = 1
+) {
+    amount = Number(amount);
 
-    if (!user.inventory[itemId]) {
+    if (
+        !Number.isFinite(amount) ||
+        amount <= 0
+    ) {
         return false;
     }
 
-    if (user.inventory[itemId] < amount) {
+    const user =
+        getOrCreate(userId);
+
+    const inventory = {
+        ...(user.inventory || {})
+    };
+
+    const current =
+        Number(
+            inventory[itemId] || 0
+        );
+
+    if (current < amount) {
         return false;
     }
 
-    user.inventory[itemId] -= amount;
+    const remaining =
+        current - amount;
 
-    if (user.inventory[itemId] <= 0) {
-        delete user.inventory[itemId];
+    if (remaining <= 0) {
+        delete inventory[itemId];
+    } else {
+        inventory[itemId] =
+            remaining;
     }
 
-    updateUser(userId, {
-        inventory: user.inventory
-    });
+    updateUser(
+        userId,
+        {
+            inventory
+        }
+    );
 
     return true;
 }
+
+// ==========================================
+// 🔧 TOOLS
+// ==========================================
+
+function getTools(userId) {
+    const user =
+        getOrCreate(userId);
+
+    if (!user.tools) {
+        user.tools = {
+            fishingRod: {
+                level: 1,
+                durability: 50
+            },
+
+            hoe: {
+                level: 1,
+                durability: 50
+            }
+        };
+
+        updateUser(
+            userId,
+            {
+                tools:
+                    user.tools
+            }
+        );
+    }
+
+    return user.tools;
+}
+
+function getTool(
+    userId,
+    toolId
+) {
+    const tools =
+        getTools(userId);
+
+    return (
+        tools[toolId] ||
+        null
+    );
+}
+
+function setTool(
+    userId,
+    toolId,
+    toolData
+) {
+    const tools =
+        getTools(userId);
+
+    tools[toolId] = {
+        ...(tools[toolId] || {}),
+        ...toolData
+    };
+
+    updateUser(
+        userId,
+        {
+            tools
+        }
+    );
+
+    return tools[toolId];
+}
+
+function upgradeTool(
+    userId,
+    toolId
+) {
+    const tool =
+        getTool(
+            userId,
+            toolId
+        );
+
+    if (!tool) {
+        return false;
+    }
+
+    const level =
+        Number(tool.level || 1) + 1;
+
+    const durability =
+        50 +
+        (level - 1) * 25;
+
+    return setTool(
+        userId,
+        toolId,
+        {
+            level,
+            durability
+        }
+    );
+}
+
+function useTool(
+    userId,
+    toolId
+) {
+    const tool =
+        getTool(
+            userId,
+            toolId
+        );
+
+    if (!tool) {
+        return false;
+    }
+
+    const durability =
+        Number(
+            tool.durability || 0
+        );
+
+    if (durability <= 0) {
+        return false;
+    }
+
+    return setTool(
+        userId,
+        toolId,
+        {
+            durability:
+                durability - 1
+        }
+    );
+}
+
+// ==========================================
+// 🌱 FARM
+// ==========================================
+
+function getFarm(userId) {
+    const user =
+        getOrCreate(userId);
+
+    if (
+        !user.farm ||
+        typeof user.farm !== "object"
+    ) {
+        user.farm = {
+            plots: [
+                {
+                    id: 1,
+                    unlocked: true,
+                    seed: null,
+                    plantedAt: null,
+                    readyAt: null
+                }
+            ]
+        };
+
+        updateUser(
+            userId,
+            {
+                farm:
+                    user.farm
+            }
+        );
+    }
+
+    if (
+        !Array.isArray(
+            user.farm.plots
+        )
+    ) {
+        user.farm.plots = [];
+    }
+
+    return user.farm;
+}
+
+function updateFarm(
+    userId,
+    farm
+) {
+    updateUser(
+        userId,
+        {
+            farm
+        }
+    );
+
+    return farm;
+}
+
+// ==========================================
+// 📦 EXPORT
+// ==========================================
 
 module.exports = {
     load,
     save,
+
     getUser,
-    getOrCreate,
     createUser,
+    getOrCreate,
     updateUser,
+
     addBalance,
     removeBalance,
+
+    getBank,
+    addBank,
+    removeBank,
+
+    deposit,
+    withdraw,
+
     addXP,
+
     addItem,
-    removeItem
+    removeItem,
+
+    getTools,
+    getTool,
+    setTool,
+    upgradeTool,
+    useTool,
+
+    getFarm,
+    updateFarm
 };
+

@@ -1,3 +1,4 @@
+
 const {
     EmbedBuilder,
     ActionRowBuilder,
@@ -9,16 +10,21 @@ const database = require("../../database/database");
 const Item = require("../../database/models/Item");
 
 // ═══════════════════════════════════════
-// VENTI • FISHING CONFIG
+// 🍃 VENTI • FISHING
 // ═══════════════════════════════════════
 
 const COLORS = {
-    primary: 0x9ccfd8,
-    success: 0xa8d8a8,
+    common: 0x9ccfd8,
+    uncommon: 0x8fd3c7,
     rare: 0xc9b1ff,
+    epic: 0xd8a7ff,
     legendary: 0xffd166,
     error: 0xf2a7a7
 };
+
+// ═══════════════════════════════════════
+// 🎣 FISH
+// ═══════════════════════════════════════
 
 const FISH = [
     {
@@ -60,7 +66,7 @@ const FISH = [
     {
         id: "wind_fish",
         name: "Wind Fish",
-        emoji: "🌬️",
+        emoji: "🌪️",
         rarity: "Legendary",
         chance: 1,
         value: 2500,
@@ -69,18 +75,71 @@ const FISH = [
 ];
 
 // ═══════════════════════════════════════
+// 🎣 ROD BONUS
+// ═══════════════════════════════════════
+
+const ROD_BONUS = {
+    1: {
+        common: 1,
+        uncommon: 1,
+        rare: 1,
+        epic: 1,
+        legendary: 1
+    },
+
+    2: {
+        common: 0.90,
+        uncommon: 1.10,
+        rare: 1.35,
+        epic: 1.20,
+        legendary: 1.10
+    },
+
+    3: {
+        common: 0.75,
+        uncommon: 1.05,
+        rare: 1.55,
+        epic: 1.50,
+        legendary: 1.30
+    },
+
+    4: {
+        common: 0.55,
+        uncommon: 0.95,
+        rare: 1.70,
+        epic: 2.00,
+        legendary: 2.50
+    }
+};
+
+// ═══════════════════════════════════════
+// 🎣 ROD DURABILITY
+// ═══════════════════════════════════════
+
+const ROD_DURABILITY = {
+    1: 20,
+    2: 35,
+    3: 55,
+    4: 80
+};
+
+// ═══════════════════════════════════════
 // COMMAND
 // ═══════════════════════════════════════
 
 const command = {
     name: "fish",
+
     aliases: [
         "f",
         "fishing"
     ],
+
     description:
         "🎣 Câu cá tại Windrise Lake.",
+
     usage: "Vfish",
+
     category: "games",
 
     async execute(message) {
@@ -89,63 +148,16 @@ const command = {
 };
 
 // ═══════════════════════════════════════
-// RANDOM FISH
-// ═══════════════════════════════════════
-
-function randomFish() {
-    const roll =
-        Math.random() * 100;
-
-    let current = 0;
-
-    for (const fish of FISH) {
-        current += fish.chance;
-
-        if (roll <= current) {
-            return fish;
-        }
-    }
-
-    return FISH[0];
-}
-
-// ═══════════════════════════════════════
-// GET USER
-// ═══════════════════════════════════════
-
-function getUser(userId) {
-    if (
-        typeof database.getUser !==
-        "function"
-    ) {
-        throw new Error(
-            "database.getUser() không tồn tại."
-        );
-    }
-
-    return database.getUser(
-        userId
-    );
-}
-
-// ═══════════════════════════════════════
-// CREATE USER
+// USER
 // ═══════════════════════════════════════
 
 function ensureUser(userId) {
     let user =
-        getUser(userId);
+        database.getUser(userId);
 
     if (!user) {
-        if (
-            typeof database.createUser ===
-            "function"
-        ) {
-            user =
-                database.createUser(
-                    userId
-                );
-        }
+        user =
+            database.createUser(userId);
     }
 
     return user;
@@ -159,46 +171,14 @@ function updateUser(
     userId,
     data
 ) {
-    if (
-        typeof database.updateUser ===
-        "function"
-    ) {
-        return database.updateUser(
-            userId,
-            data
-        );
-    }
-
-    const user =
-        getUser(userId);
-
-    if (!user) {
-        throw new Error(
-            "Không tìm thấy user."
-        );
-    }
-
-    Object.assign(
-        user,
+    return database.updateUser(
+        userId,
         data
-    );
-
-    if (
-        typeof database.saveUser ===
-        "function"
-    ) {
-        return database.saveUser(
-            user
-        );
-    }
-
-    throw new Error(
-        "Database cần có updateUser() hoặc saveUser()."
     );
 }
 
 // ═══════════════════════════════════════
-// ADD XP
+// ⭐ XP
 // ═══════════════════════════════════════
 
 function addXP(
@@ -208,41 +188,22 @@ function addXP(
     const user =
         ensureUser(userId);
 
-    if (!user) {
-        throw new Error(
-            "Không thể tạo user."
-        );
-    }
-
-    const oldXP =
+    let xp =
         Number(user.xp || 0);
 
-    const oldLevel =
+    let level =
         Number(user.level || 1);
 
-    const requiredXP =
-        oldLevel * 100;
+    xp += amount;
 
-    let xp =
-        oldXP + amount;
-
-    let level =
-        oldLevel;
-
-    let leveledUp =
-        false;
+    let leveledUp = false;
 
     while (
-        xp >=
-        level * 100
+        xp >= level * 100
     ) {
-        xp -=
-            level * 100;
-
+        xp -= level * 100;
         level++;
-
-        leveledUp =
-            true;
+        leveledUp = true;
     }
 
     updateUser(
@@ -261,17 +222,14 @@ function addXP(
 }
 
 // ═══════════════════════════════════════
-// ADD FISH TO INVENTORY
+// 🎒 ADD ITEM
 // ═══════════════════════════════════════
 
-function addFish(
+function addItem(
     userId,
-    fish
+    itemId,
+    amount = 1
 ) {
-    /*
-     * Ưu tiên dùng Item.add()
-     */
-
     if (
         Item &&
         typeof Item.add ===
@@ -279,34 +237,22 @@ function addFish(
     ) {
         return Item.add(
             userId,
-            fish.id,
-            1
+            itemId,
+            amount
         );
     }
-
-    /*
-     * Fallback nếu Item.add()
-     * chưa tồn tại.
-     */
 
     const user =
         ensureUser(userId);
 
-    if (!user) {
-        throw new Error(
-            "Không tìm thấy user."
-        );
-    }
+    const inventory = {
+        ...(user.inventory || {})
+    };
 
-    const inventory =
-        {
-            ...(user.inventory || {})
-        };
-
-    inventory[fish.id] =
+    inventory[itemId] =
         Number(
-            inventory[fish.id] || 0
-        ) + 1;
+            inventory[itemId] || 0
+        ) + amount;
 
     updateUser(
         userId,
@@ -315,11 +261,279 @@ function addFish(
         }
     );
 
-    return inventory[fish.id];
+    return inventory[itemId];
 }
 
 // ═══════════════════════════════════════
-// RARITY COLOR
+// 🎣 GET ROD
+// ═══════════════════════════════════════
+
+function getRod(user) {
+    const inventory =
+        user.inventory || {};
+
+    const rods =
+        typeof Item.getAll ===
+        "function"
+            ? Item.getAll().filter(
+                item =>
+                    item.category ===
+                    "rod"
+            )
+            : [];
+
+    /*
+     * Chọn cần cấp cao nhất mà user sở hữu.
+     */
+
+    const ownedRods = rods
+        .filter(rod => {
+            const owned =
+                inventory[rod.id];
+
+            if (
+                typeof owned ===
+                "number"
+            ) {
+                return owned > 0;
+            }
+
+            if (
+                owned &&
+                typeof owned ===
+                "object"
+            ) {
+                return Number(
+                    owned.amount || 1
+                ) > 0;
+            }
+
+            return false;
+        })
+        .sort(
+            (a, b) =>
+                Number(b.rodLevel || 1) -
+                Number(a.rodLevel || 1)
+        );
+
+    if (!ownedRods.length) {
+        return null;
+    }
+
+    const rod =
+        ownedRods[0];
+
+    const owned =
+        inventory[rod.id];
+
+    const level =
+        Number(
+            rod.rodLevel || 1
+        );
+
+    const defaultDurability =
+        ROD_DURABILITY[level] ||
+        20;
+
+    if (
+        typeof owned ===
+        "number"
+    ) {
+        return {
+            item: rod,
+            level,
+            amount: owned,
+            durability:
+                defaultDurability,
+            maxDurability:
+                defaultDurability
+        };
+    }
+
+    const maxDurability =
+        Number(
+            owned.maxDurability ||
+            defaultDurability
+        );
+
+    return {
+        item: rod,
+        level,
+        amount:
+            Number(
+                owned.amount || 1
+            ),
+        durability:
+            Number(
+                owned.durability ??
+                maxDurability
+            ),
+        maxDurability
+    };
+}
+
+// ═══════════════════════════════════════
+// 🛡️ USE ROD
+// ═══════════════════════════════════════
+
+function useRod(
+    userId,
+    rodData
+) {
+    const user =
+        ensureUser(userId);
+
+    const inventory = {
+        ...(user.inventory || {})
+    };
+
+    const rodId =
+        rodData.item.id;
+
+    const current =
+        inventory[rodId];
+
+    let durability =
+        Number(
+            rodData.durability || 0
+        ) - 1;
+
+    durability =
+        Math.max(
+            0,
+            durability
+        );
+
+    if (
+        typeof current ===
+        "number"
+    ) {
+        if (
+            durability <= 0
+        ) {
+            delete inventory[rodId];
+
+            updateUser(
+                userId,
+                {
+                    inventory
+                }
+            );
+
+            return {
+                broken: true,
+                durability: 0,
+                maxDurability:
+                    rodData.maxDurability
+            };
+        }
+
+        inventory[rodId] = {
+            amount: current,
+            durability,
+            maxDurability:
+                rodData.maxDurability
+        };
+    } else {
+        if (
+            durability <= 0
+        ) {
+            delete inventory[rodId];
+
+            updateUser(
+                userId,
+                {
+                    inventory
+                }
+            );
+
+            return {
+                broken: true,
+                durability: 0,
+                maxDurability:
+                    rodData.maxDurability
+            };
+        }
+
+        inventory[rodId] = {
+            ...(current || {}),
+            amount:
+                Number(
+                    current?.amount || 1
+                ),
+            durability,
+            maxDurability:
+                Number(
+                    current?.maxDurability ||
+                    rodData.maxDurability
+                )
+        };
+    }
+
+    updateUser(
+        userId,
+        {
+            inventory
+        }
+    );
+
+    return {
+        broken: false,
+        durability,
+        maxDurability:
+            rodData.maxDurability
+    };
+}
+
+// ═══════════════════════════════════════
+// 🎲 RANDOM FISH WITH ROD BONUS
+// ═══════════════════════════════════════
+
+function randomFish(
+    rodLevel
+) {
+    const bonus =
+        ROD_BONUS[rodLevel] ||
+        ROD_BONUS[1];
+
+    const weights =
+        FISH.map(fish => {
+            const rarity =
+                fish.rarity.toLowerCase();
+
+            return {
+                fish,
+                weight:
+                    fish.chance *
+                    Number(
+                        bonus[rarity] || 1
+                    )
+            };
+        });
+
+    const total =
+        weights.reduce(
+            (sum, entry) =>
+                sum + entry.weight,
+            0
+        );
+
+    let roll =
+        Math.random() * total;
+
+    for (const entry of weights) {
+        roll -= entry.weight;
+
+        if (roll <= 0) {
+            return entry.fish;
+        }
+    }
+
+    return FISH[0];
+}
+
+// ═══════════════════════════════════════
+// 🎨 COLOR
 // ═══════════════════════════════════════
 
 function getRarityColor(
@@ -330,27 +544,29 @@ function getRarityColor(
             return COLORS.legendary;
 
         case "Epic":
-            return 0xd8a7ff;
+            return COLORS.epic;
 
         case "Rare":
             return COLORS.rare;
 
         case "Uncommon":
-            return 0x8fd3c7;
+            return COLORS.uncommon;
 
         default:
-            return COLORS.primary;
+            return COLORS.common;
     }
 }
 
 // ═══════════════════════════════════════
-// CREATE FISH EMBED
+// 📋 EMBED
 // ═══════════════════════════════════════
 
 function createFishEmbed(
     message,
     fish,
-    xpData
+    xpData,
+    rodData,
+    durabilityData
 ) {
     const discordUser =
         message.author;
@@ -372,38 +588,46 @@ function createFishEmbed(
                     })
             })
             .setTitle(
-                "🎣  A peaceful catch"
+                "🎣 A peaceful catch"
             )
             .setDescription(
                 [
                     "🌊 **Windrise Lake**",
                     "",
-                    `${fish.emoji} You caught **${fish.name}**!`,
-                    `> Rarity: **${fish.rarity}**`,
+                    `${fish.emoji} **${fish.name}**`,
+                    `> Độ hiếm: **${fish.rarity}**`,
                     "",
-                    `💰 Value: **${fish.value.toLocaleString()} Venti**`,
+                    `💰 Giá trị: **${fish.value.toLocaleString()} Venti**`,
                     `✨ XP: **+${fish.xp}**`
                 ].join("\n")
             )
             .addFields(
                 {
-                    name: "🎒 Inventory",
+                    name: "🎣 Cần câu",
                     value:
-                        `Added **${fish.name} ×1**`,
+                        `${rodData.item.emoji || "🎣"} ${rodData.item.name}`,
                     inline: true
                 },
                 {
-                    name: "⭐ Level",
+                    name: "🛡️ Độ bền",
                     value:
-                        `Lv. **${xpData.level}**`,
+                        `${durabilityData.durability}/${durabilityData.maxDurability}`,
+                    inline: true
+                },
+                {
+                    name: "⭐ Cấp độ",
+                    value:
+                        `Lv. ${xpData.level}`,
                     inline: true
                 }
             )
             .setFooter({
                 text:
-                    xpData.leveledUp
-                        ? `🌟 Level Up! You reached level ${xpData.level}`
-                        : `Venti • Fishing`
+                    durabilityData.broken
+                        ? "💥 Cần câu đã hỏng!"
+                        : xpData.leveledUp
+                            ? `🌟 Level Up! Bạn đạt level ${xpData.level}`
+                            : "🍃 Venti • Fishing"
             })
             .setTimestamp();
 
@@ -411,11 +635,42 @@ function createFishEmbed(
 }
 
 // ═══════════════════════════════════════
-// BUTTONS
+// ❌ NO ROD
+// ═══════════════════════════════════════
+
+function createNoRodEmbed() {
+    return new EmbedBuilder()
+        .setColor(
+            COLORS.error
+        )
+        .setTitle(
+            "🎣 Chưa có cần câu"
+        )
+        .setDescription(
+            [
+                "🌊 **Windrise Lake**",
+                "",
+                "Bạn chưa sở hữu cần câu.",
+                "",
+                "🛒 Dùng **Vshop** để mua cần câu đầu tiên.",
+                "",
+                "♡ Cần tốt hơn sẽ có độ bền cao hơn",
+                "♡ Cần cấp cao tăng cơ hội bắt cá hiếm"
+            ].join("\n")
+        )
+        .setFooter({
+            text:
+                "Venti • Fishing"
+        });
+}
+
+// ═══════════════════════════════════════
+// 🔘 BUTTONS
 // ═══════════════════════════════════════
 
 function createButtons(
-    userId
+    userId,
+    disabled = false
 ) {
     return new ActionRowBuilder()
         .addComponents(
@@ -424,11 +679,14 @@ function createButtons(
                     `fish_again_${userId}`
                 )
                 .setLabel(
-                    "Fish Again"
+                    "Câu tiếp"
                 )
                 .setEmoji("🎣")
                 .setStyle(
                     ButtonStyle.Primary
+                )
+                .setDisabled(
+                    disabled
                 ),
 
             new ButtonBuilder()
@@ -436,7 +694,7 @@ function createButtons(
                     `fish_inventory_${userId}`
                 )
                 .setLabel(
-                    "Inventory"
+                    "Túi đồ"
                 )
                 .setEmoji("🎒")
                 .setStyle(
@@ -446,7 +704,7 @@ function createButtons(
 }
 
 // ═══════════════════════════════════════
-// FISH COMMAND
+// 🎣 MAIN
 // ═══════════════════════════════════════
 
 async function fishCommand(
@@ -455,10 +713,6 @@ async function fishCommand(
     try {
         const userId =
             message.author.id;
-
-        /*
-         * Đảm bảo database user tồn tại.
-         */
 
         const user =
             ensureUser(userId);
@@ -470,25 +724,82 @@ async function fishCommand(
             });
         }
 
-        /*
-         * Random fish.
-         */
+        // ─────────────────────────────
+        // CHECK ROD
+        // ─────────────────────────────
+
+        const rodData =
+            getRod(user);
+
+        if (!rodData) {
+            return message.reply({
+                embeds: [
+                    createNoRodEmbed()
+                ]
+            });
+        }
+
+        // ─────────────────────────────
+        // CHECK DURABILITY
+        // ─────────────────────────────
+
+        if (
+            rodData.durability <= 0
+        ) {
+            return message.reply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(
+                            COLORS.error
+                        )
+                        .setTitle(
+                            "💥 Cần câu đã hỏng"
+                        )
+                        .setDescription(
+                            [
+                                `**${rodData.item.name}** đã hết độ bền.`,
+                                "",
+                                "🛒 Hãy mua một cần câu mới tại **Vshop**.",
+                                "",
+                                "🍃 Cần mới sẽ bắt đầu với đầy độ bền."
+                            ].join("\n")
+                        )
+                ]
+            });
+        }
+
+        // ─────────────────────────────
+        // RANDOM
+        // ─────────────────────────────
 
         const fish =
-            randomFish();
+            randomFish(
+                rodData.level
+            );
 
-        /*
-         * Add fish.
-         */
+        // ─────────────────────────────
+        // ADD FISH
+        // ─────────────────────────────
 
-        addFish(
+        addItem(
             userId,
-            fish
+            fish.id,
+            1
         );
 
-        /*
-         * Add XP.
-         */
+        // ─────────────────────────────
+        // DURABILITY
+        // ─────────────────────────────
+
+        const durabilityData =
+            useRod(
+                userId,
+                rodData
+            );
+
+        // ─────────────────────────────
+        // XP
+        // ─────────────────────────────
 
         const xpData =
             addXP(
@@ -496,30 +807,49 @@ async function fishCommand(
                 fish.xp
             );
 
-        /*
-         * Embed.
-         */
+        // ─────────────────────────────
+        // STATS
+        // ─────────────────────────────
+
+        const latestUser =
+            ensureUser(userId);
+
+        const stats = {
+            ...(latestUser.stats || {})
+        };
+
+        stats.fish =
+            Number(
+                stats.fish || 0
+            ) + 1;
+
+        updateUser(
+            userId,
+            {
+                stats
+            }
+        );
+
+        // ─────────────────────────────
+        // EMBED
+        // ─────────────────────────────
 
         const embed =
             createFishEmbed(
                 message,
                 fish,
-                xpData
-            );
-
-        /*
-         * Buttons.
-         */
-
-        const buttons =
-            createButtons(
-                userId
+                xpData,
+                rodData,
+                durabilityData
             );
 
         return message.reply({
             embeds: [embed],
             components: [
-                buttons
+                createButtons(
+                    userId,
+                    durabilityData.broken
+                )
             ]
         });
     } catch (error) {
@@ -535,8 +865,5 @@ async function fishCommand(
     }
 }
 
-// ═══════════════════════════════════════
-// EXPORT
-// ═══════════════════════════════════════
-
 module.exports = command;
+

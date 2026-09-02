@@ -1,15 +1,24 @@
 {
   "743028655097380895": {
-    "balance": 2717,
+    "id": "743028655097380895",
+    "balance": 1547,
     "bank": 0,
-    "xp": 76,
+    "xp": 0,
     "level": 1,
-    "last_daily": 0,
-    "last_work": 0,
-    "last_beg": 0,
-    "created_at": 1787996951405,
-    "inventory": {
-      "blue_fish": 2
+    "dailyStreak": 1,
+    "lastDaily": 1788347182183,
+    "lastWork": 0,
+    "lastBeg": 0,
+    "inventory": {},
+    "tools": {
+      "fishingRod": {
+        "level": 1,
+        "durability": 50
+      },
+      "hoe": {
+        "level": 1,
+        "durability": 50
+      }
     },
     "farm": {
       "plots": [
@@ -22,51 +31,21 @@
         }
       ]
     },
-    "lastDaily": 1788177702757,
-    "dailyStreak": 1,
-    "quests": {
-      "date": "2026-08-31",
-      "daily": [
-        {
-          "id": "fish",
-          "progress": 0,
-          "claimed": false
-        },
-        {
-          "id": "farm",
-          "progress": 0,
-          "claimed": false
-        },
-        {
-          "id": "sell",
-          "progress": 0,
-          "claimed": false
-        }
-      ]
-    }
-  },
-  "398030689905278977": {
-    "id": "398030689905278977",
-    "balance": 1050,
-    "bank": 0,
-    "xp": 0,
-    "level": 1,
-    "dailyStreak": 0,
-    "lastDaily": 0,
-    "lastWork": 0,
-    "lastBeg": 0,
-    "inventory": {},
-    "quests": {
-      "date": "",
-      "daily": []
-    },
     "stats": {
       "games": 0,
       "wins": 0,
       "losses": 0,
       "work": 0,
-      "fish": 0
+      "fish": 0,
+      "farm": 0,
+      "harvest": 0,
+      "quest": 0
     },
-    "createdAt": 1788178705268
+    "quests": {
+      "date": "",
+      "daily": []
+    },
+    "achievements": {},
+    "createdAt": 1788347176388
   }
 }

@@ -7,7 +7,7 @@ const {
 
 const User =
     require("../../database/models/User");
-
+    
 const QUESTS = [
     {
         id: "fish",
