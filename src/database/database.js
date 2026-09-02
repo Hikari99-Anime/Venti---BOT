@@ -2,8 +2,11 @@
 const fs = require("fs");
 const path = require("path");
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DATA_FILE = path.join(DATA_DIR, "users.json");
+const DATA_DIR =
+    path.join(process.cwd(), "data");
+
+const DATA_FILE =
+    path.join(DATA_DIR, "users.json");
 
 // ==========================================
 // 📂 INIT
@@ -29,15 +32,15 @@ if (!fs.existsSync(DATA_FILE)) {
 
 function load() {
     try {
-        const raw = fs.readFileSync(
-            DATA_FILE,
-            "utf8"
+        return JSON.parse(
+            fs.readFileSync(
+                DATA_FILE,
+                "utf8"
+            )
         );
-
-        return JSON.parse(raw || "{}");
     } catch (error) {
         console.error(
-            "[database load]",
+            "[Database] Load error:",
             error
         );
 
@@ -50,110 +53,189 @@ function load() {
 // ==========================================
 
 function save(data) {
-    try {
-        fs.writeFileSync(
-            DATA_FILE,
-            JSON.stringify(
-                data,
-                null,
-                2
-            ),
-            "utf8"
-        );
-
-        return true;
-    } catch (error) {
-        console.error(
-            "[database save]",
-            error
-        );
-
-        return false;
-    }
+    fs.writeFileSync(
+        DATA_FILE,
+        JSON.stringify(
+            data,
+            null,
+            2
+        ),
+        "utf8"
+    );
 }
 
 // ==========================================
-// 👤 USER
+// 👤 CREATE USER
 // ==========================================
-
-function getUser(userId) {
-    const data = load();
-
-    return data[userId] || null;
-}
 
 function createUser(userId) {
-    const data = load();
+
+    const data =
+        load();
 
     if (!data[userId]) {
+
         data[userId] = {
-            id: userId,
 
-            // 💰 Economy
-            balance: 1000,
-            bank: 0,
+            id:
+                userId,
 
-            // ⭐ Level
-            xp: 0,
-            level: 1,
+            // ==================================
+            // 💰 ECONOMY
+            // ==================================
 
-            // ⏰ Cooldowns
-            dailyStreak: 0,
-            lastDaily: 0,
-            lastWork: 0,
-            lastBeg: 0,
+            balance:
+                1000,
 
-            // 🎒 Inventory
-            inventory: {},
+            bank:
+                0,
 
-            // 🔧 Tools
+            bankData: {
+
+                lastInterest:
+                    0,
+
+                totalInterest:
+                    0
+            },
+
+            // ==================================
+            // ⭐ XP
+            // ==================================
+
+            xp:
+                0,
+
+            level:
+                1,
+
+            // ==================================
+            // 🎁 DAILY
+            // ==================================
+
+            dailyStreak:
+                0,
+
+            lastDaily:
+                0,
+
+            lastWork:
+                0,
+
+            lastBeg:
+                0,
+
+            // ==================================
+            // 🎒 INVENTORY
+            // ==================================
+
+            inventory:
+                {},
+
+            // ==================================
+            // 🔧 TOOLS
+            // ==================================
+
             tools: {
+
                 fishingRod: {
-                    level: 1,
-                    durability: 50
+                    level:
+                        1,
+
+                    durability:
+                        50
                 },
 
                 hoe: {
-                    level: 1,
-                    durability: 50
+                    level:
+                        1,
+
+                    durability:
+                        50
                 }
             },
 
-            // 🌱 Farm
+            // ==================================
+            // 🌾 FARM
+            // ==================================
+
             farm: {
+
                 plots: [
+
                     {
-                        id: 1,
-                        unlocked: true,
-                        seed: null,
-                        plantedAt: null,
-                        readyAt: null
+                        id:
+                            1,
+
+                        unlocked:
+                            true,
+
+                        seed:
+                            null,
+
+                        plantedAt:
+                            null,
+
+                        readyAt:
+                            null
                     }
                 ]
             },
 
-            // 📊 Stats
+            // ==================================
+            // 📊 STATS
+            // ==================================
+
             stats: {
-                games: 0,
-                wins: 0,
-                losses: 0,
-                work: 0,
-                fish: 0,
-                farm: 0,
-                harvest: 0,
-                quest: 0
+
+                games:
+                    0,
+
+                wins:
+                    0,
+
+                losses:
+                    0,
+
+                work:
+                    0,
+
+                fish:
+                    0,
+
+                farm:
+                    0,
+
+                quest:
+                    0
             },
 
-            // 📜 Quests
+            // ==================================
+            // 📜 QUESTS
+            // ==================================
+
             quests: {
-                date: "",
-                daily: []
+
+                date:
+                    "",
+
+                daily:
+                    []
             },
 
-            // 🏆 Achievements
-            achievements: {},
+            // ==================================
+            // 🏆 ACHIEVEMENTS
+            // ==================================
 
-            createdAt: Date.now()
+            achievements:
+                {},
+
+            // ==================================
+            // ⏰ CREATED
+            // ==================================
+
+            createdAt:
+                Date.now()
         };
 
         save(data);
@@ -162,7 +244,27 @@ function createUser(userId) {
     return data[userId];
 }
 
+// ==========================================
+// 👤 GET USER
+// ==========================================
+
+function getUser(userId) {
+
+    const data =
+        load();
+
+    return (
+        data[userId] ||
+        null
+    );
+}
+
+// ==========================================
+// 👤 GET OR CREATE
+// ==========================================
+
 function getOrCreate(userId) {
+
     return (
         getUser(userId) ||
         createUser(userId)
@@ -170,29 +272,37 @@ function getOrCreate(userId) {
 }
 
 // ==========================================
-// ✏️ UPDATE
+// ✏️ UPDATE USER
 // ==========================================
 
 function updateUser(
     userId,
     updates
 ) {
-    const data = load();
+
+    const data =
+        load();
 
     if (!data[userId]) {
-        createUser(userId);
+
+        createUser(
+            userId
+        );
+
+        return updateUser(
+            userId,
+            updates
+        );
     }
 
-    const freshData = load();
-
-    freshData[userId] = {
-        ...freshData[userId],
+    data[userId] = {
+        ...data[userId],
         ...updates
     };
 
-    save(freshData);
+    save(data);
 
-    return freshData[userId];
+    return data[userId];
 }
 
 // ==========================================
@@ -203,62 +313,85 @@ function addBalance(
     userId,
     amount
 ) {
-    amount = Number(amount);
+
+    const user =
+        getOrCreate(
+            userId
+        );
+
+    amount =
+        Number(amount);
 
     if (
-        !Number.isFinite(amount) ||
+        !Number.isSafeInteger(
+            amount
+        ) ||
         amount <= 0
     ) {
         return false;
     }
 
-    const user =
-        getOrCreate(userId);
-
-    const balance =
-        Number(user.balance || 0) +
-        amount;
+    user.balance =
+        Number(
+            user.balance || 0
+        ) + amount;
 
     updateUser(
         userId,
         {
-            balance
+            balance:
+                user.balance
         }
     );
 
-    return balance;
+    return user.balance;
 }
+
+// ==========================================
+// 💸 REMOVE BALANCE
+// ==========================================
 
 function removeBalance(
     userId,
     amount
 ) {
-    amount = Number(amount);
+
+    const user =
+        getOrCreate(
+            userId
+        );
+
+    amount =
+        Number(amount);
 
     if (
-        !Number.isFinite(amount) ||
+        !Number.isSafeInteger(
+            amount
+        ) ||
         amount <= 0
     ) {
         return false;
     }
 
-    const user =
-        getOrCreate(userId);
-
     const balance =
-        Number(user.balance || 0);
+        Number(
+            user.balance || 0
+        );
 
-    if (balance < amount) {
+    if (
+        balance < amount
+    ) {
         return false;
     }
 
-    const newBalance =
+    user.balance =
         balance - amount;
 
     updateUser(
         userId,
         {
-            balance: newBalance
+            balance:
+                user.balance
         }
     );
 
@@ -269,117 +402,89 @@ function removeBalance(
 // 🏦 BANK
 // ==========================================
 
-function getBank(userId) {
-    const user =
-        getOrCreate(userId);
-
-    return Number(
-        user.bank || 0
-    );
-}
-
 function addBank(
     userId,
     amount
 ) {
-    amount = Number(amount);
+
+    const user =
+        getOrCreate(
+            userId
+        );
+
+    amount =
+        Number(amount);
 
     if (
-        !Number.isFinite(amount) ||
+        !Number.isSafeInteger(
+            amount
+        ) ||
         amount <= 0
     ) {
         return false;
     }
 
-    const user =
-        getOrCreate(userId);
-
-    const bank =
-        Number(user.bank || 0) +
-        amount;
+    user.bank =
+        Number(
+            user.bank || 0
+        ) + amount;
 
     updateUser(
         userId,
         {
-            bank
+            bank:
+                user.bank
         }
     );
 
-    return bank;
+    return user.bank;
 }
+
+// ==========================================
+// 🏦 REMOVE BANK
+// ==========================================
 
 function removeBank(
     userId,
     amount
 ) {
-    amount = Number(amount);
+
+    const user =
+        getOrCreate(
+            userId
+        );
+
+    amount =
+        Number(amount);
 
     if (
-        !Number.isFinite(amount) ||
+        !Number.isSafeInteger(
+            amount
+        ) ||
         amount <= 0
     ) {
         return false;
     }
 
-    const user =
-        getOrCreate(userId);
-
     const bank =
-        Number(user.bank || 0);
+        Number(
+            user.bank || 0
+        );
 
-    if (bank < amount) {
+    if (
+        bank < amount
+    ) {
         return false;
     }
 
-    const newBank =
+    user.bank =
         bank - amount;
 
     updateUser(
         userId,
         {
-            bank: newBank
-        }
-    );
-
-    return true;
-}
-
-// ==========================================
-// 🔄 TRANSFER BALANCE → BANK
-// ==========================================
-
-function deposit(
-    userId,
-    amount
-) {
-    amount = Number(amount);
-
-    if (
-        !Number.isFinite(amount) ||
-        amount <= 0
-    ) {
-        return false;
-    }
-
-    const user =
-        getOrCreate(userId);
-
-    const balance =
-        Number(user.balance || 0);
-
-    if (balance < amount) {
-        return false;
-    }
-
-    updateUser(
-        userId,
-        {
-            balance:
-                balance - amount,
-
             bank:
-                Number(user.bank || 0) +
-                amount
+                user.bank
         }
     );
 
@@ -387,45 +492,245 @@ function deposit(
 }
 
 // ==========================================
-// 🔄 BANK → BALANCE
+// 📈 BANK INTEREST
 // ==========================================
 
-function withdraw(
-    userId,
-    amount
-) {
-    amount = Number(amount);
+// 1% mỗi ngày
+const BANK_INTEREST_RATE =
+    0.01;
 
-    if (
-        !Number.isFinite(amount) ||
-        amount <= 0
-    ) {
-        return false;
-    }
+// 24 giờ
+const BANK_INTEREST_COOLDOWN =
+    24 * 60 * 60 * 1000;
+
+// ==========================================
+// 📈 CALCULATE INTEREST
+// ==========================================
+
+function calculateBankInterest(
+    userId
+) {
 
     const user =
-        getOrCreate(userId);
+        getOrCreate(
+            userId
+        );
+
+    // Đảm bảo bankData tồn tại
+    if (!user.bankData) {
+
+        user.bankData = {
+
+            lastInterest:
+                0,
+
+            totalInterest:
+                0
+        };
+
+        updateUser(
+            userId,
+            {
+                bankData:
+                    user.bankData
+            }
+        );
+    }
 
     const bank =
-        Number(user.bank || 0);
+        Number(
+            user.bank || 0
+        );
 
-    if (bank < amount) {
-        return false;
+    const lastInterest =
+        Number(
+            user.bankData.lastInterest ||
+            0
+        );
+
+    const now =
+        Date.now();
+
+    const nextInterestAt =
+        lastInterest > 0
+            ? lastInterest +
+              BANK_INTEREST_COOLDOWN
+            : now;
+
+    const canClaim =
+        bank > 0 &&
+        (
+            lastInterest === 0 ||
+            now >=
+                nextInterestAt
+        );
+
+    const amount =
+        Math.floor(
+            bank *
+            BANK_INTEREST_RATE
+        );
+
+    return {
+
+        canClaim,
+
+        amount,
+
+        bank,
+
+        rate:
+            BANK_INTEREST_RATE,
+
+        lastInterest,
+
+        nextInterestAt
+    };
+}
+
+// ==========================================
+// 💵 CLAIM INTEREST
+// ==========================================
+
+function claimBankInterest(
+    userId
+) {
+
+    const user =
+        getOrCreate(
+            userId
+        );
+
+    if (!user.bankData) {
+
+        user.bankData = {
+
+            lastInterest:
+                0,
+
+            totalInterest:
+                0
+        };
     }
+
+    const bank =
+        Number(
+            user.bank || 0
+        );
+
+    // Bank trống
+    if (
+        bank <= 0
+    ) {
+        return {
+
+            success:
+                false,
+
+            reason:
+                "empty"
+        };
+    }
+
+    const now =
+        Date.now();
+
+    const lastInterest =
+        Number(
+            user.bankData.lastInterest ||
+            0
+        );
+
+    const nextInterestAt =
+        lastInterest > 0
+            ? lastInterest +
+              BANK_INTEREST_COOLDOWN
+            : 0;
+
+    // Chưa đủ 24 giờ
+    if (
+        lastInterest > 0 &&
+        now < nextInterestAt
+    ) {
+        return {
+
+            success:
+                false,
+
+            reason:
+                "cooldown",
+
+            nextInterestAt
+        };
+    }
+
+    // Tính 1%
+    const interest =
+        Math.floor(
+            bank *
+            BANK_INTEREST_RATE
+        );
+
+    // Nếu tiền quá ít
+    if (
+        interest < 1
+    ) {
+        return {
+
+            success:
+                false,
+
+            reason:
+                "too_small"
+        };
+    }
+
+    // ==================================
+    // 💵 CỘNG LÃI VÀO BANK
+    // ==================================
+
+    user.bank =
+        bank + interest;
+
+    user.bankData.lastInterest =
+        now;
+
+    user.bankData.totalInterest =
+        Number(
+            user.bankData.totalInterest ||
+            0
+        ) + interest;
 
     updateUser(
         userId,
         {
-            bank:
-                bank - amount,
 
-            balance:
-                Number(user.balance || 0) +
-                amount
+            bank:
+                user.bank,
+
+            bankData:
+                user.bankData
         }
     );
 
-    return true;
+    return {
+
+        success:
+            true,
+
+        amount:
+            interest,
+
+        bank:
+            user.bank,
+
+        totalInterest:
+            user.bankData.totalInterest,
+
+        nextInterestAt:
+            now +
+            BANK_INTEREST_COOLDOWN
+    };
 }
 
 // ==========================================
@@ -436,50 +741,69 @@ function addXP(
     userId,
     amount
 ) {
-    amount = Number(amount);
-
-    if (
-        !Number.isFinite(amount) ||
-        amount <= 0
-    ) {
-        return null;
-    }
 
     const user =
-        getOrCreate(userId);
+        getOrCreate(
+            userId
+        );
 
-    let xp =
-        Number(user.xp || 0) +
-        amount;
+    amount =
+        Number(amount);
+
+    if (
+        !Number.isSafeInteger(
+            amount
+        ) ||
+        amount <= 0
+    ) {
+        return {
+
+            xp:
+                user.xp,
+
+            level:
+                user.level
+        };
+    }
+
+    user.xp =
+        Number(
+            user.xp || 0
+        ) + amount;
 
     let level =
-        Number(user.level || 1);
-
-    let leveledUp = false;
+        Number(
+            user.level || 1
+        );
 
     while (
-        xp >= level * 500
+        user.xp >=
+        level * 500
     ) {
-        xp -=
+
+        user.xp -=
             level * 500;
 
         level++;
-
-        leveledUp = true;
     }
 
     updateUser(
         userId,
         {
-            xp,
+
+            xp:
+                user.xp,
+
             level
         }
     );
 
     return {
-        xp,
-        level,
-        leveledUp
+
+        xp:
+            user.xp,
+
+        level
     };
 }
 
@@ -492,81 +816,102 @@ function addItem(
     itemId,
     amount = 1
 ) {
-    amount = Number(amount);
+
+    const user =
+        getOrCreate(
+            userId
+        );
+
+    amount =
+        Number(amount);
 
     if (
-        !Number.isFinite(amount) ||
+        !Number.isSafeInteger(
+            amount
+        ) ||
         amount <= 0
     ) {
         return false;
     }
 
-    const user =
-        getOrCreate(userId);
+    if (
+        !user.inventory
+    ) {
+        user.inventory = {};
+    }
 
-    const inventory = {
-        ...(user.inventory || {})
-    };
+    if (
+        !user.inventory[itemId]
+    ) {
+        user.inventory[itemId] =
+            0;
+    }
 
-    inventory[itemId] =
-        Number(
-            inventory[itemId] || 0
-        ) + amount;
+    user.inventory[itemId] +=
+        amount;
 
     updateUser(
         userId,
         {
-            inventory
+            inventory:
+                user.inventory
         }
     );
 
-    return inventory[itemId];
+    return user.inventory[
+        itemId
+    ];
 }
+
+// ==========================================
+// 🎒 REMOVE ITEM
+// ==========================================
 
 function removeItem(
     userId,
     itemId,
     amount = 1
 ) {
-    amount = Number(amount);
+
+    const user =
+        getOrCreate(
+            userId
+        );
+
+    amount =
+        Number(amount);
 
     if (
-        !Number.isFinite(amount) ||
-        amount <= 0
+        !user.inventory ||
+        !user.inventory[itemId]
     ) {
         return false;
     }
 
-    const user =
-        getOrCreate(userId);
-
-    const inventory = {
-        ...(user.inventory || {})
-    };
-
-    const current =
-        Number(
-            inventory[itemId] || 0
-        );
-
-    if (current < amount) {
+    if (
+        user.inventory[itemId] <
+        amount
+    ) {
         return false;
     }
 
-    const remaining =
-        current - amount;
+    user.inventory[itemId] -=
+        amount;
 
-    if (remaining <= 0) {
-        delete inventory[itemId];
-    } else {
-        inventory[itemId] =
-            remaining;
+    if (
+        user.inventory[itemId] <=
+        0
+    ) {
+        delete user.inventory[
+            itemId
+        ];
     }
 
     updateUser(
         userId,
         {
-            inventory
+            inventory:
+                user.inventory
         }
     );
 
@@ -578,19 +923,30 @@ function removeItem(
 // ==========================================
 
 function getTools(userId) {
+
     const user =
-        getOrCreate(userId);
+        getOrCreate(
+            userId
+        );
 
     if (!user.tools) {
+
         user.tools = {
+
             fishingRod: {
-                level: 1,
-                durability: 50
+                level:
+                    1,
+
+                durability:
+                    50
             },
 
             hoe: {
-                level: 1,
-                durability: 50
+                level:
+                    1,
+
+                durability:
+                    50
             }
         };
 
@@ -606,12 +962,19 @@ function getTools(userId) {
     return user.tools;
 }
 
+// ==========================================
+// 🔧 GET TOOL
+// ==========================================
+
 function getTool(
     userId,
     toolId
 ) {
+
     const tools =
-        getTools(userId);
+        getTools(
+            userId
+        );
 
     return (
         tools[toolId] ||
@@ -619,16 +982,25 @@ function getTool(
     );
 }
 
+// ==========================================
+// 🔧 SET TOOL
+// ==========================================
+
 function setTool(
     userId,
     toolId,
     toolData
 ) {
+
     const tools =
-        getTools(userId);
+        getTools(
+            userId
+        );
 
     tools[toolId] = {
+
         ...(tools[toolId] || {}),
+
         ...toolData
     };
 
@@ -642,10 +1014,15 @@ function setTool(
     return tools[toolId];
 }
 
+// ==========================================
+// 🔧 UPGRADE TOOL
+// ==========================================
+
 function upgradeTool(
     userId,
     toolId
 ) {
+
     const tool =
         getTool(
             userId,
@@ -656,27 +1033,32 @@ function upgradeTool(
         return false;
     }
 
-    const level =
-        Number(tool.level || 1) + 1;
+    tool.level++;
 
-    const durability =
+    tool.durability =
         50 +
-        (level - 1) * 25;
+        (
+            tool.level - 1
+        ) * 25;
 
-    return setTool(
+    setTool(
         userId,
         toolId,
-        {
-            level,
-            durability
-        }
+        tool
     );
+
+    return tool;
 }
+
+// ==========================================
+// 🔧 USE TOOL
+// ==========================================
 
 function useTool(
     userId,
     toolId
 ) {
+
     const tool =
         getTool(
             userId,
@@ -687,38 +1069,36 @@ function useTool(
         return false;
     }
 
-    const durability =
-        Number(
-            tool.durability || 0
-        );
-
-    if (durability <= 0) {
+    if (
+        tool.durability <= 0
+    ) {
         return false;
     }
 
-    return setTool(
+    tool.durability--;
+
+    setTool(
         userId,
         toolId,
-        {
-            durability:
-                durability - 1
-        }
+        tool
     );
+
+    return tool;
 }
 
 // ==========================================
-// 🌱 FARM
+// 🌾 FARM
 // ==========================================
 
 function getFarm(userId) {
+
     const user =
         getOrCreate(userId);
 
-    if (
-        !user.farm ||
-        typeof user.farm !== "object"
-    ) {
+    if (!user.farm) {
+
         user.farm = {
+
             plots: [
                 {
                     id: 1,
@@ -733,27 +1113,50 @@ function getFarm(userId) {
         updateUser(
             userId,
             {
-                farm:
-                    user.farm
+                farm: user.farm
             }
         );
     }
 
-    if (
-        !Array.isArray(
-            user.farm.plots
-        )
-    ) {
-        user.farm.plots = [];
+    if (!Array.isArray(user.farm.plots)) {
+
+        user.farm.plots = [
+            {
+                id: 1,
+                unlocked: true,
+                seed: null,
+                plantedAt: null,
+                readyAt: null
+            }
+        ];
+
+        updateUser(
+            userId,
+            {
+                farm: user.farm
+            }
+        );
     }
 
     return user.farm;
 }
 
+// ==========================================
+// 🌱 UPDATE FARM
+// ==========================================
+
 function updateFarm(
     userId,
     farm
 ) {
+
+    if (
+        !farm ||
+        typeof farm !== "object"
+    ) {
+        return false;
+    }
+
     updateUser(
         userId,
         {
@@ -764,41 +1167,201 @@ function updateFarm(
     return farm;
 }
 
+
+// ==========================================
+// ⏰ COOLDOWN SYSTEM
+// ==========================================
+
+function checkCooldown(
+    userId,
+    type,
+    cooldown
+) {
+
+    const user =
+        getOrCreate(userId);
+
+    const now =
+        Date.now();
+
+    let last = 0;
+
+    // ======================================
+    // 📌 LẤY THỜI GIAN CUỐI
+    // ======================================
+
+    if (type === "daily") {
+        last =
+            Number(
+                user.lastDaily || 0
+            );
+    }
+
+    else if (type === "work") {
+        last =
+            Number(
+                user.lastWork || 0
+            );
+    }
+
+    else if (type === "beg") {
+        last =
+            Number(
+                user.lastBeg || 0
+            );
+    }
+
+    else {
+        return {
+            ready: true,
+            remaining: 0,
+            last: 0,
+            next: 0
+        };
+    }
+
+    const next =
+        last + Number(cooldown || 0);
+
+    const remaining =
+        Math.max(
+            0,
+            next - now
+        );
+
+    return {
+        ready:
+            remaining <= 0,
+
+        remaining,
+
+        last,
+
+        next
+    };
+}
+
+// ==========================================
+// ⏰ SET COOLDOWN
+// ==========================================
+
+function setCooldown(
+    userId,
+    type
+) {
+
+    const now =
+        Date.now();
+
+    const updates = {};
+
+    if (type === "daily") {
+        updates.lastDaily = now;
+    }
+
+    else if (type === "work") {
+        updates.lastWork = now;
+    }
+
+    else if (type === "beg") {
+        updates.lastBeg = now;
+    }
+
+    else {
+        return false;
+    }
+
+    updateUser(
+        userId,
+        updates
+    );
+
+    return now;
+}
+
+// ==========================================
+// ⏰ GET LAST COOLDOWN
+// ==========================================
+
+function getCooldown(
+    userId,
+    type
+) {
+
+    const user =
+        getOrCreate(userId);
+
+    if (type === "daily") {
+        return Number(
+            user.lastDaily || 0
+        );
+    }
+
+    if (type === "work") {
+        return Number(
+            user.lastWork || 0
+        );
+    }
+
+    if (type === "beg") {
+        return Number(
+            user.lastBeg || 0
+        );
+    }
+
+    return 0;
+}
+
+
 // ==========================================
 // 📦 EXPORT
 // ==========================================
 
 module.exports = {
+
+    // DATABASE
     load,
     save,
 
+    // USER
     getUser,
     createUser,
     getOrCreate,
     updateUser,
 
+    // MONEY
     addBalance,
     removeBalance,
 
-    getBank,
+    // BANK
     addBank,
     removeBank,
 
-    deposit,
-    withdraw,
+    // BANK INTEREST
+    calculateBankInterest,
+    claimBankInterest,
 
+    // XP
     addXP,
 
+    // ITEMS
     addItem,
     removeItem,
 
+    // TOOLS
     getTools,
     getTool,
     setTool,
     upgradeTool,
     useTool,
 
-    getFarm,
-    updateFarm
+    // FARM 
+    getFarm, 
+    updateFarm,
+
+    // COOLDOWN 
+    checkCooldown, 
+    setCooldown, 
+    getCooldown,
 };
 

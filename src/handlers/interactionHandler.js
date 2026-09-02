@@ -1,4 +1,16 @@
 
+const {
+    EmbedBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    StringSelectMenuBuilder
+} = require("discord.js");
+
+// ==========================================
+// 📦 BUTTON / MENU MODULES
+// ==========================================
+
 const help =
     require("../interactions/buttons/help");
 
@@ -14,13 +26,15 @@ const shop =
 const fish =
     require("../interactions/buttons/fish");
 
-// 🏦 BANK
-const bank =
-    require("../commands/economy/bank");
-
 const helpMenu =
     require("../interactions/menus/helpMenu");
 
+// ==========================================
+// 🏦 BANK
+// ==========================================
+
+const bank =
+    require("../commands/economy/bank");
 
 // ==========================================
 // 🎒 INVENTORY DATA
@@ -29,6 +43,7 @@ const helpMenu =
 const INVENTORY_CATEGORIES = {
     farm: {
         name: "🌾 Nông sản",
+
         items: [
             "apple",
             "sweet_flower",
@@ -38,6 +53,7 @@ const INVENTORY_CATEGORIES = {
 
     fish: {
         name: "🐟 Hải sản",
+
         items: [
             "small_fish",
             "blue_fish",
@@ -47,7 +63,6 @@ const INVENTORY_CATEGORIES = {
         ]
     }
 };
-
 
 // ==========================================
 // 🎯 MAIN INTERACTION HANDLER
@@ -67,9 +82,10 @@ async function handleInteraction(
             const id =
                 interaction.customId || "";
 
-
             // ==================================
             // 🏦 BANK
+            // QUAN TRỌNG: PHẢI ĐẶT TRƯỚC
+            // CÁC ROUTER KHÁC
             // ==================================
 
             if (
@@ -79,7 +95,6 @@ async function handleInteraction(
                     interaction
                 );
             }
-
 
             // ==================================
             // ❓ HELP
@@ -92,7 +107,6 @@ async function handleInteraction(
                     interaction
                 );
             }
-
 
             // ==================================
             // 👤 PROFILE
@@ -118,7 +132,6 @@ async function handleInteraction(
                 );
             }
 
-
             // ==================================
             // 🎒 INVENTORY
             // ==================================
@@ -130,7 +143,6 @@ async function handleInteraction(
                     interaction
                 );
             }
-
 
             // ==================================
             // 🛒 SHOP
@@ -144,7 +156,6 @@ async function handleInteraction(
                 );
             }
 
-
             // ==================================
             // 🎣 FISH
             // ==================================
@@ -156,11 +167,12 @@ async function handleInteraction(
                     interaction
                 );
             }
+
+            return false;
         }
 
-
         // ======================================
-        // 📂 SELECT MENU
+        // 📂 STRING SELECT MENU
         // ======================================
 
         if (
@@ -170,9 +182,8 @@ async function handleInteraction(
             const id =
                 interaction.customId || "";
 
-
             // ==================================
-            // ❓ HELP
+            // ❓ HELP MENU
             // ==================================
 
             if (
@@ -183,9 +194,8 @@ async function handleInteraction(
                 );
             }
 
-
             // ==================================
-            // 🎒 INVENTORY
+            // 🎒 INVENTORY MENU
             // ==================================
 
             if (
@@ -196,15 +206,51 @@ async function handleInteraction(
                     interaction
                 );
             }
+
+            return false;
         }
 
+        // ======================================
+        // 🪟 MODAL
+        // ======================================
+
+        if (
+            interaction.isModalSubmit()
+        ) {
+
+            const id =
+                interaction.customId || "";
+
+            // ==================================
+            // 🏦 BANK MODAL
+            // QUAN TRỌNG
+            // ==================================
+
+            if (
+                id.startsWith(
+                    "bank_modal_"
+                )
+            ) {
+                return bank.handleInteraction(
+                    interaction
+                );
+            }
+
+            return false;
+        }
+
+        return false;
 
     } catch (error) {
 
         console.error(
-            "[Interaction]",
+            "[InteractionHandler]",
             error
         );
+
+        // ======================================
+        // ❌ ERROR RESPONSE
+        // ======================================
 
         if (
             interaction.replied ||
@@ -215,8 +261,7 @@ async function handleInteraction(
                 .followUp({
                     content:
                         "🍃 Có lỗi xảy ra khi xử lý thao tác này.",
-                    ephemeral:
-                        true
+                    ephemeral: true
                 })
                 .catch(() => {});
         }
@@ -225,13 +270,11 @@ async function handleInteraction(
             .reply({
                 content:
                     "🍃 Có lỗi xảy ra khi xử lý thao tác này.",
-                ephemeral:
-                    true
+                ephemeral: true
             })
             .catch(() => {});
     }
 }
-
 
 // ==========================================
 // 👤 PROFILE ROUTER
@@ -244,6 +287,9 @@ async function routeProfile(
     const id =
         interaction.customId;
 
+    // ======================================
+    // 🎒 INVENTORY
+    // ======================================
 
     if (
         id ===
@@ -254,6 +300,9 @@ async function routeProfile(
         );
     }
 
+    // ======================================
+    // 🛒 SHOP
+    // ======================================
 
     if (
         id ===
@@ -264,12 +313,10 @@ async function routeProfile(
         );
     }
 
-
     return profile.execute(
         interaction
     );
 }
-
 
 // ==========================================
 // 🎒 INVENTORY BUTTON ROUTER
@@ -282,8 +329,10 @@ async function routeInventory(
     const id =
         interaction.customId;
 
-
+    // ======================================
     // 🛒 SHOP
+    // ======================================
+
     if (
         id === "inventory_shop"
     ) {
@@ -292,8 +341,10 @@ async function routeInventory(
         );
     }
 
-
+    // ======================================
     // 👤 BACK
+    // ======================================
+
     if (
         id === "inventory_back"
     ) {
@@ -302,8 +353,10 @@ async function routeInventory(
         );
     }
 
-
+    // ======================================
     // ❌ CLOSE
+    // ======================================
+
     if (
         id === "inventory_close"
     ) {
@@ -311,13 +364,17 @@ async function routeInventory(
         return interaction.update({
             content:
                 "🍃 Chiếc túi đã được đóng lại.",
+
             embeds: [],
+
             components: []
         });
     }
 
+    // ======================================
+    // 🔄 REFRESH
+    // ======================================
 
-    // 🔃 REFRESH
     if (
         id === "inventory_refresh"
     ) {
@@ -328,10 +385,8 @@ async function routeInventory(
         );
     }
 
-
-    return;
+    return false;
 }
-
 
 // ==========================================
 // 📂 INVENTORY SELECT MENU
@@ -344,7 +399,6 @@ async function routeInventoryMenu(
     const category =
         interaction.values[0];
 
-
     if (
         !INVENTORY_CATEGORIES[
             category
@@ -354,18 +408,16 @@ async function routeInventoryMenu(
         return interaction.reply({
             content:
                 "🍃 Danh mục không hợp lệ.",
-            ephemeral:
-                true
+
+            ephemeral: true
         });
     }
-
 
     return updateInventory(
         interaction,
         category
     );
 }
-
 
 // ==========================================
 // 🔄 UPDATE INVENTORY
@@ -386,51 +438,46 @@ async function updateInventory(
             "../database/models/Item"
         );
 
-
     const user =
         User.getOrCreate(
             interaction.user.id
         );
-
 
     const data =
         INVENTORY_CATEGORIES[
             category
         ];
 
-
     const inventory =
         user.inventory || {};
 
-
     const items =
         data.items
-            .map(id => {
+            .map(itemId => {
 
                 const item =
-                    Item.get(id);
-
+                    Item.get(
+                        itemId
+                    );
 
                 if (!item) {
                     return null;
                 }
-
 
                 return {
                     ...item,
 
                     amount:
                         Number(
-                            inventory[id] ||
-                            0
+                            inventory[
+                                itemId
+                            ] || 0
                         )
                 };
             })
             .filter(Boolean);
 
-
     let content;
-
 
     if (
         items.length === 0
@@ -449,12 +496,14 @@ async function updateInventory(
                 .join("\n");
     }
 
-
     const total =
         Object.values(
             inventory
         ).reduce(
-            (sum, amount) =>
+            (
+                sum,
+                amount
+            ) =>
                 sum +
                 Number(
                     amount || 0
@@ -462,20 +511,11 @@ async function updateInventory(
             0
         );
 
-
-    const {
-        EmbedBuilder,
-        ActionRowBuilder,
-        StringSelectMenuBuilder,
-        ButtonBuilder,
-        ButtonStyle
-    } = require("discord.js");
-
-
     const embed =
         new EmbedBuilder()
-
-            .setColor("#A8DCC0")
+            .setColor(
+                "#A8DCC0"
+            )
 
             .setAuthor({
                 name:
@@ -490,16 +530,17 @@ async function updateInventory(
             )
 
             .setDescription(
-                "୨୧ ───────── ୨୧\n" +
-                `        ${data.name}\n` +
-                "୨୧ ───────── ୨୧\n\n" +
-
-                content +
-
-                "\n\n" +
-                "୨୧ ───────── ୨୧\n" +
-                `☁️ Tổng vật phẩm · **${total}**\n` +
-                "🍃 Một chiếc túi nhỏ của bạn."
+                [
+                    "୨୧ ───────── ୨୧",
+                    `        ${data.name}`,
+                    "୨୧ ───────── ୨୧",
+                    "",
+                    content,
+                    "",
+                    "୨୧ ───────── ୨୧",
+                    `☁️ Tổng vật phẩm · **${total}**`,
+                    "🍃 Một chiếc túi nhỏ của bạn."
+                ].join("\n")
             )
 
             .setFooter({
@@ -509,14 +550,12 @@ async function updateInventory(
 
             .setTimestamp();
 
-
     // ======================================
-    // 📂 SELECT
+    // 📂 SELECT MENU
     // ======================================
 
     const menu =
         new StringSelectMenuBuilder()
-
             .setCustomId(
                 "inventory_category"
             )
@@ -525,52 +564,46 @@ async function updateInventory(
                 "☁️ Chọn danh mục..."
             )
 
-            .addOptions(
+            .addOptions({
 
-                {
-                    label:
-                        "Nông sản",
+                label:
+                    "Nông sản",
 
-                    description:
-                        "Hoa quả và vật phẩm nông nghiệp",
+                description:
+                    "Hoa quả và vật phẩm nông nghiệp",
 
-                    value:
-                        "farm",
+                value:
+                    "farm",
 
-                    emoji:
-                        "🌾",
+                emoji:
+                    "🌾",
 
-                    default:
-                        category ===
-                        "farm"
-                },
+                default:
+                    category === "farm"
 
-                {
-                    label:
-                        "Hải sản",
+            }, {
 
-                    description:
-                        "Những thứ bạn câu được",
+                label:
+                    "Hải sản",
 
-                    value:
-                        "fish",
+                description:
+                    "Những thứ bạn câu được",
 
-                    emoji:
-                        "🐟",
+                value:
+                    "fish",
 
-                    default:
-                        category ===
-                        "fish"
-                }
-            );
+                emoji:
+                    "🐟",
 
+                default:
+                    category === "fish"
+            });
 
     const selectRow =
         new ActionRowBuilder()
             .addComponents(
                 menu
             );
-
 
     // ======================================
     // 🔘 BUTTONS
@@ -609,7 +642,6 @@ async function updateInventory(
                     )
             );
 
-
     return interaction.update({
 
         embeds: [
@@ -623,7 +655,6 @@ async function updateInventory(
     });
 }
 
-
 // ==========================================
 // 🛒 SHOP ROUTER
 // ==========================================
@@ -635,8 +666,10 @@ async function routeShop(
     const id =
         interaction.customId;
 
-
+    // ======================================
     // 👤 PROFILE
+    // ======================================
+
     if (
         id === "shop_profile"
     ) {
@@ -645,8 +678,10 @@ async function routeShop(
         );
     }
 
-
+    // ======================================
     // 🎒 INVENTORY
+    // ======================================
+
     if (
         id === "shop_inventory"
     ) {
@@ -655,22 +690,29 @@ async function routeShop(
         );
     }
 
-
+    // ======================================
     // ❌ CLOSE
+    // ======================================
+
     if (
         id === "shop_close"
     ) {
 
         return interaction.update({
+
             content:
                 "🍃 Cửa hàng đã đóng.",
+
             embeds: [],
+
             components: []
         });
     }
 
+    // ======================================
+    // ◀ PREVIOUS
+    // ======================================
 
-    // ◀️ PREVIOUS
     if (
         id.startsWith(
             "shop_prev_"
@@ -682,13 +724,11 @@ async function routeShop(
                 id.split("_")[2]
             ) || 0;
 
-
         const nextPage =
             Math.max(
                 0,
                 page - 1
             );
-
 
         return updateShop(
             interaction,
@@ -696,8 +736,10 @@ async function routeShop(
         );
     }
 
+    // ======================================
+    // ▶ NEXT
+    // ======================================
 
-    // ▶️ NEXT
     if (
         id.startsWith(
             "shop_next_"
@@ -709,15 +751,16 @@ async function routeShop(
                 id.split("_")[2]
             ) || 0;
 
-
         return updateShop(
             interaction,
             page + 1
         );
     }
 
+    // ======================================
+    // 🔄 REFRESH
+    // ======================================
 
-    // 🔃 REFRESH
     if (
         id.startsWith(
             "shop_refresh_"
@@ -729,17 +772,14 @@ async function routeShop(
                 id.split("_")[2]
             ) || 0;
 
-
         return updateShop(
             interaction,
             page
         );
     }
 
-
-    return;
+    return false;
 }
-
 
 // ==========================================
 // 🔄 UPDATE SHOP
@@ -759,7 +799,6 @@ async function updateShop(
             page
         );
 
-
     return interaction.update({
 
         embeds: [
@@ -775,7 +814,6 @@ async function updateShop(
     });
 }
 
-
 // ==========================================
 // 📤 EXPORT
 // ==========================================
@@ -783,3 +821,4 @@ async function updateShop(
 module.exports = {
     handleInteraction
 };
+

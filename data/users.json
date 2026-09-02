@@ -1,12 +1,76 @@
 {
   "743028655097380895": {
     "id": "743028655097380895",
-    "balance": 1547,
-    "bank": 0,
-    "xp": 0,
+    "balance": 1278,
+    "bank": 510,
+    "xp": 65,
     "level": 1,
     "dailyStreak": 1,
     "lastDaily": 1788347182183,
+    "lastWork": 0,
+    "lastBeg": 0,
+    "inventory": {
+      "fishing_rod": {
+        "amount": 1,
+        "durability": 19,
+        "maxDurability": 20
+      },
+      "small_fish": 1
+    },
+    "tools": {
+      "fishingRod": {
+        "level": 1,
+        "durability": 50
+      },
+      "hoe": {
+        "level": 1,
+        "durability": 50
+      }
+    },
+    "farm": {
+      "plots": [
+        {
+          "id": 1,
+          "unlocked": true,
+          "seed": null,
+          "plantedAt": null,
+          "readyAt": null
+        }
+      ]
+    },
+    "stats": {
+      "games": 0,
+      "wins": 0,
+      "losses": 0,
+      "work": 0,
+      "fish": 1,
+      "farm": 0,
+      "harvest": 0,
+      "quest": 0
+    },
+    "quests": {
+      "date": "",
+      "daily": []
+    },
+    "achievements": {},
+    "createdAt": 1788347176388,
+    "bankData": {
+      "lastInterest": 1788348459253,
+      "totalInterest": 10
+    }
+  },
+  "398030689905278977": {
+    "id": "398030689905278977",
+    "balance": 764,
+    "bank": 0,
+    "bankData": {
+      "lastInterest": 0,
+      "totalInterest": 0
+    },
+    "xp": 0,
+    "level": 1,
+    "dailyStreak": 0,
+    "lastDaily": 0,
     "lastWork": 0,
     "lastBeg": 0,
     "inventory": {},
@@ -38,7 +102,6 @@
       "work": 0,
       "fish": 0,
       "farm": 0,
-      "harvest": 0,
       "quest": 0
     },
     "quests": {
@@ -46,6 +109,6 @@
       "daily": []
     },
     "achievements": {},
-    "createdAt": 1788347176388
+    "createdAt": 1788349068575
   }
 }

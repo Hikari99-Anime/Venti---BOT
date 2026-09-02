@@ -11,10 +11,9 @@ const {
 
 const db = require("../../database/database");
 
-
-// ═══════════════════════════════════════
-// 🏦 VENTI BANK
-// ═══════════════════════════════════════
+// ==========================================
+// 🏦 COLORS
+// ==========================================
 
 const COLORS = {
     primary: "#9ccfd8",
@@ -23,10 +22,9 @@ const COLORS = {
     error: "#f2a7a7"
 };
 
-
-// ═══════════════════════════════════════
-// FORMAT MONEY
-// ═══════════════════════════════════════
+// ==========================================
+// 💰 FORMAT MONEY
+// ==========================================
 
 function money(amount) {
     return Number(
@@ -34,19 +32,59 @@ function money(amount) {
     ).toLocaleString("vi-VN");
 }
 
+// ==========================================
+// ⏰ FORMAT TIME
+// ==========================================
 
-// ═══════════════════════════════════════
-// GET USER
-// ═══════════════════════════════════════
+function countdown(timestamp) {
+
+    if (!timestamp) {
+        return "Ngay bây giờ";
+    }
+
+    const remaining =
+        Math.max(
+            0,
+            Number(timestamp) - Date.now()
+        );
+
+    if (remaining <= 0) {
+        return "Có thể nhận ngay";
+    }
+
+    const totalSeconds =
+        Math.ceil(
+            remaining / 1000
+        );
+
+    const hours =
+        Math.floor(
+            totalSeconds / 3600
+        );
+
+    const minutes =
+        Math.floor(
+            (totalSeconds % 3600) / 60
+        );
+
+    if (hours > 0) {
+        return `${hours} giờ ${minutes} phút`;
+    }
+
+    return `${minutes} phút`;
+}
+
+// ==========================================
+// 👤 GET USER
+// ==========================================
 
 function getUser(userId) {
     return db.getOrCreate(userId);
 }
 
-
-// ═══════════════════════════════════════
-// BANK EMBED
-// ═══════════════════════════════════════
+// ==========================================
+// 🏦 BANK EMBED
+// ==========================================
 
 function bankEmbed(userId) {
 
@@ -54,49 +92,122 @@ function bankEmbed(userId) {
         getUser(userId);
 
     const balance =
-        Number(user.balance || 0);
+        Number(
+            user.balance || 0
+        );
 
     const bank =
-        Number(user.bank || 0);
+        Number(
+            user.bank || 0
+        );
 
     const total =
         balance + bank;
 
+    let interest = {
+        canClaim: false,
+        amount: 0,
+        nextInterestAt: null
+    };
+
+    if (
+        typeof db.calculateBankInterest ===
+        "function"
+    ) {
+        interest =
+            db.calculateBankInterest(
+                userId
+            ) || interest;
+    }
+
+    const totalInterest =
+        Number(
+            user.bankData?.totalInterest ||
+            0
+        );
+
+    const interestAmount =
+        Number(
+            interest.amount || 0
+        );
+
     return new EmbedBuilder()
-        .setColor(COLORS.primary)
-        .setTitle("🏦 Venti Bank")
+
+        .setColor(
+            COLORS.primary
+        )
+
+        .setTitle(
+            "`🏦` Venti Bank"
+        )
+
         .setDescription(
             [
-                "╭─────────────────────╮",
-                "       🏦 **NGÂN HÀNG VENTI**",
-                "╰─────────────────────╯",
+                "╭────────────────────────────╮",
+                "        `🏦` **VENTI BANK**",
+                "╰────────────────────────────╯",
                 "",
-                `💰 **Tiền mặt**`,
-                `> ${money(balance)} Mora`,
+
+                "● `💰` **Tiền mặt**",
+                `> +${money(balance)} Mora`,
                 "",
-                `🏦 **Tiền trong ngân hàng**`,
-                `> ${money(bank)} Mora`,
+
+                "● `🏦` **Tiền trong Bank**",
+                `> +${money(bank)} Mora`,
                 "",
-                `💎 **Tổng tài sản**`,
-                `> ${money(total)} Mora`,
+
+                "● `💎` **Tổng tài sản**",
+                `> +${money(total)} Mora`,
                 "",
-                "🌿 Chọn một chức năng bên dưới."
+
+                "○ `📈` **Lãi suất**",
+                "> +1% / ngày",
+                "",
+
+                "○ `💵` **Lãi hôm nay**",
+                interest.canClaim
+                    ? `> +${money(interestAmount)} Mora`
+                    : "> Chưa thể nhận",
+                "",
+
+                "○ `📊` **Tổng lãi đã nhận**",
+                `> +${money(totalInterest)} Mora`,
+                "",
+
+                "────────────────────────────",
+                "",
+
+                interest.canClaim
+                    ? "◉ `🌿` **Bạn có thể nhận lãi ngay!**"
+                    : `○ \`⏰\` Lần nhận lãi tiếp theo: **${countdown(interest.nextInterestAt)}**`,
+
+                "",
+
+                "● `🔒` Tiền trong Bank được bảo toàn",
+                "● `📈` Số dư Bank sinh lãi mỗi ngày"
             ].join("\n")
         )
+
         .setFooter({
-            text: "Venti Bank • An toàn • Nhanh chóng"
+            text:
+                "Venti Bank • An toàn • Sinh lời"
         })
+
         .setTimestamp();
 }
 
-
-// ═══════════════════════════════════════
-// BUTTONS
-// ═══════════════════════════════════════
+// ==========================================
+// 🔘 BANK BUTTONS
+// ==========================================
 
 function bankButtons(userId) {
 
     return [
+
+        // ==============================
+        // ROW 1
+        // ==============================
+
         new ActionRowBuilder()
             .addComponents(
 
@@ -104,8 +215,12 @@ function bankButtons(userId) {
                     .setCustomId(
                         `bank_deposit_${userId}`
                     )
-                    .setLabel("Gửi tiền")
-                    .setEmoji("💰")
+                    .setLabel(
+                        "Gửi tiền"
+                    )
+                    .setEmoji(
+                        "💰"
+                    )
                     .setStyle(
                         ButtonStyle.Success
                     ),
@@ -114,32 +229,48 @@ function bankButtons(userId) {
                     .setCustomId(
                         `bank_withdraw_${userId}`
                     )
-                    .setLabel("Rút tiền")
-                    .setEmoji("💸")
+                    .setLabel(
+                        "Rút tiền"
+                    )
+                    .setEmoji(
+                        "💸"
+                    )
                     .setStyle(
                         ButtonStyle.Primary
-                    ),
-
-                new ButtonBuilder()
-                    .setCustomId(
-                        `bank_transfer_${userId}`
-                    )
-                    .setLabel("Chuyển tiền")
-                    .setEmoji("🔄")
-                    .setStyle(
-                        ButtonStyle.Secondary
                     )
             ),
+
+        // ==============================
+        // ROW 2
+        // ==============================
 
         new ActionRowBuilder()
             .addComponents(
 
                 new ButtonBuilder()
                     .setCustomId(
+                        `bank_interest_${userId}`
+                    )
+                    .setLabel(
+                        "Nhận lãi"
+                    )
+                    .setEmoji(
+                        "📈"
+                    )
+                    .setStyle(
+                        ButtonStyle.Success
+                    ),
+
+                new ButtonBuilder()
+                    .setCustomId(
                         `bank_refresh_${userId}`
                     )
-                    .setLabel("Làm mới")
-                    .setEmoji("🔃")
+                    .setLabel(
+                        "Làm mới"
+                    )
+                    .setEmoji(
+                        "🔃"
+                    )
                     .setStyle(
                         ButtonStyle.Secondary
                     ),
@@ -148,8 +279,12 @@ function bankButtons(userId) {
                     .setCustomId(
                         `bank_close_${userId}`
                     )
-                    .setLabel("Đóng")
-                    .setEmoji("✖️")
+                    .setLabel(
+                        "Đóng"
+                    )
+                    .setEmoji(
+                        "✖️"
+                    )
                     .setStyle(
                         ButtonStyle.Danger
                     )
@@ -157,10 +292,9 @@ function bankButtons(userId) {
     ];
 }
 
-
-// ═══════════════════════════════════════
-// DEPOSIT MODAL
-// ═══════════════════════════════════════
+// ==========================================
+// 💰 DEPOSIT MODAL
+// ==========================================
 
 function depositModal(userId) {
 
@@ -170,7 +304,7 @@ function depositModal(userId) {
                 `bank_modal_deposit_${userId}`
             )
             .setTitle(
-                "💰 Gửi tiền vào ngân hàng"
+                "💰 Gửi tiền vào Bank"
             );
 
     const amount =
@@ -179,7 +313,7 @@ function depositModal(userId) {
                 "amount"
             )
             .setLabel(
-                "Nhập số tiền muốn gửi"
+                "Số tiền muốn gửi"
             )
             .setPlaceholder(
                 "Ví dụ: 5000"
@@ -187,22 +321,29 @@ function depositModal(userId) {
             .setStyle(
                 TextInputStyle.Short
             )
-            .setRequired(true)
-            .setMinLength(1)
-            .setMaxLength(15);
+            .setRequired(
+                true
+            )
+            .setMinLength(
+                1
+            )
+            .setMaxLength(
+                15
+            );
 
     modal.addComponents(
         new ActionRowBuilder()
-            .addComponents(amount)
+            .addComponents(
+                amount
+            )
     );
 
     return modal;
 }
 
-
-// ═══════════════════════════════════════
-// WITHDRAW MODAL
-// ═══════════════════════════════════════
+// ==========================================
+// 💸 WITHDRAW MODAL
+// ==========================================
 
 function withdrawModal(userId) {
 
@@ -212,7 +353,7 @@ function withdrawModal(userId) {
                 `bank_modal_withdraw_${userId}`
             )
             .setTitle(
-                "💸 Rút tiền khỏi ngân hàng"
+                "💸 Rút tiền khỏi Bank"
             );
 
     const amount =
@@ -221,7 +362,7 @@ function withdrawModal(userId) {
                 "amount"
             )
             .setLabel(
-                "Nhập số tiền muốn rút"
+                "Số tiền muốn rút"
             )
             .setPlaceholder(
                 "Ví dụ: 5000"
@@ -229,87 +370,29 @@ function withdrawModal(userId) {
             .setStyle(
                 TextInputStyle.Short
             )
-            .setRequired(true)
-            .setMinLength(1)
-            .setMaxLength(15);
-
-    modal.addComponents(
-        new ActionRowBuilder()
-            .addComponents(amount)
-    );
-
-    return modal;
-}
-
-
-// ═══════════════════════════════════════
-// TRANSFER MODAL
-// ═══════════════════════════════════════
-
-function transferModal(userId) {
-
-    const modal =
-        new ModalBuilder()
-            .setCustomId(
-                `bank_modal_transfer_${userId}`
+            .setRequired(
+                true
             )
-            .setTitle(
-                "🔄 Chuyển tiền"
+            .setMinLength(
+                1
+            )
+            .setMaxLength(
+                15
             );
 
-    const receiver =
-        new TextInputBuilder()
-            .setCustomId(
-                "receiver"
-            )
-            .setLabel(
-                "ID Discord người nhận"
-            )
-            .setPlaceholder(
-                "Ví dụ: 123456789012345678"
-            )
-            .setStyle(
-                TextInputStyle.Short
-            )
-            .setRequired(true)
-            .setMinLength(5)
-            .setMaxLength(25);
-
-    const amount =
-        new TextInputBuilder()
-            .setCustomId(
-                "amount"
-            )
-            .setLabel(
-                "Số tiền muốn chuyển"
-            )
-            .setPlaceholder(
-                "Ví dụ: 10000"
-            )
-            .setStyle(
-                TextInputStyle.Short
-            )
-            .setRequired(true)
-            .setMinLength(1)
-            .setMaxLength(15);
-
     modal.addComponents(
-
         new ActionRowBuilder()
-            .addComponents(receiver),
-
-        new ActionRowBuilder()
-            .addComponents(amount)
-
+            .addComponents(
+                amount
+            )
     );
 
     return modal;
 }
 
-
-// ═══════════════════════════════════════
-// PARSE MONEY
-// ═══════════════════════════════════════
+// ==========================================
+// 🔢 PARSE MONEY
+// ==========================================
 
 function parseMoney(value) {
 
@@ -319,13 +402,22 @@ function parseMoney(value) {
 
     const clean =
         String(value)
+            .trim()
             .replace(/[.,\s]/g, "");
+
+    if (
+        !/^\d+$/.test(clean)
+    ) {
+        return NaN;
+    }
 
     const amount =
         Number(clean);
 
     if (
-        !Number.isSafeInteger(amount)
+        !Number.isSafeInteger(
+            amount
+        )
     ) {
         return NaN;
     }
@@ -333,10 +425,9 @@ function parseMoney(value) {
     return amount;
 }
 
-
-// ═══════════════════════════════════════
-// DEPOSIT
-// ═══════════════════════════════════════
+// ==========================================
+// 💰 DEPOSIT
+// ==========================================
 
 async function deposit(
     interaction,
@@ -351,7 +442,8 @@ async function deposit(
         return interaction.reply({
             content:
                 "❌ Số tiền không hợp lệ.",
-            ephemeral: true
+            ephemeral:
+                true
         });
     }
 
@@ -359,39 +451,106 @@ async function deposit(
         getUser(userId);
 
     const balance =
-        Number(user.balance || 0);
+        Number(
+            user.balance || 0
+        );
 
-    if (amount > balance) {
+    if (
+        amount > balance
+    ) {
         return interaction.reply({
             content:
                 `❌ Bạn chỉ có **${money(balance)} Mora** tiền mặt.`,
-            ephemeral: true
+            ephemeral:
+                true
         });
     }
 
-    db.removeBalance(
-        userId,
-        amount
-    );
+    if (
+        typeof db.removeBalance !==
+        "function"
+    ) {
+        return interaction.reply({
+            content:
+                "❌ Database chưa có hàm `removeBalance()`.",
+            ephemeral:
+                true
+        });
+    }
 
-    db.addBank(
-        userId,
-        amount
-    );
+    if (
+        typeof db.addBank !==
+        "function"
+    ) {
+        return interaction.reply({
+            content:
+                "❌ Database chưa có hàm `addBank()`.",
+            ephemeral:
+                true
+        });
+    }
+
+    const removed =
+        db.removeBalance(
+            userId,
+            amount
+        );
+
+    if (
+        removed === false
+    ) {
+        return interaction.reply({
+            content:
+                "❌ Không thể trừ tiền mặt.",
+            ephemeral:
+                true
+        });
+    }
+
+    const added =
+        db.addBank(
+            userId,
+            amount
+        );
+
+    if (
+        added === false
+    ) {
+
+        if (
+            typeof db.addBalance ===
+            "function"
+        ) {
+            db.addBalance(
+                userId,
+                amount
+            );
+        }
+
+        return interaction.reply({
+            content:
+                "❌ Không thể gửi tiền vào Bank.",
+            ephemeral:
+                true
+        });
+    }
 
     return interaction.update({
         embeds: [
-            bankEmbed(userId)
+            bankEmbed(
+                userId
+            )
         ],
         components:
-            bankButtons(userId)
+            bankButtons(
+                userId
+            )
     });
 }
 
-
-// ═══════════════════════════════════════
-// WITHDRAW
-// ═══════════════════════════════════════
+// ==========================================
+// 💸 WITHDRAW
+// ==========================================
 
 async function withdraw(
     interaction,
@@ -406,7 +565,8 @@ async function withdraw(
         return interaction.reply({
             content:
                 "❌ Số tiền không hợp lệ.",
-            ephemeral: true
+            ephemeral:
+                true
         });
     }
 
@@ -414,132 +574,199 @@ async function withdraw(
         getUser(userId);
 
     const bank =
-        Number(user.bank || 0);
-
-    if (amount > bank) {
-        return interaction.reply({
-            content:
-                `❌ Ngân hàng chỉ có **${money(bank)} Mora**.`,
-            ephemeral: true
-        });
-    }
-
-    db.removeBank(
-        userId,
-        amount
-    );
-
-    db.addBalance(
-        userId,
-        amount
-    );
-
-    return interaction.update({
-        embeds: [
-            bankEmbed(userId)
-        ],
-        components:
-            bankButtons(userId)
-    });
-}
-
-
-// ═══════════════════════════════════════
-// TRANSFER
-// ═══════════════════════════════════════
-
-async function transfer(
-    interaction,
-    userId,
-    receiverId,
-    amount
-) {
-
-    receiverId =
-        String(receiverId || "")
-            .trim();
+        Number(
+            user.bank || 0
+        );
 
     if (
-        !receiverId ||
-        !/^\d{5,25}$/.test(receiverId)
+        amount > bank
     ) {
         return interaction.reply({
             content:
-                "❌ ID Discord người nhận không hợp lệ.",
-            ephemeral: true
+                `❌ Bank chỉ có **${money(bank)} Mora**.`,
+            ephemeral:
+                true
         });
     }
 
     if (
-        receiverId === userId
+        typeof db.removeBank !==
+        "function"
     ) {
         return interaction.reply({
             content:
-                "❌ Bạn không thể chuyển tiền cho chính mình.",
-            ephemeral: true
+                "❌ Database chưa có hàm `removeBank()`.",
+            ephemeral:
+                true
         });
     }
 
     if (
-        !Number.isSafeInteger(amount) ||
-        amount <= 0
+        typeof db.addBalance !==
+        "function"
     ) {
         return interaction.reply({
             content:
-                "❌ Số tiền không hợp lệ.",
-            ephemeral: true
+                "❌ Database chưa có hàm `addBalance()`.",
+            ephemeral:
+                true
         });
     }
 
-    const sender =
-        getUser(userId);
-
-    const bank =
-        Number(sender.bank || 0);
-
-    if (amount > bank) {
-        return interaction.reply({
-            content:
-                `❌ Bạn chỉ có **${money(bank)} Mora** trong ngân hàng.`,
-            ephemeral: true
-        });
-    }
-
-    // Tạo người nhận nếu chưa có dữ liệu.
-    getUser(receiverId);
-
-    const success =
-        db.transferBank(
+    const removed =
+        db.removeBank(
             userId,
-            receiverId,
             amount
         );
 
-    if (!success) {
+    if (
+        removed === false
+    ) {
         return interaction.reply({
             content:
-                "❌ Không thể thực hiện giao dịch.",
-            ephemeral: true
+                "❌ Không thể rút tiền.",
+            ephemeral:
+                true
+        });
+    }
+
+    const added =
+        db.addBalance(
+            userId,
+            amount
+        );
+
+    if (
+        added === false
+    ) {
+
+        if (
+            typeof db.addBank ===
+            "function"
+        ) {
+            db.addBank(
+                userId,
+                amount
+            );
+        }
+
+        return interaction.reply({
+            content:
+                "❌ Không thể cộng tiền mặt.",
+            ephemeral:
+                true
         });
     }
 
     return interaction.update({
         embeds: [
-            bankEmbed(userId)
+            bankEmbed(
+                userId
+            )
         ],
         components:
-            bankButtons(userId)
+            bankButtons(
+                userId
+            )
     });
 }
 
+// ==========================================
+// 📈 CLAIM INTEREST
+// ==========================================
 
-// ═══════════════════════════════════════
-// COMMAND
-// ═══════════════════════════════════════
+async function claimInterest(
+    interaction,
+    userId
+) {
+
+    if (
+        typeof db.claimBankInterest !==
+        "function"
+    ) {
+        return interaction.reply({
+            content:
+                "❌ Database chưa có hệ thống lãi Bank.",
+            ephemeral:
+                true
+        });
+    }
+
+    const result =
+        db.claimBankInterest(
+            userId
+        );
+
+    if (
+        !result ||
+        !result.success
+    ) {
+
+        if (
+            result?.reason ===
+            "empty"
+        ) {
+            return interaction.reply({
+                content:
+                    "❌ Bank đang trống.\nHãy gửi tiền vào Bank trước.",
+                ephemeral:
+                    true
+            });
+        }
+
+        if (
+            result?.reason ===
+            "cooldown"
+        ) {
+            return interaction.reply({
+                content:
+                    `⏰ Bạn đã nhận lãi hôm nay rồi.\n\nLần nhận tiếp theo sau **${countdown(result.nextInterestAt)}**.`,
+                ephemeral:
+                    true
+            });
+        }
+
+        if (
+            result?.reason ===
+            "too_small"
+        ) {
+            return interaction.reply({
+                content:
+                    "❌ Số dư Bank quá nhỏ để tạo ra ít nhất 1 Mora tiền lãi.",
+                ephemeral:
+                    true
+            });
+        }
+
+        return interaction.reply({
+            content:
+                "❌ Không thể nhận lãi.",
+            ephemeral:
+                true
+        });
+    }
+
+    return interaction.update({
+        embeds: [
+            bankEmbed(
+                userId
+            )
+        ],
+        components:
+            bankButtons(
+                userId
+            )
+    });
+}
+
+// ==========================================
+// 📋 COMMAND
+// ==========================================
 
 const command = {
 
-    name: "bank",
+    name:
+        "bank",
 
     aliases: [
         "b",
@@ -555,237 +782,301 @@ const command = {
     category:
         "economy",
 
-    async execute(message) {
+    async execute(
+        message
+    ) {
 
         const userId =
             message.author.id;
 
-        getUser(userId);
+        getUser(
+            userId
+        );
 
         return message.reply({
             embeds: [
-                bankEmbed(userId)
+                bankEmbed(
+                    userId
+                )
             ],
             components:
-                bankButtons(userId)
+                bankButtons(
+                    userId
+                )
         });
     }
 };
 
-
-// ═══════════════════════════════════════
-// INTERACTION HANDLER
-// ═══════════════════════════════════════
+// ==========================================
+// 🎯 INTERACTION HANDLER
+// ==========================================
 
 async function handleInteraction(
     interaction
 ) {
 
-    if (
-        !interaction.isButton() &&
-        !interaction.isModalSubmit()
-    ) {
-        return false;
-    }
+    try {
 
-    const id =
-        interaction.customId || "";
-
-    // ═══════════════════════════════
-    // BUTTON
-    // ═══════════════════════════════
-
-    if (interaction.isButton()) {
+        // ==================================
+        // 🔘 BUTTON
+        // ==================================
 
         if (
-            !id.startsWith("bank_")
+            interaction.isButton()
         ) {
+
+            const id =
+                interaction.customId || "";
+
+            if (
+                !id.startsWith(
+                    "bank_"
+                )
+            ) {
+                return false;
+            }
+
+            const parts =
+                id.split("_");
+
+            const action =
+                parts[1];
+
+            const userId =
+                parts[2];
+
+            if (
+                !userId ||
+                interaction.user.id !==
+                userId
+            ) {
+                return interaction.reply({
+                    content:
+                        "🏦 Đây không phải ngân hàng của bạn.",
+                    ephemeral:
+                        true
+                });
+            }
+
+            // ==============================
+            // 💰 DEPOSIT
+            // ==============================
+
+            if (
+                action ===
+                "deposit"
+            ) {
+                return interaction.showModal(
+                    depositModal(
+                        userId
+                    )
+                );
+            }
+
+            // ==============================
+            // 💸 WITHDRAW
+            // ==============================
+
+            if (
+                action ===
+                "withdraw"
+            ) {
+                return interaction.showModal(
+                    withdrawModal(
+                        userId
+                    )
+                );
+            }
+
+            // ==============================
+            // 📈 INTEREST
+            // ==============================
+
+            if (
+                action ===
+                "interest"
+            ) {
+                return claimInterest(
+                    interaction,
+                    userId
+                );
+            }
+
+            // ==============================
+            // 🔃 REFRESH
+            // ==============================
+
+            if (
+                action ===
+                "refresh"
+            ) {
+
+                return interaction.update({
+                    embeds: [
+                        bankEmbed(
+                            userId
+                        )
+                    ],
+                    components:
+                        bankButtons(
+                            userId
+                        )
+                });
+            }
+
+            // ==============================
+            // ✖️ CLOSE
+            // ==============================
+
+            if (
+                action ===
+                "close"
+            ) {
+
+                return interaction.update({
+                    content:
+                        "🏦 Đã đóng Venti Bank.",
+                    embeds: [],
+                    components: []
+                });
+            }
+
             return false;
         }
 
-        const parts =
-            id.split("_");
-
-        const action =
-            parts[1];
-
-        const userId =
-            parts[2];
+        // ==================================
+        // 📝 MODAL
+        // ==================================
 
         if (
-            interaction.user.id !==
-            userId
+            interaction.isModalSubmit()
         ) {
-            return interaction.reply({
-                content:
-                    "🏦 Đây không phải ngân hàng của bạn.",
-                ephemeral: true
-            });
-        }
 
-        if (
-            action === "deposit"
-        ) {
-            return interaction.showModal(
-                depositModal(userId)
-            );
-        }
+            const id =
+                interaction.customId || "";
 
-        if (
-            action === "withdraw"
-        ) {
-            return interaction.showModal(
-                withdrawModal(userId)
-            );
-        }
+            if (
+                !id.startsWith(
+                    "bank_modal_"
+                )
+            ) {
+                return false;
+            }
 
-        if (
-            action === "transfer"
-        ) {
-            return interaction.showModal(
-                transferModal(userId)
-            );
-        }
+            const parts =
+                id.split("_");
 
-        if (
-            action === "refresh"
-        ) {
-            return interaction.update({
-                embeds: [
-                    bankEmbed(userId)
-                ],
-                components:
-                    bankButtons(userId)
-            });
-        }
+            const action =
+                parts[2];
 
-        if (
-            action === "close"
-        ) {
-            return interaction.update({
-                content:
-                    "🏦 Đã đóng Venti Bank.",
-                embeds: [],
-                components: []
-            });
-        }
+            const userId =
+                parts[3];
 
-        return false;
-    }
+            if (
+                !userId ||
+                interaction.user.id !==
+                userId
+            ) {
+                return interaction.reply({
+                    content:
+                        "🏦 Đây không phải ngân hàng của bạn.",
+                    ephemeral:
+                        true
+                });
+            }
 
+            // ==============================
+            // 💰 DEPOSIT
+            // ==============================
 
-    // ═══════════════════════════════
-    // MODAL
-    // ═══════════════════════════════
+            if (
+                action ===
+                "deposit"
+            ) {
 
-    if (interaction.isModalSubmit()) {
+                const amount =
+                    parseMoney(
+                        interaction.fields
+                            .getTextInputValue(
+                                "amount"
+                            )
+                    );
 
-        if (
-            !id.startsWith(
-                "bank_modal_"
-            )
-        ) {
+                return deposit(
+                    interaction,
+                    userId,
+                    amount
+                );
+            }
+
+            // ==============================
+            // 💸 WITHDRAW
+            // ==============================
+
+            if (
+                action ===
+                "withdraw"
+            ) {
+
+                const amount =
+                    parseMoney(
+                        interaction.fields
+                            .getTextInputValue(
+                                "amount"
+                            )
+                    );
+
+                return withdraw(
+                    interaction,
+                    userId,
+                    amount
+                );
+            }
+
             return false;
         }
 
-        const parts =
-            id.split("_");
+        return false;
 
-        const action =
-            parts[2];
+    } catch (error) {
 
-        const userId =
-            parts[3];
+        console.error(
+            "[Bank]",
+            error
+        );
 
         if (
-            interaction.user.id !==
-            userId
+            interaction.replied ||
+            interaction.deferred
         ) {
-            return interaction.reply({
+            return interaction
+                .followUp({
+                    content:
+                        "🏦 Có lỗi xảy ra khi xử lý Venti Bank.",
+                    ephemeral:
+                        true
+                })
+                .catch(
+                    () => {}
+                );
+        }
+
+        return interaction
+            .reply({
                 content:
-                    "🏦 Đây không phải ngân hàng của bạn.",
-                ephemeral: true
-            });
-        }
-
-        // ─────────────────────────
-        // DEPOSIT
-        // ─────────────────────────
-
-        if (
-            action === "deposit"
-        ) {
-
-            const amount =
-                parseMoney(
-                    interaction.fields.getTextInputValue(
-                        "amount"
-                    )
-                );
-
-            return deposit(
-                interaction,
-                userId,
-                amount
+                    "🏦 Có lỗi xảy ra khi xử lý Venti Bank.",
+                ephemeral:
+                    true
+            })
+            .catch(
+                () => {}
             );
-        }
-
-
-        // ─────────────────────────
-        // WITHDRAW
-        // ─────────────────────────
-
-        if (
-            action === "withdraw"
-        ) {
-
-            const amount =
-                parseMoney(
-                    interaction.fields.getTextInputValue(
-                        "amount"
-                    )
-                );
-
-            return withdraw(
-                interaction,
-                userId,
-                amount
-            );
-        }
-
-
-        // ─────────────────────────
-        // TRANSFER
-        // ─────────────────────────
-
-        if (
-            action === "transfer"
-        ) {
-
-            const receiverId =
-                interaction.fields.getTextInputValue(
-                    "receiver"
-                );
-
-            const amount =
-                parseMoney(
-                    interaction.fields.getTextInputValue(
-                        "amount"
-                    )
-                );
-
-            return transfer(
-                interaction,
-                userId,
-                receiverId,
-                amount
-            );
-        }
     }
-
-    return false;
 }
 
+// ==========================================
+// 📦 EXPORT
+// ==========================================
 
 module.exports = {
     ...command,
