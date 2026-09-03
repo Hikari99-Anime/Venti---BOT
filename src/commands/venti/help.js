@@ -6,43 +6,45 @@ const {
 } = require("discord.js");
 
 // ==========================================
-// 📚 HELP CATEGORIES
+// 📚 HELP DATA
 // ==========================================
 
 const CATEGORIES = {
     home: {
         color: "#8FD3B6",
-        title: "🍃 Venti Help Center",
+        title: "🍃 Venti Help",
 
         description:
-            "୨୧ ─────────────── ୨୧\n" +
-            "☁️ `🍃` **Chào mừng đến với Venti**\n" +
-            "୨୧ ─────────────── ୨୧\n\n" +
+            "☁️ `🍃` **Xin chào, Traveler!**\n" +
+            "・ Venti là bot **Economy • Games • Adventure**\n" +
+            "・ Kiếm Mora, nâng Level và khám phá hành trình.\n\n" +
 
-            "Một bot **Economy • Adventure • Games** " +
-            "để bạn kiếm Mora, nâng Level, câu cá, " +
-            "làm nông và khám phá hành trình của riêng mình.\n\n" +
+            "● `🚀` **Bắt đầu**\n" +
+            "> `💰 Vdaily` ・ Nhận Daily Reward\n" +
+            "> `💼 Vwork` ・ Làm việc kiếm Mora\n" +
+            "> `🎣 Vfish` ・ Câu cá\n" +
+            "> `🌾 Vfarm` ・ Làm nông\n" +
+            "> `📜 Vquest` ・ Làm nhiệm vụ\n" +
+            "> `👤 Vprofile` ・ Xem hồ sơ\n\n" +
 
-            "● `🚀` **Bắt đầu nhanh**\n" +
-            "> `💰 Vdaily` — Nhận phần thưởng mỗi ngày\n" +
-            "> `💼 Vwork` — Làm việc kiếm Mora\n" +
-            "> `🎣 Vfish` — Câu cá\n" +
-            "> `🌾 Vfarm` — Làm nông\n" +
-            "> `📜 Vquest` — Làm nhiệm vụ\n" +
-            "> `👤 Vprofile` — Xem hồ sơ\n\n" +
+            "● `🎮` **Minigames**\n" +
+            "> `🎰 Vslots` ・ Slot Machine\n" +
+            "> `🪙 Vcoinflip` ・ Coin Flip\n" +
+            "> `🎲 Vdice` ・ Dice\n" +
+            "> `🃏 Vblackjack` ・ Blackjack\n" +
+            "> `🎯 Vtaixiu` ・ Tài Xỉu\n" +
+            "> `💣 Vbomb` ・ Bomb Game\n\n" +
 
-            "● `📖` **Khám phá thêm**\n" +
-            "> `💰 Economy` — Mora & giao dịch\n" +
-            "> `🎮 Minigames` — Các trò chơi\n" +
-            "> `🌿 Adventure` — Fishing, Farming & Quest\n" +
-            "> `👤 Venti` — Profile & Inventory\n" +
-            "> `ℹ️ Thông tin` — Giới thiệu Venti\n\n" +
+            "● `📖` **Khám phá**\n" +
+            "> `💰 Economy` ・ Mora & giao dịch\n" +
+            "> `🎮 Minigames` ・ Trò chơi\n" +
+            "> `🌿 Adventure` ・ Fishing & Farming\n" +
+            "> `🍃 Venti` ・ Profile & Inventory\n\n" +
 
-            "୨୧ ─────────────── ୨୧\n" +
-            "☕ `🍃` **Chọn danh mục bên dưới để xem lệnh**",
+            "☕ `🍃` **Chọn danh mục bên dưới để xem chi tiết.**",
 
         footer:
-            "☁️ Venti • Help Center 🍃"
+            "☁️ Venti ・ Help Center 🍃"
     },
 
     // ==========================================
@@ -51,38 +53,36 @@ const CATEGORIES = {
 
     economy: {
         color: "#F1C40F",
-        title: "💰 Venti Economy",
+        title: "💰 Economy",
 
         description:
-            "୨୧ ─────────────── ୨୧\n" +
-            "💰 `🍃` **Economy System**\n" +
-            "୨୧ ─────────────── ୨୧\n\n" +
+            "☁️ `💰` **Economy System**\n" +
+            "・ Quản lý Mora và xây dựng tài sản.\n\n" +
 
-            "● `💵` **Ví & Tài sản**\n" +
-            "> `💰 Vbalance` — Xem số dư Mora\n" +
-            "> `💸 Vpay @user <amount>` — Chuyển Mora\n" +
-            "> `🏦 Vdeposit <amount>` — Gửi Mora vào ngân hàng\n" +
-            "> `🏦 Vwithdraw <amount>` — Rút Mora khỏi ngân hàng\n\n" +
+            "● `💳` **Money**\n" +
+            "> `💰 Vbalance` ・ Xem số dư\n" +
+            "> `💸 Vpay @user <amount>` ・ Chuyển Mora\n" +
+            "> `🏦 Vdeposit <amount>` ・ Gửi ngân hàng\n" +
+            "> `🏦 Vwithdraw <amount>` ・ Rút ngân hàng\n\n" +
 
             "● `🎁` **Rewards**\n" +
-            "> `📅 Vdaily` — Nhận Daily Reward\n" +
-            "> `💼 Vwork` — Làm việc kiếm Mora\n\n" +
+            "> `📅 Vdaily` ・ Daily Reward\n" +
+            "> `💼 Vwork` ・ Làm việc kiếm Mora\n\n" +
 
-            "● `🛒` **Trading**\n" +
-            "> `🛍️ Vshop` — Xem cửa hàng\n" +
-            "> `🛒 Vbuy <item> [amount]` — Mua vật phẩm\n" +
-            "> `💸 Vsell` — Bán vật phẩm\n\n" +
+            "● `🛒` **Shop**\n" +
+            "> `🛍️ Vshop` ・ Xem cửa hàng\n" +
+            "> `🛒 Vbuy <item> [amount]` ・ Mua item\n" +
+            "> `💸 Vsell` ・ Bán vật phẩm\n\n" +
 
-            "● `⭐` **Progress**\n" +
-            "> `👤 Vprofile` — Xem tài sản & Level\n" +
-            "> `📊 Vstats` — Xem thống kê hành trình\n" +
-            "> `🏆 Vleaderboard` — Xem bảng xếp hạng\n\n" +
+            "● `📊` **Progress**\n" +
+            "> `👤 Vprofile` ・ Hồ sơ\n" +
+            "> `📈 Vstats` ・ Thống kê\n" +
+            "> `🏆 Vleaderboard` ・ Bảng xếp hạng\n\n" +
 
-            "୨୧ ─────────────── ୨୧\n" +
-            "💰 `🍃` **Earn • Save • Spend • Grow**",
+            "🍃 `💰` **Earn ・ Save ・ Spend ・ Grow**",
 
         footer:
-            "💰 Venti Economy • Mora System"
+            "💰 Venti ・ Economy"
     },
 
     // ==========================================
@@ -91,32 +91,34 @@ const CATEGORIES = {
 
     games: {
         color: "#9B59B6",
-        title: "🎮 Venti Minigames",
+        title: "🎮 Minigames",
 
         description:
-            "୨୧ ─────────────── ୨୧\n" +
-            "🎮 `🍃` **Minigame Center**\n" +
-            "୨୧ ─────────────── ୨୧\n\n" +
+            "☁️ `🎮` **Minigame Center**\n" +
+            "・ Dùng Mora để thử vận may của bạn.\n\n" +
 
             "● `🎰` **Casino**\n" +
-            "> `🎰 Vslots <amount>` — Slot Machine\n" +
-            "> `🪙 Vcoinflip <amount>` — Coin Flip\n" +
-            "> `🎲 Vdice <amount>` — Dice\n" +
-            "> `🃏 Vblackjack <amount>` — Blackjack\n\n" +
+            "> `🎰 Vslots <amount>` ・ Slot Machine\n" +
+            "> `🪙 Vcoinflip <amount>` ・ Coin Flip\n" +
+            "> `🎲 Vdice <amount>` ・ Dice\n" +
+            "> `🃏 Vblackjack <amount>` ・ Blackjack\n\n" +
 
-            "● `🏆` **Game Stats**\n" +
-            "> `📊 Vstats` — Xem Games / Wins / Losses\n" +
-            "> `🏆 Vleaderboard` — Top người chơi\n\n" +
+            "● `🎯` **Luck Games**\n" +
+            "> `🎯 Vtaixiu <amount>` ・ Tài Xỉu\n" +
+            "> `💣 Vbomb <amount>` ・ Bomb Game\n\n" +
+
+            "● `📊` **Statistics**\n" +
+            "> `📈 Vstats` ・ Games / Wins / Losses\n" +
+            "> `🏆 Vleaderboard` ・ Top người chơi\n\n" +
 
             "● `🍀` **Lưu ý**\n" +
-            "> `💰` Phần thưởng và kết quả phụ thuộc vào từng game.\n" +
-            "> `🎲` Hãy chơi có trách nhiệm và quản lý Mora của bạn.\n\n" +
+            "> `💰` Mỗi game có phần thưởng khác nhau.\n" +
+            "> `🎲` Hãy quản lý Mora hợp lý.\n\n" +
 
-            "୨୧ ─────────────── ୨୧\n" +
-            "🍀 `🎮` **Good luck, Traveler!**",
+            "☘️ `🎮` **Good luck, Traveler!**",
 
         footer:
-            "🎮 Venti Games • Good luck!"
+            "🎮 Venti ・ Minigames"
     },
 
     // ==========================================
@@ -125,39 +127,37 @@ const CATEGORIES = {
 
     adventure: {
         color: "#2ECC71",
-        title: "🌿 Venti Adventure",
+        title: "🌿 Adventure",
 
         description:
-            "୨୧ ─────────────── ୨୧\n" +
-            "🌿 `🍃` **Adventure System**\n" +
-            "୨୧ ─────────────── ୨୧\n\n" +
+            "☁️ `🌿` **Adventure System**\n" +
+            "・ Thu thập, khám phá và phát triển nhân vật.\n\n" +
 
             "● `🎣` **Fishing**\n" +
-            "> `🎣 Vfish` — Câu cá\n" +
-            "> `🐟 Vfish` — Thu thập các loại cá\n" +
-            "> `🎒 Vinventory` — Xem cá và vật phẩm đang có\n" +
-            "> `💸 Vsell` — Bán cá lấy Mora\n\n" +
+            "> `🎣 Vfish` ・ Câu cá\n" +
+            "> `🐟` Thu thập nhiều loại cá\n" +
+            "> `🎒 Vinventory` ・ Xem cá & vật phẩm\n" +
+            "> `💸 Vsell` ・ Bán cá lấy Mora\n\n" +
 
             "● `🌾` **Farming**\n" +
-            "> `🌱 Vfarm` — Trồng và thu hoạch\n" +
-            "> `🎒 Vinventory` — Xem nông sản\n" +
-            "> `💸 Vsell` — Bán nông sản\n\n" +
+            "> `🌱 Vfarm` ・ Trồng & thu hoạch\n" +
+            "> `🎒 Vinventory` ・ Xem nông sản\n" +
+            "> `💸 Vsell` ・ Bán nông sản\n\n" +
 
             "● `📜` **Quest**\n" +
-            "> `📜 Vquest` — Xem nhiệm vụ\n" +
-            "> `🎯` Hoàn thành quest để nhận phần thưởng\n" +
-            "> `✨` Quest giúp tăng tiến trình hành trình\n\n" +
+            "> `📜 Vquest` ・ Xem nhiệm vụ\n" +
+            "> `🎯` Hoàn thành quest nhận thưởng\n" +
+            "> `✨` Nhận Mora & XP\n\n" +
 
-            "● `⭐` **Progress**\n" +
-            "> `⭐ Vprofile` — Level & XP\n" +
-            "> `🏆 Vachievement` — Thành tích\n" +
-            "> `📊 Vstats` — Thống kê\n\n" +
+            "● `🏆` **Progress**\n" +
+            "> `👤 Vprofile` ・ Level & XP\n" +
+            "> `🏆 Vachievement` ・ Thành tích\n" +
+            "> `📈 Vstats` ・ Thống kê\n\n" +
 
-            "୨୧ ─────────────── ୨୧\n" +
-            "🌿 `🍃` **Explore • Collect • Grow**",
+            "🍃 `🌿` **Explore ・ Collect ・ Grow**",
 
         footer:
-            "🌿 Venti Adventure • Explore Mondstadt"
+            "🌿 Venti ・ Adventure"
     },
 
     // ==========================================
@@ -169,26 +169,25 @@ const CATEGORIES = {
         title: "🍃 Venti Tools",
 
         description:
-            "୨୧ ─────────────── ୨୧\n" +
-            "🍃 `☁️` **Your Venti Tools**\n" +
-            "୨୧ ─────────────── ୨୧\n\n" +
+            "☁️ `🍃` **Your Venti Tools**\n" +
+            "・ Những lệnh giúp quản lý hành trình.\n\n" +
 
             "● `👤` **Profile**\n" +
-            "> `👤 Vprofile` — Hồ sơ cá nhân\n" +
-            "> `📊 Vstats` — Thống kê hành trình\n\n" +
+            "> `👤 Vprofile` ・ Hồ sơ cá nhân\n" +
+            "> `📈 Vstats` ・ Thống kê hành trình\n\n" +
 
             "● `🎒` **Inventory**\n" +
-            "> `🎒 Vinventory` — Xem toàn bộ vật phẩm\n" +
-            "> `💸 Vsell` — Bán vật phẩm\n" +
-            "> `🛒 Vshop` — Xem shop\n" +
-            "> `💰 Vbuy <item> [amount]` — Mua item\n\n" +
+            "> `🎒 Vinventory` ・ Túi vật phẩm\n" +
+            "> `💸 Vsell` ・ Bán vật phẩm\n" +
+            "> `🛒 Vshop` ・ Cửa hàng\n" +
+            "> `💰 Vbuy <item> [amount]` ・ Mua item\n\n" +
 
-            "● `🏆` **Achievements**\n" +
-            "> `🏆 Vachievement` — Thành tích\n" +
-            "> `⭐` Theo dõi các milestone đã đạt\n\n" +
+            "● `🏆` **Achievement**\n" +
+            "> `🏆 Vachievement` ・ Thành tích\n" +
+            "> `⭐` Theo dõi milestone\n\n" +
 
-            "● `📊` **Leaderboard**\n" +
-            "> `🏆 Vleaderboard` — Bảng xếp hạng\n" +
+            "● `🏆` **Leaderboard**\n" +
+            "> `🏆 Vleaderboard` ・ Bảng xếp hạng\n" +
             "> `💰` Top Mora\n" +
             "> `⭐` Top Level\n" +
             "> `🎣` Top Fishing\n" +
@@ -196,15 +195,14 @@ const CATEGORIES = {
             "> `🔥` Top Daily\n" +
             "> `📜` Top Quest\n\n" +
 
-            "୨୧ ─────────────── ୨୧\n" +
-            "☁️ `🍃` **Your journey • Your story**",
+            "☁️ `🍃` **Your journey ・ Your story**",
 
         footer:
-            "🍃 Venti • Your Journey"
+            "🍃 Venti ・ Your Journey"
     },
 
     // ==========================================
-    // 📊 INFORMATION
+    // 📖 INFO
     // ==========================================
 
     info: {
@@ -212,51 +210,44 @@ const CATEGORIES = {
         title: "📖 About Venti",
 
         description:
-            "୨୧ ─────────────── ୨୧\n" +
-            "📖 `🍃` **About Venti**\n" +
-            "୨୧ ─────────────── ୨୧\n\n" +
+            "☁️ `🍃` **About Venti**\n" +
+            "・ Một bot Discord lấy cảm hứng từ Mondstadt.\n" +
+            "・ Mang phong cách nhẹ nhàng của một Wandering Bard.\n\n" +
 
-            "● `🍃` **Venti Bot**\n" +
-            "> `☁️` Discord bot lấy cảm hứng từ Mondstadt.\n" +
-            "> `🎵` Mang phong cách nhẹ nhàng của một Wandering Bard.\n\n" +
-
-            "● `⚙️` **Hệ thống**\n" +
+            "● `⚙️` **Systems**\n" +
             "> `💰` Economy\n" +
             "> `🎮` Minigames\n" +
             "> `🎣` Fishing\n" +
             "> `🌾` Farming\n" +
             "> `📜` Quest\n" +
             "> `🎒` Inventory\n" +
-            "> `🏆` Achievements\n" +
+            "> `🏆` Achievement\n" +
             "> `⭐` Level & XP\n" +
-            "> `🏆` Leaderboard\n\n" +
+            "> `📊` Leaderboard\n\n" +
 
             "● `⌨️` **Prefix**\n" +
             "> `V`\n\n" +
 
-            "● `✨` **Ví dụ**\n" +
+            "● `✨` **Examples**\n" +
             "> `Vdaily`\n" +
             "> `Vfish`\n" +
             "> `Vfarm`\n" +
             "> `Vquest`\n" +
-            "> `Vprofile`\n\n" +
+            "> `Vprofile`\n" +
+            "> `Vslots 100`\n\n" +
 
-            "୨୧ ─────────────── ୨୧\n" +
             "☕ `🍃` **Wandering Bard of Mondstadt**",
 
         footer:
-            "☁️ Venti • Wandering Bard 🍃"
+            "☁️ Venti ・ Wandering Bard 🍃"
     }
 };
 
 // ==========================================
-// 🏠 CREATE EMBED
+// 🏠 EMBED
 // ==========================================
 
-function createEmbed(
-    category,
-    message
-) {
+function createEmbed(category, message) {
     const data =
         CATEGORIES[category] ||
         CATEGORIES.home;
@@ -266,7 +257,7 @@ function createEmbed(
 
         .setAuthor({
             name:
-                `${message.author.globalName || message.author.username} · Venti`,
+                `${message.author.globalName || message.author.username} ・ Venti`,
             iconURL:
                 message.author.displayAvatarURL({
                     extension: "png",
@@ -288,20 +279,17 @@ function createEmbed(
         )
 
         .setFooter({
-            text:
-                data.footer
+            text: data.footer
         })
 
         .setTimestamp();
 }
 
 // ==========================================
-// 📋 SELECT MENU
+// 📋 MENU
 // ==========================================
 
-function createMenu(
-    selected = "home"
-) {
+function createMenu(selected = "home") {
     return new ActionRowBuilder()
         .addComponents(
             new StringSelectMenuBuilder()
@@ -313,91 +301,67 @@ function createMenu(
                     "🍃 Chọn danh mục..."
                 )
 
-                .addOptions([
+                .addOptions(
                     {
-                        label:
-                            "Trang chủ",
+                        label: "Trang chủ",
                         description:
-                            "Tổng quan về Venti",
-                        value:
-                            "home",
-                        emoji:
-                            "🏠",
+                            "Tổng quan Venti",
+                        value: "home",
+                        emoji: "🏠",
                         default:
-                            selected ===
-                            "home"
+                            selected === "home"
                     },
 
                     {
-                        label:
-                            "Economy",
+                        label: "Economy",
                         description:
-                            "Mora • Daily • Work • Shop",
-                        value:
-                            "economy",
-                        emoji:
-                            "💰",
+                            "Mora ・ Daily ・ Work ・ Shop",
+                        value: "economy",
+                        emoji: "💰",
                         default:
-                            selected ===
-                            "economy"
+                            selected === "economy"
                     },
 
                     {
-                        label:
-                            "Minigames",
+                        label: "Minigames",
                         description:
-                            "Slots • Dice • Coinflip • Blackjack",
-                        value:
-                            "games",
-                        emoji:
-                            "🎮",
+                            "Slots ・ Dice ・ Games",
+                        value: "games",
+                        emoji: "🎮",
                         default:
-                            selected ===
-                            "games"
+                            selected === "games"
                     },
 
                     {
-                        label:
-                            "Adventure",
+                        label: "Adventure",
                         description:
-                            "Fishing • Farming • Quest",
-                        value:
-                            "adventure",
-                        emoji:
-                            "🌿",
+                            "Fishing ・ Farming ・ Quest",
+                        value: "adventure",
+                        emoji: "🌿",
                         default:
-                            selected ===
-                            "adventure"
+                            selected === "adventure"
                     },
 
                     {
-                        label:
-                            "Venti",
+                        label: "Venti",
                         description:
-                            "Profile • Inventory • Tools",
-                        value:
-                            "venti",
-                        emoji:
-                            "🍃",
+                            "Profile ・ Inventory ・ Tools",
+                        value: "venti",
+                        emoji: "🍃",
                         default:
-                            selected ===
-                            "venti"
+                            selected === "venti"
                     },
 
                     {
-                        label:
-                            "Thông tin",
+                        label: "Thông tin",
                         description:
-                            "Giới thiệu về Venti",
-                        value:
-                            "info",
-                        emoji:
-                            "📖",
+                            "Thông tin về Venti",
+                        value: "info",
+                        emoji: "📖",
                         default:
-                            selected ===
-                            "info"
+                            selected === "info"
                     }
-                ])
+                )
         );
 }
 
@@ -406,8 +370,7 @@ function createMenu(
 // ==========================================
 
 module.exports = {
-    name:
-        "help",
+    name: "help",
 
     aliases: [
         "h",
@@ -418,9 +381,10 @@ module.exports = {
     description:
         "Xem hướng dẫn sử dụng Venti.",
 
-    async execute(
-        message
-    ) {
+    async execute(message) {
+        const userId =
+            message.author.id;
+
         const msg =
             await message.reply({
                 embeds: [
@@ -431,71 +395,88 @@ module.exports = {
                 ],
 
                 components: [
-                    createMenu(
-                        "home"
-                    )
+                    createMenu("home")
                 ]
             });
 
         const collector =
             msg.createMessageComponentCollector({
-                time:
-                    180000
+                time: 180000
             });
 
         collector.on(
             "collect",
             async interaction => {
-                if (
-                    interaction.customId !==
-                    "venti_help_menu"
-                ) {
-                    return;
-                }
+                try {
+                    if (
+                        interaction.customId !==
+                        "venti_help_menu"
+                    ) {
+                        return;
+                    }
 
-                // Không cho người khác điều khiển
-                if (
-                    interaction.user.id !==
-                    message.author.id
-                ) {
-                    return interaction.reply({
-                        content:
-                            "❌ Đây không phải Help Center của bạn.",
-                        ephemeral:
-                            true
+                    if (
+                        interaction.user.id !==
+                        userId
+                    ) {
+                        if (
+                            interaction.replied ||
+                            interaction.deferred
+                        ) {
+                            return;
+                        }
+
+                        return interaction.reply({
+                            content:
+                                "❌ Đây không phải Help Center của bạn.",
+                            ephemeral: true
+                        });
+                    }
+
+                    const category =
+                        interaction.values?.[0];
+
+                    if (
+                        !category ||
+                        !CATEGORIES[category]
+                    ) {
+                        if (
+                            !interaction.replied &&
+                            !interaction.deferred
+                        ) {
+                            return interaction.reply({
+                                content:
+                                    "❌ Danh mục không hợp lệ.",
+                                ephemeral: true
+                            });
+                        }
+
+                        return;
+                    }
+
+                    // ACK interaction trước
+                    await interaction.deferUpdate();
+
+                    await msg.edit({
+                        embeds: [
+                            createEmbed(
+                                category,
+                                message
+                            )
+                        ],
+
+                        components: [
+                            createMenu(
+                                category
+                            )
+                        ]
                     });
+                } catch (error) {
+                    console.error(
+                        "Help Interaction Error:",
+                        error
+                    );
                 }
-
-                const category =
-                    interaction.values[0];
-
-                if (
-                    !CATEGORIES[
-                        category
-                    ]
-                ) {
-                    return interaction.reply({
-                        content:
-                            "❌ Danh mục không hợp lệ.",
-                        ephemeral:
-                            true
-                    });
-                }
-
-                await interaction.update({
-                    embeds: [
-                        createEmbed(
-                            category,
-                            message
-                        )
-                    ],
-
-                    components: [
-                        createMenu(
-                            category
-                        )
-                    ]
-                });
             }
         );
 

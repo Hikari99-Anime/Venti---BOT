@@ -1,8 +1,8 @@
 {
   "743028655097380895": {
     "id": "743028655097380895",
-    "balance": 1022,
-    "bank": 0,
+    "balance": 0,
+    "bank": 370,
     "bankData": {
       "lastInterest": 1788351513880,
       "totalInterest": 6
@@ -43,9 +43,9 @@
       ]
     },
     "stats": {
-      "games": 0,
-      "wins": 0,
-      "losses": 0,
+      "games": 9,
+      "wins": 3,
+      "losses": 5,
       "work": 0,
       "fish": 2,
       "farm": 0,
