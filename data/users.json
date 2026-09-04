@@ -1,13 +1,13 @@
 {
   "743028655097380895": {
     "id": "743028655097380895",
-    "balance": 0,
+    "balance": 770,
     "bank": 370,
     "bankData": {
       "lastInterest": 1788351513880,
       "totalInterest": 6
     },
-    "xp": 13,
+    "xp": 148,
     "level": 1,
     "dailyStreak": 1,
     "lastDaily": 1788351470450,
@@ -16,10 +16,11 @@
     "inventory": {
       "fishing_rod": {
         "amount": 1,
-        "durability": 18,
+        "durability": 13,
         "maxDurability": 20
       },
-      "small_fish": 1
+      "small_fish": 5,
+      "golden_fish": 1
     },
     "tools": {
       "fishingRod": {
@@ -47,22 +48,22 @@
       "wins": 3,
       "losses": 5,
       "work": 0,
-      "fish": 2,
+      "fish": 7,
       "farm": 0,
       "quest": 0,
-      "harvest": 4
+      "harvest": 7
     },
     "quests": {
-      "date": "2026-09-02",
+      "date": "2026-09-03",
       "daily": [
         {
           "id": "fish",
-          "progress": 2,
-          "claimed": false
+          "progress": 5,
+          "claimed": true
         },
         {
           "id": "farm",
-          "progress": 4,
+          "progress": 3,
           "claimed": false
         },
         {
