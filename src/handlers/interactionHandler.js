@@ -37,6 +37,13 @@ const bank =
     require("../commands/economy/bank");
 
 // ==========================================
+// 🙏 BEG
+// ==========================================
+
+const beg =
+    require("../commands/economy/beg");
+
+// ==========================================
 // 🎒 INVENTORY DATA
 // ==========================================
 
@@ -92,6 +99,18 @@ async function handleInteraction(
                 id.startsWith("bank_")
             ) {
                 return bank.handleInteraction(
+                    interaction
+                );
+            }
+
+            // ==================================
+            // 🙏 BEG
+            // ==================================
+
+            if (
+                id.startsWith("beg_")
+            ) {
+                return beg.handleInteraction(
                     interaction
                 );
             }
@@ -232,6 +251,20 @@ async function handleInteraction(
                 )
             ) {
                 return bank.handleInteraction(
+                    interaction
+                );
+            }
+
+            // ==================================
+            // 🙏 BEG MODAL
+            // ==================================
+
+            if (
+                id.startsWith(
+                    "beg_modal_"
+                )
+            ) {
+                return beg.handleInteraction(
                     interaction
                 );
             }
