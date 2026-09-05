@@ -16,10 +16,10 @@ const CATEGORIES = {
 
         description:
             "☁️ `🍃` **Xin chào, Traveler!**\n" +
-            "・ Venti là bot **Economy • Games • Adventure**\n" +
+            "・ Columbina là bot `Economy • Games • Adventure`\n" +
             "・ Kiếm Mora, nâng Level và khám phá hành trình.\n\n" +
 
-            "● `🚀` **Bắt đầu**\n" +
+            "- `🚀` **Bắt đầu**\n" +
             "> `💰 Vdaily` ・ Nhận Daily Reward\n" +
             "> `💼 Vwork` ・ Làm việc kiếm Mora\n" +
             "> `🎣 Vfish` ・ Câu cá\n" +
@@ -27,7 +27,7 @@ const CATEGORIES = {
             "> `📜 Vquest` ・ Làm nhiệm vụ\n" +
             "> `👤 Vprofile` ・ Xem hồ sơ\n\n" +
 
-            "● `🎮` **Minigames**\n" +
+            "- `🎮` **Minigames**\n" +
             "> `🎰 Vslots` ・ Slot Machine\n" +
             "> `🪙 Vcoinflip` ・ Coin Flip\n" +
             "> `🎲 Vdice` ・ Dice\n" +
@@ -35,7 +35,7 @@ const CATEGORIES = {
             "> `🎯 Vtaixiu` ・ Tài Xỉu\n" +
             "> `💣 Vbomb` ・ Bomb Game\n\n" +
 
-            "● `📖` **Khám phá**\n" +
+            "- `📖` **Khám phá**\n" +
             "> `💰 Economy` ・ Mora & giao dịch\n" +
             "> `🎮 Minigames` ・ Trò chơi\n" +
             "> `🌿 Adventure` ・ Fishing & Farming\n" +
@@ -59,22 +59,22 @@ const CATEGORIES = {
             "☁️ `💰` **Economy System**\n" +
             "・ Quản lý Mora và xây dựng tài sản.\n\n" +
 
-            "● `💳` **Money**\n" +
+            "- `💳` **Money**\n" +
             "> `💰 Vbalance` ・ Xem số dư\n" +
             "> `💸 Vpay @user <amount>` ・ Chuyển Mora\n" +
             "> `🏦 Vdeposit <amount>` ・ Gửi ngân hàng\n" +
             "> `🏦 Vwithdraw <amount>` ・ Rút ngân hàng\n\n" +
 
-            "● `🎁` **Rewards**\n" +
+            "- `🎁` **Rewards**\n" +
             "> `📅 Vdaily` ・ Daily Reward\n" +
             "> `💼 Vwork` ・ Làm việc kiếm Mora\n\n" +
 
-            "● `🛒` **Shop**\n" +
+            "- `🛒` **Shop**\n" +
             "> `🛍️ Vshop` ・ Xem cửa hàng\n" +
             "> `🛒 Vbuy <item> [amount]` ・ Mua item\n" +
             "> `💸 Vsell` ・ Bán vật phẩm\n\n" +
 
-            "● `📊` **Progress**\n" +
+            "- `📊` **Progress**\n" +
             "> `👤 Vprofile` ・ Hồ sơ\n" +
             "> `📈 Vstats` ・ Thống kê\n" +
             "> `🏆 Vleaderboard` ・ Bảng xếp hạng\n\n" +
@@ -97,21 +97,21 @@ const CATEGORIES = {
             "☁️ `🎮` **Minigame Center**\n" +
             "・ Dùng Mora để thử vận may của bạn.\n\n" +
 
-            "● `🎰` **Casino**\n" +
+            "- `🎰` **Casino**\n" +
             "> `🎰 Vslots <amount>` ・ Slot Machine\n" +
             "> `🪙 Vcoinflip <amount>` ・ Coin Flip\n" +
             "> `🎲 Vdice <amount>` ・ Dice\n" +
             "> `🃏 Vblackjack <amount>` ・ Blackjack\n\n" +
 
-            "● `🎯` **Luck Games**\n" +
+            "- `🎯` **Luck Games**\n" +
             "> `🎯 Vtaixiu <amount>` ・ Tài Xỉu\n" +
             "> `💣 Vbomb <amount>` ・ Bomb Game\n\n" +
 
-            "● `📊` **Statistics**\n" +
+            "- `📊` **Statistics**\n" +
             "> `📈 Vstats` ・ Games / Wins / Losses\n" +
             "> `🏆 Vleaderboard` ・ Top người chơi\n\n" +
 
-            "● `🍀` **Lưu ý**\n" +
+            "- `🍀` **Lưu ý**\n" +
             "> `💰` Mỗi game có phần thưởng khác nhau.\n" +
             "> `🎲` Hãy quản lý Mora hợp lý.\n\n" +
 
@@ -133,23 +133,23 @@ const CATEGORIES = {
             "☁️ `🌿` **Adventure System**\n" +
             "・ Thu thập, khám phá và phát triển nhân vật.\n\n" +
 
-            "● `🎣` **Fishing**\n" +
+            "- `🎣` **Fishing**\n" +
             "> `🎣 Vfish` ・ Câu cá\n" +
             "> `🐟` Thu thập nhiều loại cá\n" +
             "> `🎒 Vinventory` ・ Xem cá & vật phẩm\n" +
             "> `💸 Vsell` ・ Bán cá lấy Mora\n\n" +
 
-            "● `🌾` **Farming**\n" +
+            "- `🌾` **Farming**\n" +
             "> `🌱 Vfarm` ・ Trồng & thu hoạch\n" +
             "> `🎒 Vinventory` ・ Xem nông sản\n" +
             "> `💸 Vsell` ・ Bán nông sản\n\n" +
 
-            "● `📜` **Quest**\n" +
+            "- `📜` **Quest**\n" +
             "> `📜 Vquest` ・ Xem nhiệm vụ\n" +
             "> `🎯` Hoàn thành quest nhận thưởng\n" +
             "> `✨` Nhận Mora & XP\n\n" +
 
-            "● `🏆` **Progress**\n" +
+            "- `🏆` **Progress**\n" +
             "> `👤 Vprofile` ・ Level & XP\n" +
             "> `🏆 Vachievement` ・ Thành tích\n" +
             "> `📈 Vstats` ・ Thống kê\n\n" +
@@ -172,21 +172,21 @@ const CATEGORIES = {
             "☁️ `🍃` **Your Venti Tools**\n" +
             "・ Những lệnh giúp quản lý hành trình.\n\n" +
 
-            "● `👤` **Profile**\n" +
+            "- `👤` **Profile**\n" +
             "> `👤 Vprofile` ・ Hồ sơ cá nhân\n" +
             "> `📈 Vstats` ・ Thống kê hành trình\n\n" +
 
-            "● `🎒` **Inventory**\n" +
+            "- `🎒` **Inventory**\n" +
             "> `🎒 Vinventory` ・ Túi vật phẩm\n" +
             "> `💸 Vsell` ・ Bán vật phẩm\n" +
             "> `🛒 Vshop` ・ Cửa hàng\n" +
             "> `💰 Vbuy <item> [amount]` ・ Mua item\n\n" +
 
-            "● `🏆` **Achievement**\n" +
+            "- `🏆` **Achievement**\n" +
             "> `🏆 Vachievement` ・ Thành tích\n" +
             "> `⭐` Theo dõi milestone\n\n" +
 
-            "● `🏆` **Leaderboard**\n" +
+            "- `🏆` **Leaderboard**\n" +
             "> `🏆 Vleaderboard` ・ Bảng xếp hạng\n" +
             "> `💰` Top Mora\n" +
             "> `⭐` Top Level\n" +
@@ -214,7 +214,7 @@ const CATEGORIES = {
             "・ Một bot Discord lấy cảm hứng từ Mondstadt.\n" +
             "・ Mang phong cách nhẹ nhàng của một Wandering Bard.\n\n" +
 
-            "● `⚙️` **Systems**\n" +
+            "- `⚙️` **Systems**\n" +
             "> `💰` Economy\n" +
             "> `🎮` Minigames\n" +
             "> `🎣` Fishing\n" +
@@ -225,10 +225,10 @@ const CATEGORIES = {
             "> `⭐` Level & XP\n" +
             "> `📊` Leaderboard\n\n" +
 
-            "● `⌨️` **Prefix**\n" +
+            "- `⌨️` **Prefix**\n" +
             "> `V`\n\n" +
 
-            "● `✨` **Examples**\n" +
+            "- `✨` **Examples**\n" +
             "> `Vdaily`\n" +
             "> `Vfish`\n" +
             "> `Vfarm`\n" +

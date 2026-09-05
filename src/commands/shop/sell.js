@@ -268,15 +268,15 @@ function createCategoryEmbed(
             [
                 "🍃 Bán vật phẩm để nhận Mora.",
                 "",
-                "● 🌾 **Nông sản**",
+                "- 🌾 **Nông sản**",
                 "",
                 farmingText,
                 "",
-                "● 🌊 **Hải sản**",
+                "- 🌊 **Hải sản**",
                 "",
                 seafoodText,
                 "",
-                "● 💡 **Hướng dẫn**",
+                "- 💡 **Hướng dẫn**",
                 "> Chọn một danh mục bên dưới.",
                 "> Sau đó chọn vật phẩm bạn muốn bán."
             ].join("\n")

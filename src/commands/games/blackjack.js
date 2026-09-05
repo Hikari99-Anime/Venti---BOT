@@ -631,10 +631,10 @@ function createGameEmbed(
         .setDescription(
             `> 💰 Cược: \`${bet.toLocaleString()} Mora\`\n\n` +
 
-            `### 🤵 Dealer\n` +
+            `- ### 🤵 Dealer\n` +
             `> \`${dealer[0].name}${dealer[0].suit}\`  \`??\`\n\n` +
 
-            `### 👤 Bạn\n` +
+            `- ### 👤 Bạn\n` +
             `> ${formatHand(player)}\n` +
             `> ⭐ Điểm: **${getHandValue(player)}**\n\n` +
 

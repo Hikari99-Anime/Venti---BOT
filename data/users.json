@@ -1,89 +1,7 @@
 {
   "743028655097380895": {
     "id": "743028655097380895",
-    "balance": 770,
-    "bank": 370,
-    "bankData": {
-      "lastInterest": 1788351513880,
-      "totalInterest": 6
-    },
-    "xp": 148,
-    "level": 1,
-    "dailyStreak": 1,
-    "lastDaily": 1788351470450,
-    "lastWork": 0,
-    "lastBeg": 0,
-    "inventory": {
-      "fishing_rod": {
-        "amount": 1,
-        "durability": 13,
-        "maxDurability": 20
-      },
-      "small_fish": 5,
-      "golden_fish": 1
-    },
-    "tools": {
-      "fishingRod": {
-        "level": 1,
-        "durability": 50
-      },
-      "hoe": {
-        "level": 1,
-        "durability": 50
-      }
-    },
-    "farm": {
-      "plots": [
-        {
-          "id": 1,
-          "unlocked": true,
-          "seed": null,
-          "plantedAt": null,
-          "readyAt": null
-        }
-      ]
-    },
-    "stats": {
-      "games": 9,
-      "wins": 3,
-      "losses": 5,
-      "work": 0,
-      "fish": 7,
-      "farm": 0,
-      "quest": 0,
-      "harvest": 7
-    },
-    "quests": {
-      "date": "2026-09-03",
-      "daily": [
-        {
-          "id": "fish",
-          "progress": 5,
-          "claimed": true
-        },
-        {
-          "id": "farm",
-          "progress": 3,
-          "claimed": false
-        },
-        {
-          "id": "sell",
-          "progress": 0,
-          "claimed": false
-        }
-      ]
-    },
-    "achievements": {
-      "first_fish": {
-        "unlocked": true,
-        "unlockedAt": 1788351976355
-      }
-    },
-    "createdAt": 1788351422410
-  },
-  "398030689905278977": {
-    "id": "398030689905278977",
-    "balance": 1000,
+    "balance": 880400,
     "bank": 0,
     "bankData": {
       "lastInterest": 0,
@@ -91,8 +9,8 @@
     },
     "xp": 0,
     "level": 1,
-    "dailyStreak": 0,
-    "lastDaily": 0,
+    "dailyStreak": 1,
+    "lastDaily": 1788590159164,
     "lastWork": 0,
     "lastBeg": 0,
     "inventory": {},
@@ -111,26 +29,85 @@
         {
           "id": 1,
           "unlocked": true,
+          "seed": "watermelon_seed",
+          "plantedAt": 1788592437787,
+          "readyAt": 1788592617787
+        },
+        {
+          "id": 2,
+          "unlocked": true,
           "seed": null,
           "plantedAt": null,
           "readyAt": null
+        },
+        {
+          "id": 3,
+          "unlocked": true,
+          "seed": null,
+          "plantedAt": null,
+          "readyAt": null
+        },
+        {
+          "id": 4,
+          "unlocked": true,
+          "seed": "watermelon_seed",
+          "plantedAt": 1788592462799,
+          "readyAt": 1788592642799
+        },
+        {
+          "id": 5,
+          "unlocked": true,
+          "seed": "apple_seed",
+          "plantedAt": 1788592455408,
+          "readyAt": 1788592485408
+        },
+        {
+          "id": 6,
+          "unlocked": true,
+          "seed": "strawberry_seed",
+          "plantedAt": 1788592447472,
+          "readyAt": 1788592567472
+        },
+        {
+          "id": 7,
+          "unlocked": true,
+          "seed": "watermelon_seed",
+          "plantedAt": 1788592428770,
+          "readyAt": 1788592608770
         }
       ]
     },
     "stats": {
-      "games": 0,
-      "wins": 0,
-      "losses": 0,
+      "games": 27,
+      "wins": 17,
+      "losses": 9,
       "work": 0,
       "fish": 0,
       "farm": 0,
-      "quest": 0
+      "quest": 0,
+      "harvest": 3
     },
     "quests": {
-      "date": "",
-      "daily": []
+      "date": "2026-09-05",
+      "daily": [
+        {
+          "id": "fish",
+          "progress": 0,
+          "claimed": false
+        },
+        {
+          "id": "farm",
+          "progress": 3,
+          "claimed": false
+        },
+        {
+          "id": "sell",
+          "progress": 0,
+          "claimed": false
+        }
+      ]
     },
     "achievements": {},
-    "createdAt": 1788351479676
+    "createdAt": 1788589792735
   }
 }

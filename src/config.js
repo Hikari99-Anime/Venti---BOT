@@ -6,7 +6,7 @@ module.exports = {
     ownerId: process.env.OWNER_ID,
 
     bot: {
-        name: "Venti",
+        name: "Columbina",
         emoji: "🍃",
         currency: "Mora"
     },
