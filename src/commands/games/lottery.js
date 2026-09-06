@@ -1,910 +1,1750 @@
-
 const {
     EmbedBuilder,
     ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
-    StringSelectMenuBuilder
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle,
+    MessageFlags,
+    PermissionFlagsBits
 } = require("discord.js");
 
-// ==========================================
-// 📦 BUTTON / MENU MODULES
-// ==========================================
+const db =
+    require("../../database/database");
 
-const help =
-    require("../interactions/buttons/help");
-
-const profile =
-    require("../interactions/buttons/profile");
-
-const inventory =
-    require("../interactions/buttons/inventory");
-
-const shop =
-    require("../interactions/buttons/shop");
-
-const fish =
-    require("../interactions/buttons/fish");
-
-const helpMenu =
-    require("../interactions/menus/helpMenu");
+const User =
+    require("../../database/models/User");
 
 // ==========================================
-// 🏦 BANK
+// 🎰 LOTTERY CONFIG
 // ==========================================
 
-const bank =
-    require("../commands/economy/bank");
+const TICKET_PRICE =
+    1000;
+
+const BASE_JACKPOT =
+    10000;
+
+const MIN_NUMBER =
+    0;
+
+const MAX_NUMBER =
+    99999;
+
+const MAX_TICKETS_PER_USER =
+    5;
+
+const ROUND_DURATION =
+    5 * 60 * 1000;
 
 // ==========================================
-// 🙏 BEG
+// ⚙️ SYSTEM
 // ==========================================
 
-const beg =
-    require("../commands/economy/beg");
+let lotteryClient =
+    null;
+
+let lotteryTimer =
+    null;
+
+let panelUpdateTimer =
+    null;
 
 // ==========================================
-// 🎰 LOTTERY
+// 💰 MONEY
 // ==========================================
 
-const lottery =
-    require("../commands/games/lottery");
-
-// ==========================================
-// 🎒 INVENTORY CATEGORIES
-// ==========================================
-
-const INVENTORY_CATEGORIES = {
-
-    farm: {
-
-        name:
-            "🌾 Nông sản",
-
-        items: [
-            "apple",
-            "sweet_flower",
-            "sunsettia"
-        ]
-    },
-
-    fish: {
-
-        name:
-            "🐟 Hải sản",
-
-        items: [
-            "small_fish",
-            "blue_fish",
-            "golden_fish",
-            "crystal_fish",
-            "wind_fish"
-        ]
-    }
-};
-
-// ==========================================
-// 🎯 MAIN INTERACTION HANDLER
-// ==========================================
-
-async function handleInteraction(interaction) {
-
-    try {
-
-        // ======================================
-        // 🔘 BUTTON
-        // ======================================
-
-        if (interaction.isButton()) {
-
-            const id =
-                interaction.customId || "";
-
-            // ==================================
-            // 🏦 BANK
-            // ==================================
-
-            if (
-                id.startsWith("bank_")
-            ) {
-
-                return bank.handleInteraction(
-                    interaction
-                );
-            }
-
-            // ==================================
-            // 🙏 BEG
-            // ==================================
-
-            if (
-                id.startsWith("beg_")
-            ) {
-
-                return beg.handleInteraction(
-                    interaction
-                );
-            }
-
-            // ==================================
-            // 🎰 LOTTERY
-            // ==================================
-
-            if (
-                id.startsWith("lottery_")
-            ) {
-
-                if (
-                    typeof lottery.handleInteraction ===
-                    "function"
-                ) {
-
-                    return lottery.handleInteraction(
-                        interaction
-                    );
-                }
-
-                console.error(
-                    "❌ Lottery không có handleInteraction()"
-                );
-
-                return false;
-            }
-
-            // ==================================
-            // ❓ HELP
-            // ==================================
-
-            if (
-                id.startsWith("help_")
-            ) {
-
-                return help.execute(
-                    interaction
-                );
-            }
-
-            // ==================================
-            // 👤 PROFILE
-            // ==================================
-
-            if (
-                id.startsWith("profile_")
-            ) {
-
-                return routeProfile(
-                    interaction
-                );
-            }
-
-            // ==================================
-            // 🎒 INVENTORY
-            // ==================================
-
-            if (
-                id.startsWith("inventory_")
-            ) {
-
-                return routeInventory(
-                    interaction
-                );
-            }
-
-            // ==================================
-            // 🛒 SHOP
-            // ==================================
-
-            if (
-                id.startsWith("shop_")
-            ) {
-
-                return routeShop(
-                    interaction
-                );
-            }
-
-            // ==================================
-            // 🎣 FISH
-            // ==================================
-
-            if (
-                id.startsWith("fish_")
-            ) {
-
-                return fish.execute(
-                    interaction
-                );
-            }
-
-            return false;
-        }
-
-        // ======================================
-        // 📂 STRING SELECT MENU
-        // ======================================
-
-        if (
-            interaction.isStringSelectMenu()
-        ) {
-
-            const id =
-                interaction.customId || "";
-
-            // ==================================
-            // ❓ HELP MENU
-            // ==================================
-
-            if (
-                id === "help_menu"
-            ) {
-
-                return helpMenu.execute(
-                    interaction
-                );
-            }
-
-            // ==================================
-            // 🎒 INVENTORY MENU
-            // ==================================
-
-            if (
-                id === "inventory_category"
-            ) {
-
-                return routeInventoryMenu(
-                    interaction
-                );
-            }
-
-            return false;
-        }
-
-        // ======================================
-        // 🪟 MODAL SUBMIT
-        // ======================================
-
-        if (
-            interaction.isModalSubmit()
-        ) {
-
-            const id =
-                interaction.customId || "";
-
-            // ==================================
-            // 🏦 BANK MODAL
-            // ==================================
-
-            if (
-                id.startsWith("bank_modal_")
-            ) {
-
-                return bank.handleInteraction(
-                    interaction
-                );
-            }
-
-            // ==================================
-            // 🙏 BEG MODAL
-            // ==================================
-
-            if (
-                id.startsWith("beg_modal_")
-            ) {
-
-                return beg.handleInteraction(
-                    interaction
-                );
-            }
-
-            // ==================================
-            // 🎰 LOTTERY MODAL
-            // ==================================
-
-            if (
-                id.startsWith("lottery_")
-            ) {
-
-                if (
-                    typeof lottery.handleInteraction ===
-                    "function"
-                ) {
-
-                    return lottery.handleInteraction(
-                        interaction
-                    );
-                }
-
-                console.error(
-                    "❌ Lottery không có handleInteraction()"
-                );
-
-                return false;
-            }
-
-            return false;
-        }
-
-        return false;
-
-    } catch (error) {
-
-        console.error(
-            "[InteractionHandler]",
-            error
-        );
-
-        // ======================================
-        // ❌ ERROR RESPONSE
-        // ======================================
-
-        try {
-
-            if (
-                interaction.replied ||
-                interaction.deferred
-            ) {
-
-                return interaction.followUp({
-
-                    content:
-                        "🍃 Có lỗi xảy ra khi xử lý thao tác này.",
-
-                    ephemeral:
-                        true
-                });
-            }
-
-            return interaction.reply({
-
-                content:
-                    "🍃 Có lỗi xảy ra khi xử lý thao tác này.",
-
-                ephemeral:
-                    true
-            });
-
-        } catch {
-            return;
-        }
-    }
+function money(amount) {
+
+    return Number(
+        amount || 0
+    ).toLocaleString("vi-VN");
 }
 
 // ==========================================
-// 👤 PROFILE ROUTER
+// 🔢 TICKET
 // ==========================================
 
-async function routeProfile(interaction) {
+function padTicket(number) {
 
-    const id =
-        interaction.customId || "";
-
-    // ======================================
-    // 🎒 INVENTORY
-    // ======================================
-
-    if (
-        id === "profile_inventory"
-    ) {
-
-        return inventory.execute(
-            interaction
-        );
-    }
-
-    // ======================================
-    // 🛒 SHOP
-    // ======================================
-
-    if (
-        id === "profile_shop"
-    ) {
-
-        return shop.execute(
-            interaction
-        );
-    }
-
-    // ======================================
-    // 👤 PROFILE
-    // ======================================
-
-    return profile.execute(
-        interaction
+    return String(
+        number
+    ).padStart(
+        5,
+        "0"
     );
 }
 
 // ==========================================
-// 🎒 INVENTORY BUTTON ROUTER
+// 🎰 GET LOTTERY
 // ==========================================
 
-async function routeInventory(interaction) {
+function getLottery(data) {
 
-    const id =
-        interaction.customId || "";
+    if (!data.lottery) {
 
-    // ======================================
-    // 🛒 SHOP
-    // ======================================
+        data.lottery = {
 
-    if (
-        id === "inventory_shop"
-    ) {
+            jackpot:
+                BASE_JACKPOT,
 
-        return shop.execute(
-            interaction
-        );
+            tickets: {},
+
+            channelId:
+                null,
+
+            messageId:
+                null,
+
+            nextDrawAt:
+                Date.now() +
+                ROUND_DURATION,
+
+            previous:
+                null
+        };
     }
 
     // ======================================
-    // 👤 BACK
+    // 🛠️ FIX OLD DATA
     // ======================================
 
     if (
-        id === "inventory_back"
+        typeof data.lottery.jackpot !==
+            "number" ||
+        data.lottery.jackpot <
+            BASE_JACKPOT
     ) {
 
-        return profile.execute(
-            interaction
-        );
+        data.lottery.jackpot =
+            BASE_JACKPOT;
     }
-
-    // ======================================
-    // ❌ CLOSE
-    // ======================================
 
     if (
-        id === "inventory_close"
+        !data.lottery.tickets
     ) {
 
-        return interaction.update({
-
-            content:
-                "🍃 Chiếc túi đã được đóng lại.",
-
-            embeds: [],
-
-            components: []
-        });
+        data.lottery.tickets = {};
     }
-
-    // ======================================
-    // 🔄 REFRESH
-    // ======================================
 
     if (
-        id === "inventory_refresh"
+        !data.lottery.nextDrawAt
     ) {
 
-        return updateInventory(
-            interaction,
-            "farm"
-        );
+        data.lottery.nextDrawAt =
+            Date.now() +
+            ROUND_DURATION;
     }
 
-    return false;
+    if (
+        typeof data.lottery.channelId ===
+        "undefined"
+    ) {
+
+        data.lottery.channelId =
+            null;
+    }
+
+    if (
+        typeof data.lottery.messageId ===
+        "undefined"
+    ) {
+
+        data.lottery.messageId =
+            null;
+    }
+
+    return data.lottery;
 }
 
 // ==========================================
-// 📂 INVENTORY SELECT MENU ROUTER
+// 🎟️ USER TICKETS
 // ==========================================
 
-async function routeInventoryMenu(interaction) {
-
-    const category =
-        interaction.values?.[0];
-
-    if (
-        !category ||
-        !INVENTORY_CATEGORIES[category]
-    ) {
-
-        return interaction.reply({
-
-            content:
-                "🍃 Danh mục không hợp lệ.",
-
-            ephemeral:
-                true
-        });
-    }
-
-    return updateInventory(
-        interaction,
-        category
-    );
-}
-
-// ==========================================
-// 🔄 UPDATE INVENTORY
-// ==========================================
-
-async function updateInventory(
-    interaction,
-    category
+function getUserTickets(
+    lottery,
+    userId
 ) {
 
-    const User =
-        require(
-            "../database/models/User"
-        );
+    return Object.keys(
+        lottery.tickets
+    ).filter(
+        number =>
+            lottery.tickets[number] ===
+            userId
+    );
+}
 
-    const Item =
-        require(
-            "../database/models/Item"
-        );
+// ==========================================
+// 🎟️ TICKET COUNT
+// ==========================================
 
-    const user =
-        User.getOrCreate(
-            interaction.user.id
-        );
+function getTicketCount(
+    lottery
+) {
 
-    const data =
-        INVENTORY_CATEGORIES[category];
+    return Object.keys(
+        lottery.tickets
+    ).length;
+}
 
-    if (!data) {
+// ==========================================
+// 🔎 TAKEN
+// ==========================================
 
-        return interaction.reply({
+function isNumberTaken(
+    lottery,
+    number
+) {
 
-            content:
-                "🍃 Danh mục không hợp lệ.",
+    return Boolean(
+        lottery.tickets[number]
+    );
+}
 
-            ephemeral:
-                true
-        });
-    }
+// ==========================================
+// 🎲 RANDOM TICKET
+// ==========================================
 
-    const userInventory =
-        user.inventory || {};
-
-    const items =
-        data.items
-            .map(itemId => {
-
-                const item =
-                    Item.get(itemId);
-
-                if (!item) {
-                    return null;
-                }
-
-                return {
-
-                    ...item,
-
-                    amount:
-                        Number(
-                            userInventory[itemId] || 0
-                        )
-                };
-            })
-            .filter(Boolean);
-
-    let content;
-
-    if (
-        items.length === 0
-    ) {
-
-        content =
-            "☁️ Chưa có vật phẩm nào.";
-
-    } else {
-
-        content =
-            items
-                .map(item =>
-                    `${item.emoji || "📦"} **${item.name}** · ×${item.amount}`
-                )
-                .join("\n");
-    }
+function getRandomTicket(
+    lottery
+) {
 
     const total =
-        Object.values(
-            userInventory
+        MAX_NUMBER -
+        MIN_NUMBER +
+        1;
+
+    if (
+        getTicketCount(
+            lottery
+        ) >= total
+    ) {
+
+        return null;
+    }
+
+    let number;
+
+    do {
+
+        number =
+            Math.floor(
+                Math.random() *
+                total
+            );
+
+    } while (
+        isNumberTaken(
+            lottery,
+            padTicket(number)
         )
-        .reduce(
-            (
-                sum,
-                amount
-            ) =>
-                sum +
-                Number(
-                    amount || 0
-                ),
-            0
+    );
+
+    return padTicket(
+        number
+    );
+}
+
+// ==========================================
+// ⏰ COUNTDOWN
+// ==========================================
+
+function getRemainingTime(
+    lottery
+) {
+
+    const remaining =
+        Math.max(
+            0,
+            Number(
+                lottery.nextDrawAt || 0
+            ) -
+            Date.now()
         );
 
-    const displayName =
-        interaction.user.globalName ||
-        interaction.user.username;
+    const totalSeconds =
+        Math.ceil(
+            remaining / 1000
+        );
 
-    const embed =
-        new EmbedBuilder()
+    const minutes =
+        Math.floor(
+            totalSeconds / 60
+        );
 
-            .setColor(
-                "#A8DCC0"
-            )
+    const seconds =
+        totalSeconds % 60;
 
-            .setAuthor({
+    return {
 
-                name:
-                    `☁️ ${displayName} · Venti`
-            })
+        remaining,
 
-            .setTitle(
-                "🍃 Túi Đồ"
-            )
+        minutes,
 
-            .setDescription(
+        seconds,
 
+        text:
+            String(minutes)
+                .padStart(2, "0") +
+            ":" +
+            String(seconds)
+                .padStart(2, "0")
+    };
+}
+
+// ==========================================
+// 🎨 CREATE EMBED
+// ==========================================
+
+function createLotteryEmbed(
+    lottery
+) {
+
+    const time =
+        getRemainingTime(
+            lottery
+        );
+
+    const previous =
+        lottery.previous;
+
+    let resultText =
+        "Chưa có kết quả kỳ trước.";
+
+    if (previous) {
+
+        if (
+            previous.winnerId &&
+            previous.number
+        ) {
+
+            resultText =
                 [
-                    "୨୧ ───────── ୨୧",
+                    `🎯 Số trúng: **${previous.number}**`,
+                    `🏆 Người thắng: <@${previous.winnerId}>`,
+                    `💰 Jackpot: **${money(previous.jackpot)} Mora**`
+                ].join("\n");
 
-                    `        ${data.name}`,
+        } else {
 
-                    "୨୧ ───────── ୨୧",
+            resultText =
+                [
+                    `🎯 Số trúng: **${previous.number}**`,
+                    "🏆 Người thắng: **Không có người trúng**",
+                    `💰 Jackpot được cộng dồn: **${money(lottery.jackpot)} Mora**`
+                ].join("\n");
+        }
+    }
 
-                    "",
+    return new EmbedBuilder()
 
-                    content,
+        .setColor(
+            "#A8DCC0"
+        )
 
-                    "",
+        .setAuthor({
+            name:
+                "🍃 Venti • Lottery"
+        })
 
-                    "୨୧ ───────── ୨୧",
+        .setTitle(
+            "🎟️ VÉ SỐ VENTI"
+        )
 
-                    `☁️ Tổng vật phẩm · **${total}**`,
+        .setDescription(
+            [
+                `## ⏰ ${time.text}`,
 
-                    "🍃 Một chiếc túi nhỏ của bạn."
+                "",
 
-                ].join("\n")
-            )
+                "🎰 **JACKPOT**",
+                `> 💰 **${money(lottery.jackpot)} Mora**`,
 
-            .setFooter({
+                "",
 
-                text:
-                    "☕ Venti · Cozy Inventory"
-            })
+                "🎟️ **GIÁ VÉ**",
+                `> 🪙 **${money(TICKET_PRICE)} Mora / vé**`,
 
-            .setTimestamp();
+                "",
 
-    const menu =
-        new StringSelectMenuBuilder()
+                "📊 **THỐNG KÊ**",
+                `> 🎫 Vé đã bán: **${getTicketCount(lottery)}**`,
+                `> 👤 Tối đa mỗi người: **${MAX_TICKETS_PER_USER} vé**`,
 
-            .setCustomId(
-                "inventory_category"
-            )
+                "",
 
-            .setPlaceholder(
-                "☁️ Chọn danh mục..."
-            )
+                "🎯 **KẾT QUẢ GẦN NHẤT**",
+                `> ${resultText.replace(/\n/g, "\n> ")}`,
 
-            .addOptions(
+                "",
 
-                {
+                "୨୧ ─────────────── ୨୧",
 
-                    label:
-                        "Nông sản",
+                "🔢 Số vé: `00000` → `99999`",
+                "🎲 Có thể mua số ngẫu nhiên",
+                "🔢 Hoặc tự chọn số",
+                "🚫 Không thể mua trùng số",
 
-                    description:
-                        "Hoa quả và vật phẩm nông nghiệp",
+                "",
 
-                    value:
-                        "farm",
+                "🍃 Chúc bạn may mắn, nhà lữ hành."
+            ].join("\n")
+        )
 
-                    emoji:
-                        "🌾",
+        .setFooter({
+            text:
+                "Venti • Lottery • Jackpot không có người trúng sẽ cộng dồn"
+        })
 
-                    default:
-                        category === "farm"
-                },
+        .setTimestamp();
+}
 
-                {
+// ==========================================
+// 🔘 BUTTONS
+// ==========================================
 
-                    label:
-                        "Hải sản",
+function createLotteryButtons() {
 
-                    description:
-                        "Những thứ bạn câu được",
+    return [
 
-                    value:
-                        "fish",
-
-                    emoji:
-                        "🐟",
-
-                    default:
-                        category === "fish"
-                }
-            );
-
-    const selectRow =
-        new ActionRowBuilder()
-            .addComponents(
-                menu
-            );
-
-    const buttons =
         new ActionRowBuilder()
             .addComponents(
 
                 new ButtonBuilder()
-
                     .setCustomId(
-                        "inventory_refresh"
+                        "lottery_random"
                     )
-
                     .setLabel(
-                        "Làm mới"
+                        "Mua vé ngẫu nhiên"
                     )
-
                     .setEmoji(
-                        "🔃"
+                        "🎲"
                     )
+                    .setStyle(
+                        ButtonStyle.Primary
+                    ),
 
+                new ButtonBuilder()
+                    .setCustomId(
+                        "lottery_custom"
+                    )
+                    .setLabel(
+                        "Chọn số"
+                    )
+                    .setEmoji(
+                        "🔢"
+                    )
                     .setStyle(
                         ButtonStyle.Secondary
                     ),
 
                 new ButtonBuilder()
-
                     .setCustomId(
-                        "inventory_close"
+                        "lottery_check"
                     )
-
                     .setLabel(
-                        "Đóng"
+                        "Vé của tôi"
                     )
-
                     .setEmoji(
-                        "✖️"
+                        "🎟️"
                     )
-
                     .setStyle(
-                        ButtonStyle.Danger
+                        ButtonStyle.Secondary
+                    ),
+
+                new ButtonBuilder()
+                    .setCustomId(
+                        "lottery_refresh"
                     )
+                    .setLabel(
+                        "Làm mới"
+                    )
+                    .setEmoji(
+                        "🔄"
+                    )
+                    .setStyle(
+                        ButtonStyle.Secondary
+                    )
+            )
+    ];
+}
+
+// ==========================================
+// 🔄 UPDATE PANEL
+// ==========================================
+
+async function updateLotteryPanel(
+    client
+) {
+
+    if (!client) {
+        return;
+    }
+
+    const data =
+        db.load();
+
+    const lottery =
+        getLottery(
+            data
+        );
+
+    if (
+        !lottery.channelId ||
+        !lottery.messageId
+    ) {
+
+        return;
+    }
+
+    try {
+
+        const channel =
+            await client.channels.fetch(
+                lottery.channelId
             );
 
-    return interaction.update({
+        if (
+            !channel ||
+            !channel.isTextBased()
+        ) {
 
-        embeds: [
-            embed
-        ],
+            return;
+        }
 
-        components: [
-            selectRow,
-            buttons
-        ]
+        const message =
+            await channel.messages.fetch(
+                lottery.messageId
+            );
+
+        await message.edit({
+
+            embeds: [
+                createLotteryEmbed(
+                    lottery
+                )
+            ],
+
+            components:
+                createLotteryButtons()
+        });
+
+    } catch (error) {
+
+        console.log(
+            "[Lottery Panel]",
+            error.message
+        );
+    }
+}
+
+// ==========================================
+// 💾 SAVE
+// ==========================================
+
+async function saveLottery(
+    data
+) {
+
+    db.save(
+        data
+    );
+}
+
+// ==========================================
+// 🎰 DRAW LOTTERY
+// ==========================================
+
+async function drawLottery(
+    client
+) {
+
+    const data =
+        db.load();
+
+    const lottery =
+        getLottery(
+            data
+        );
+
+    if (
+        Date.now() <
+        Number(
+            lottery.nextDrawAt
+        )
+    ) {
+
+        return false;
+    }
+
+    const numbers =
+        Object.keys(
+            lottery.tickets
+        );
+
+    const oldJackpot =
+        lottery.jackpot;
+
+    let winnerId =
+        null;
+
+    let winningNumber =
+        null;
+
+    // ======================================
+    // 🎲 RANDOM WINNING NUMBER
+    // ======================================
+
+    if (
+        numbers.length > 0
+    ) {
+
+        const index =
+            Math.floor(
+                Math.random() *
+                numbers.length
+            );
+
+        winningNumber =
+            numbers[index];
+
+        winnerId =
+            lottery.tickets[
+                winningNumber
+            ];
+
+        // ==================================
+        // 💰 PAY WINNER
+        // ==================================
+
+        if (
+            winnerId
+        ) {
+
+            User.addBalance(
+                winnerId,
+                oldJackpot
+            );
+        }
+    }
+
+    // ======================================
+    // 📜 SAVE RESULT
+    // ======================================
+
+    lottery.previous = {
+
+        number:
+            winningNumber ||
+            "Không có",
+
+        winnerId:
+            winnerId,
+
+        jackpot:
+            oldJackpot,
+
+        drawTime:
+            new Date()
+                .toLocaleString(
+                    "vi-VN"
+                )
+    };
+
+    // ======================================
+    // 🎰 NEXT ROUND
+    // ======================================
+
+    lottery.tickets =
+        {};
+
+    /*
+     * Nếu có người trúng:
+     * Jackpot reset về BASE.
+     *
+     * Nếu không có người trúng:
+     * Giữ nguyên jackpot để cộng dồn.
+     */
+
+    if (
+        winnerId
+    ) {
+
+        lottery.jackpot =
+            BASE_JACKPOT;
+    }
+
+    lottery.nextDrawAt =
+        Date.now() +
+        ROUND_DURATION;
+
+    await saveLottery(
+        data
+    );
+
+    // ======================================
+    // 🔄 UPDATE PANEL
+    // ======================================
+
+    await updateLotteryPanel(
+        client
+    );
+
+    return true;
+}
+
+// ==========================================
+// ▶️ START SYSTEM
+// ==========================================
+
+function startLotterySystem(
+    client
+) {
+
+    lotteryClient =
+        client;
+
+    // ======================================
+    // 🎰 DRAW TIMER
+    // ======================================
+
+    if (
+        !lotteryTimer
+    ) {
+
+        lotteryTimer =
+            setInterval(
+                async () => {
+
+                    try {
+
+                        await drawLottery(
+                            lotteryClient
+                        );
+
+                    } catch (
+                        error
+                    ) {
+
+                        console.error(
+                            "[Lottery Timer]",
+                            error
+                        );
+                    }
+
+                },
+                1000
+            );
+    }
+
+    // ======================================
+    // 🔄 PANEL COUNTDOWN
+    // ======================================
+
+    if (
+        !panelUpdateTimer
+    ) {
+
+        panelUpdateTimer =
+            setInterval(
+                async () => {
+
+                    try {
+
+                        const data =
+                            db.load();
+
+                        const lottery =
+                            getLottery(
+                                data
+                            );
+
+                        if (
+                            lottery.channelId &&
+                            lottery.messageId
+                        ) {
+
+                            await updateLotteryPanel(
+                                lotteryClient
+                            );
+                        }
+
+                    } catch (
+                        error
+                    ) {
+
+                        console.error(
+                            "[Lottery Panel Timer]",
+                            error
+                        );
+                    }
+
+                },
+                1000
+            );
+    }
+}
+
+// ==========================================
+// 🎟️ BUY TICKET
+// ==========================================
+
+async function buyTicket(
+    interaction,
+    selectedNumber
+) {
+
+    const data =
+        db.load();
+
+    const lottery =
+        getLottery(
+            data
+        );
+
+    const userId =
+        interaction.user.id;
+
+    // ======================================
+    // 🎟️ CHECK USER LIMIT
+    // ======================================
+
+    const userTickets =
+        getUserTickets(
+            lottery,
+            userId
+        );
+
+    if (
+        userTickets.length >=
+        MAX_TICKETS_PER_USER
+    ) {
+
+        return interaction.reply({
+
+            content:
+                [
+                    "❌ **Bạn đã đạt giới hạn vé.**",
+                    "",
+                    `🎟️ Vé của bạn: ${userTickets.join(", ")}`,
+                    `📊 ${userTickets.length}/${MAX_TICKETS_PER_USER} vé`
+                ].join("\n"),
+
+            flags:
+                MessageFlags.Ephemeral
+        });
+    }
+
+    // ======================================
+    // 🔢 DETERMINE TICKET
+    // ======================================
+
+    let ticketNumber;
+
+    if (
+        selectedNumber !== null &&
+        selectedNumber !== undefined
+    ) {
+
+        if (
+            !Number.isInteger(
+                selectedNumber
+            ) ||
+            selectedNumber <
+                MIN_NUMBER ||
+            selectedNumber >
+                MAX_NUMBER
+        ) {
+
+            return interaction.reply({
+
+                content:
+                    "❌ Số vé phải từ `00000` đến `99999`.",
+
+                flags:
+                    MessageFlags.Ephemeral
+            });
+        }
+
+        ticketNumber =
+            padTicket(
+                selectedNumber
+            );
+
+        if (
+            isNumberTaken(
+                lottery,
+                ticketNumber
+            )
+        ) {
+
+            return interaction.reply({
+
+                content:
+                    `❌ Số vé \`${ticketNumber}\` đã có người mua.`,
+
+                flags:
+                    MessageFlags.Ephemeral
+            });
+        }
+
+    } else {
+
+        ticketNumber =
+            getRandomTicket(
+                lottery
+            );
+
+        if (
+            !ticketNumber
+        ) {
+
+            return interaction.reply({
+
+                content:
+                    "❌ Đã hết số vé trong kỳ này.",
+
+                flags:
+                    MessageFlags.Ephemeral
+            });
+        }
+    }
+
+    // ======================================
+    // 💰 CHECK BALANCE
+    // ======================================
+
+    const user =
+        User.getOrCreate(
+            userId
+        );
+
+    const balance =
+        Number(
+            user.balance || 0
+        );
+
+    if (
+        balance <
+        TICKET_PRICE
+    ) {
+
+        return interaction.reply({
+
+            content:
+                [
+                    "❌ **Bạn không đủ Mora.**",
+                    "",
+                    `🪙 Cần: **${money(TICKET_PRICE)} Mora**`,
+                    `💰 Bạn có: **${money(balance)} Mora**`
+                ].join("\n"),
+
+            flags:
+                MessageFlags.Ephemeral
+        });
+    }
+
+    // ======================================
+    // 💰 TRỪ TIỀN
+    // ======================================
+
+    const removed =
+        User.removeBalance(
+            userId,
+            TICKET_PRICE
+        );
+
+    if (
+        removed === false
+    ) {
+
+        return interaction.reply({
+
+            content:
+                "❌ Không thể trừ Mora của bạn. Vui lòng thử lại.",
+
+            flags:
+                MessageFlags.Ephemeral
+        });
+    }
+
+    // ======================================
+    // 🎟️ ADD TICKET
+    // ======================================
+
+    lottery.tickets[
+        ticketNumber
+    ] =
+        userId;
+
+    // ======================================
+    // 💰 ADD JACKPOT
+    // ======================================
+
+    lottery.jackpot +=
+        TICKET_PRICE;
+
+    await saveLottery(
+        data
+    );
+
+    // ======================================
+    // 🎉 SUCCESS
+    // ======================================
+
+    const updatedUser =
+        User.getOrCreate(
+            userId
+        );
+
+    const newBalance =
+        Number(
+            updatedUser.balance || 0
+        );
+
+    await interaction.reply({
+
+        content:
+            [
+                "🎟️ **MUA VÉ THÀNH CÔNG!**",
+                "",
+                `🔢 Số vé: **${ticketNumber}**`,
+                `🪙 Giá vé: **${money(TICKET_PRICE)} Mora**`,
+                `💰 Jackpot: **${money(lottery.jackpot)} Mora**`,
+                "",
+                `🎟️ Vé của bạn: **${getUserTickets(lottery, userId).length}/${MAX_TICKETS_PER_USER}**`,
+                `💳 Số dư còn lại: **${money(newBalance)} Mora**`
+            ].join("\n"),
+
+        flags:
+            MessageFlags.Ephemeral
+    });
+
+    await updateLotteryPanel(
+        interaction.client
+    );
+}
+
+// ==========================================
+// 🔢 CUSTOM NUMBER MODAL
+// ==========================================
+
+async function openCustomModal(
+    interaction
+) {
+
+    const modal =
+        new ModalBuilder()
+            .setCustomId(
+                "lottery_custom_modal"
+            )
+            .setTitle(
+                "🔢 Chọn số vé"
+            );
+
+    const input =
+        new TextInputBuilder()
+            .setCustomId(
+                "lottery_number"
+            )
+            .setLabel(
+                "Nhập 5 chữ số"
+            )
+            .setPlaceholder(
+                "Ví dụ: 01234"
+            )
+            .setStyle(
+                TextInputStyle.Short
+            )
+            .setMinLength(
+                5
+            )
+            .setMaxLength(
+                5
+            )
+            .setRequired(
+                true
+            );
+
+    modal.addComponents(
+
+        new ActionRowBuilder()
+            .addComponents(
+                input
+            )
+    );
+
+    return interaction.showModal(
+        modal
+    );
+}
+
+// ==========================================
+// 🎟️ SHOW MY TICKETS
+// ==========================================
+
+async function showMyTickets(
+    interaction
+) {
+
+    const data =
+        db.load();
+
+    const lottery =
+        getLottery(
+            data
+        );
+
+    const tickets =
+        getUserTickets(
+            lottery,
+            interaction.user.id
+        );
+
+    if (
+        tickets.length === 0
+    ) {
+
+        return interaction.reply({
+
+            content:
+                "🎟️ Bạn chưa có vé trong kỳ hiện tại.",
+
+            flags:
+                MessageFlags.Ephemeral
+        });
+    }
+
+    return interaction.reply({
+
+        content:
+            [
+                "🎟️ **VÉ CỦA BẠN**",
+                "",
+                tickets
+                    .map(
+                        (ticket, index) =>
+                            `${index + 1}. \`${ticket}\``
+                    )
+                    .join("\n"),
+                "",
+                `📊 ${tickets.length}/${MAX_TICKETS_PER_USER} vé`
+            ].join("\n"),
+
+        flags:
+            MessageFlags.Ephemeral
     });
 }
 
 // ==========================================
-// 🛒 SHOP ROUTER
+// ⚙️ SETUP
 // ==========================================
 
-async function routeShop(interaction) {
+async function setupLottery(
+    interaction
+) {
+
+    if (
+        !interaction.member.permissions.has(
+            PermissionFlagsBits.Administrator
+        )
+    ) {
+
+        return interaction.reply({
+
+            content:
+                "❌ Chỉ Admin mới có thể setup khu vé số.",
+
+            flags:
+                MessageFlags.Ephemeral
+        });
+    }
+
+    const data =
+        db.load();
+
+    const lottery =
+        getLottery(
+            data
+        );
+
+    // ======================================
+    // 🧹 DELETE OLD PANEL
+    // ======================================
+
+    if (
+        lottery.channelId &&
+        lottery.messageId
+    ) {
+
+        try {
+
+            const oldChannel =
+                await interaction.client.channels.fetch(
+                    lottery.channelId
+                );
+
+            if (
+                oldChannel &&
+                oldChannel.isTextBased()
+            ) {
+
+                const oldMessage =
+                    await oldChannel.messages.fetch(
+                        lottery.messageId
+                    )
+                    .catch(
+                        () => null
+                    );
+
+                if (
+                    oldMessage
+                ) {
+
+                    await oldMessage.delete()
+                        .catch(
+                            () => {}
+                        );
+                }
+            }
+
+        } catch {
+            // Ignore old panel errors
+        }
+    }
+
+    // ======================================
+    // 🎰 RESET PANEL LOCATION
+    // ======================================
+
+    lottery.channelId =
+        interaction.channel.id;
+
+    lottery.messageId =
+        null;
+
+    // ======================================
+    // 🎰 NEW ROUND IF NEEDED
+    // ======================================
+
+    if (
+        !lottery.nextDrawAt ||
+        Number(
+            lottery.nextDrawAt
+        ) <= Date.now()
+    ) {
+
+        lottery.nextDrawAt =
+            Date.now() +
+            ROUND_DURATION;
+    }
+
+    // ======================================
+    // 📌 SEND ONLY ONE PANEL
+    // ======================================
+
+    const message =
+        await interaction.channel.send({
+
+            embeds: [
+                createLotteryEmbed(
+                    lottery
+                )
+            ],
+
+            components:
+                createLotteryButtons()
+        });
+
+    lottery.messageId =
+        message.id;
+
+    await saveLottery(
+        data
+    );
+
+    startLotterySystem(
+        interaction.client
+    );
+
+    // ======================================
+    // 🧹 DELETE SETUP COMMAND
+    // ======================================
+
+    if (
+        interaction.message &&
+        interaction.message.deletable
+    ) {
+
+        await interaction.message
+            .delete()
+            .catch(
+                () => {}
+            );
+    }
+
+    // ======================================
+    // 📢 NO MESSAGE IN LOTTERY CHANNEL
+    // ======================================
+
+    return interaction.reply({
+
+        content:
+            `✅ Đã setup khu vé số tại ${interaction.channel}.\n` +
+            "🎟️ Panel vé số đã được tạo.",
+
+        flags:
+            MessageFlags.Ephemeral
+    });
+}
+
+// ==========================================
+// ❌ REMOVE SETUP
+// ==========================================
+
+async function removeLotterySetup(
+    interaction
+) {
+
+    if (
+        !interaction.member.permissions.has(
+            PermissionFlagsBits.Administrator
+        )
+    ) {
+
+        return interaction.reply({
+
+            content:
+                "❌ Chỉ Admin mới có thể hủy setup.",
+
+            flags:
+                MessageFlags.Ephemeral
+        });
+    }
+
+    const data =
+        db.load();
+
+    const lottery =
+        getLottery(
+            data
+        );
+
+    const channelId =
+        lottery.channelId;
+
+    const messageId =
+        lottery.messageId;
+
+    lottery.channelId =
+        null;
+
+    lottery.messageId =
+        null;
+
+    await saveLottery(
+        data
+    );
+
+    // ======================================
+    // 🗑️ DELETE PANEL
+    // ======================================
+
+    if (
+        channelId &&
+        messageId
+    ) {
+
+        try {
+
+            const channel =
+                await interaction.client.channels.fetch(
+                    channelId
+                );
+
+            if (
+                channel &&
+                channel.isTextBased()
+            ) {
+
+                const message =
+                    await channel.messages.fetch(
+                        messageId
+                    )
+                    .catch(
+                        () => null
+                    );
+
+                if (
+                    message
+                ) {
+
+                    await message.delete()
+                        .catch(
+                            () => {}
+                        );
+                }
+            }
+
+        } catch (error) {
+
+            console.log(
+                "[Lottery Remove]",
+                error.message
+            );
+        }
+    }
+
+    return interaction.reply({
+
+        content:
+            "✅ Đã hủy setup khu vé số.",
+
+        flags:
+            MessageFlags.Ephemeral
+    });
+}
+
+// ==========================================
+// 🔘 INTERACTION
+// ==========================================
+
+async function handleLotteryInteraction(
+    interaction
+) {
+
+    if (
+        !interaction.isButton() &&
+        !interaction.isModalSubmit()
+    ) {
+
+        return false;
+    }
 
     const id =
         interaction.customId || "";
 
     if (
-        id === "shop_profile"
+        !id.startsWith(
+            "lottery_"
+        )
     ) {
 
-        return profile.execute(
-            interaction
-        );
+        return false;
     }
 
+    startLotterySystem(
+        interaction.client
+    );
+
+    // ======================================
+    // 🔘 BUTTON
+    // ======================================
+
     if (
-        id === "shop_inventory"
+        interaction.isButton()
     ) {
 
-        return inventory.execute(
-            interaction
-        );
+        if (
+            id ===
+            "lottery_random"
+        ) {
+
+            await buyTicket(
+                interaction,
+                null
+            );
+
+            return true;
+        }
+
+        if (
+            id ===
+            "lottery_custom"
+        ) {
+
+            await openCustomModal(
+                interaction
+            );
+
+            return true;
+        }
+
+        if (
+            id ===
+            "lottery_check"
+        ) {
+
+            await showMyTickets(
+                interaction
+            );
+
+            return true;
+        }
+
+        if (
+            id ===
+            "lottery_refresh"
+        ) {
+
+            const data =
+                db.load();
+
+            const lottery =
+                getLottery(
+                    data
+                );
+
+            return interaction.update({
+
+                embeds: [
+                    createLotteryEmbed(
+                        lottery
+                    )
+                ],
+
+                components:
+                    createLotteryButtons()
+            });
+        }
+
+        return false;
     }
 
-    if (
-        id === "shop_close"
-    ) {
-
-        return interaction.update({
-
-            content:
-                "🍃 Cửa hàng đã đóng.",
-
-            embeds: [],
-
-            components: []
-        });
-    }
+    // ======================================
+    // 🪟 MODAL
+    // ======================================
 
     if (
-        id.startsWith("shop_prev_")
+        interaction.isModalSubmit() &&
+        id ===
+            "lottery_custom_modal"
     ) {
 
-        const page =
-            Number(
-                id.split("_")[2]
-            ) || 0;
+        const raw =
+            interaction.fields
+                .getTextInputValue(
+                    "lottery_number"
+                )
+                .trim();
 
-        return updateShop(
-            interaction,
-            Math.max(
-                0,
-                page - 1
+        if (
+            !/^[0-9]{5}$/.test(
+                raw
             )
-        );
-    }
+        ) {
 
-    if (
-        id.startsWith("shop_next_")
-    ) {
+            return interaction.reply({
 
-        const page =
+                content:
+                    "❌ Vui lòng nhập đúng 5 chữ số.",
+
+                flags:
+                    MessageFlags.Ephemeral
+            });
+        }
+
+        const number =
             Number(
-                id.split("_")[2]
-            ) || 0;
+                raw
+            );
 
-        return updateShop(
+        await buyTicket(
             interaction,
-            page + 1
+            number
         );
-    }
 
-    if (
-        id.startsWith("shop_refresh_")
-    ) {
-
-        const page =
-            Number(
-                id.split("_")[2]
-            ) || 0;
-
-        return updateShop(
-            interaction,
-            page
-        );
+        return true;
     }
 
     return false;
 }
 
 // ==========================================
-// 🔄 UPDATE SHOP
-// ==========================================
-
-async function updateShop(
-    interaction,
-    page
-) {
-
-    const result =
-        shop.createShopEmbed(
-            page
-        );
-
-    return interaction.update({
-
-        embeds: [
-            result.embed
-        ],
-
-        components: [
-
-            shop.createButtons(
-                result.page,
-                result.maxPage
-            )
-        ]
-    });
-}
-
-// ==========================================
-// 📤 EXPORT
+// 💬 COMMAND
 // ==========================================
 
 module.exports = {
-    handleInteraction
-};
 
+    name:
+        "lottery",
+
+    aliases: [
+        "vé số",
+        "veso"
+    ],
+
+    description:
+        "Vé số Venti.",
+
+    usage:
+        "Vlottery",
+
+    async execute(
+        message,
+        args
+    ) {
+
+        startLotterySystem(
+            message.client
+        );
+
+        const subcommand =
+            args[0]
+                ? args[0].toLowerCase()
+                : "";
+
+        // ==================================
+        // ⚙️ SETUP
+        // ==================================
+
+        if (
+            subcommand ===
+            "setup"
+        ) {
+
+            const fakeInteraction = {
+
+                member:
+                    message.member,
+
+                channel:
+                    message.channel,
+
+                client:
+                    message.client,
+
+                user:
+                    message.author,
+
+                message:
+                    message,
+
+                reply:
+                    async options =>
+                        message.reply(
+                            options
+                        )
+            };
+
+            return setupLottery(
+                fakeInteraction
+            );
+        }
+
+        // ==================================
+        // ❌ REMOVE SETUP
+        // ==================================
+
+        if (
+            subcommand ===
+            "huysetup"
+        ) {
+
+            const fakeInteraction = {
+
+                member:
+                    message.member,
+
+                channel:
+                    message.channel,
+
+                client:
+                    message.client,
+
+                user:
+                    message.author,
+
+                message:
+                    message,
+
+                reply:
+                    async options =>
+                        message.reply(
+                            options
+                        )
+            };
+
+            return removeLotterySetup(
+                fakeInteraction
+            );
+        }
+
+        // ==================================
+        // 🎟️ CHECK
+        // ==================================
+
+        if (
+            subcommand ===
+            "check"
+        ) {
+
+            const data =
+                db.load();
+
+            const lottery =
+                getLottery(
+                    data
+                );
+
+            const tickets =
+                getUserTickets(
+                    lottery,
+                    message.author.id
+                );
+
+            if (
+                tickets.length === 0
+            ) {
+
+                return message.reply(
+                    "🎟️ Bạn chưa có vé trong kỳ hiện tại."
+                );
+            }
+
+            return message.reply(
+                [
+                    "🎟️ **VÉ SỐ CỦA BẠN**",
+                    "",
+                    tickets
+                        .map(
+                            (ticket, index) =>
+                                `${index + 1}. \`${ticket}\``
+                        )
+                        .join("\n"),
+                    "",
+                    `📊 ${tickets.length}/${MAX_TICKETS_PER_USER} vé`
+                ].join("\n")
+            );
+        }
+
+        // ==================================
+        // 📊 INFO
+        // ==================================
+
+        const data =
+            db.load();
+
+        const lottery =
+            getLottery(
+                data
+            );
+
+        return message.reply({
+
+            embeds: [
+                createLotteryEmbed(
+                    lottery
+                )
+            ]
+        });
+    },
+
+    handleInteraction:
+        handleLotteryInteraction,
+
+    startLotterySystem:
+        startLotterySystem
+};
