@@ -1,3 +1,4 @@
+
 const {
     EmbedBuilder,
     ActionRowBuilder,
@@ -101,7 +102,6 @@ async function handleInteraction(interaction) {
 
             // ==================================
             // 🏦 BANK
-            // QUAN TRỌNG: ĐẶT TRƯỚC ROUTER KHÁC
             // ==================================
 
             if (
@@ -143,6 +143,10 @@ async function handleInteraction(interaction) {
                         interaction
                     );
                 }
+
+                console.error(
+                    "❌ Lottery không có handleInteraction()"
+                );
 
                 return false;
             }
@@ -292,6 +296,31 @@ async function handleInteraction(interaction) {
                 );
             }
 
+            // ==================================
+            // 🎰 LOTTERY MODAL
+            // ==================================
+
+            if (
+                id.startsWith("lottery_")
+            ) {
+
+                if (
+                    typeof lottery.handleInteraction ===
+                    "function"
+                ) {
+
+                    return lottery.handleInteraction(
+                        interaction
+                    );
+                }
+
+                console.error(
+                    "❌ Lottery không có handleInteraction()"
+                );
+
+                return false;
+            }
+
             return false;
         }
 
@@ -308,33 +337,35 @@ async function handleInteraction(interaction) {
         // ❌ ERROR RESPONSE
         // ======================================
 
-        if (
-            interaction.replied ||
-            interaction.deferred
-        ) {
+        try {
 
-            return interaction
-                .followUp({
+            if (
+                interaction.replied ||
+                interaction.deferred
+            ) {
+
+                return interaction.followUp({
 
                     content:
                         "🍃 Có lỗi xảy ra khi xử lý thao tác này.",
 
                     ephemeral:
                         true
-                })
-                .catch(() => {});
-        }
+                });
+            }
 
-        return interaction
-            .reply({
+            return interaction.reply({
 
                 content:
                     "🍃 Có lỗi xảy ra khi xử lý thao tác này.",
 
                 ephemeral:
                     true
-            })
-            .catch(() => {});
+            });
+
+        } catch {
+            return;
+        }
     }
 }
 
@@ -405,7 +436,7 @@ async function routeInventory(interaction) {
     }
 
     // ======================================
-    // 👤 BACK TO PROFILE
+    // 👤 BACK
     // ======================================
 
     if (
@@ -462,10 +493,6 @@ async function routeInventoryMenu(interaction) {
     const category =
         interaction.values?.[0];
 
-    // ======================================
-    // ❌ INVALID CATEGORY
-    // ======================================
-
     if (
         !category ||
         !INVENTORY_CATEGORIES[category]
@@ -496,10 +523,6 @@ async function updateInventory(
     category
 ) {
 
-    // ======================================
-    // 📦 DATABASE MODELS
-    // ======================================
-
     const User =
         require(
             "../database/models/User"
@@ -510,18 +533,10 @@ async function updateInventory(
             "../database/models/Item"
         );
 
-    // ======================================
-    // 👤 GET USER
-    // ======================================
-
     const user =
         User.getOrCreate(
             interaction.user.id
         );
-
-    // ======================================
-    // 📂 CATEGORY
-    // ======================================
 
     const data =
         INVENTORY_CATEGORIES[category];
@@ -538,16 +553,8 @@ async function updateInventory(
         });
     }
 
-    // ======================================
-    // 🎒 USER INVENTORY
-    // ======================================
-
     const userInventory =
         user.inventory || {};
-
-    // ======================================
-    // 📦 ITEMS
-    // ======================================
 
     const items =
         data.items
@@ -572,10 +579,6 @@ async function updateInventory(
             })
             .filter(Boolean);
 
-    // ======================================
-    // 📝 INVENTORY CONTENT
-    // ======================================
-
     let content;
 
     if (
@@ -589,17 +592,11 @@ async function updateInventory(
 
         content =
             items
-                .map(item => {
-
-                    return `${item.emoji || "📦"} **${item.name}** · ×${item.amount}`;
-
-                })
+                .map(item =>
+                    `${item.emoji || "📦"} **${item.name}** · ×${item.amount}`
+                )
                 .join("\n");
     }
-
-    // ======================================
-    // 🔢 TOTAL ITEMS
-    // ======================================
 
     const total =
         Object.values(
@@ -609,19 +606,13 @@ async function updateInventory(
             (
                 sum,
                 amount
-            ) => {
-
-                return sum +
-                    Number(
-                        amount || 0
-                    );
-            },
+            ) =>
+                sum +
+                Number(
+                    amount || 0
+                ),
             0
         );
-
-    // ======================================
-    // 🎨 EMBED
-    // ======================================
 
     const displayName =
         interaction.user.globalName ||
@@ -645,8 +636,8 @@ async function updateInventory(
             )
 
             .setDescription(
-                [
 
+                [
                     "୨୧ ───────── ୨୧",
 
                     `        ${data.name}`,
@@ -675,10 +666,6 @@ async function updateInventory(
             })
 
             .setTimestamp();
-
-    // ======================================
-    // 📂 CATEGORY SELECT MENU
-    // ======================================
 
     const menu =
         new StringSelectMenuBuilder()
@@ -736,10 +723,6 @@ async function updateInventory(
                 menu
             );
 
-    // ======================================
-    // 🔘 INVENTORY BUTTONS
-    // ======================================
-
     const buttons =
         new ActionRowBuilder()
             .addComponents(
@@ -781,10 +764,6 @@ async function updateInventory(
                     )
             );
 
-    // ======================================
-    // 🔄 UPDATE MESSAGE
-    // ======================================
-
     return interaction.update({
 
         embeds: [
@@ -807,10 +786,6 @@ async function routeShop(interaction) {
     const id =
         interaction.customId || "";
 
-    // ======================================
-    // 👤 PROFILE
-    // ======================================
-
     if (
         id === "shop_profile"
     ) {
@@ -820,10 +795,6 @@ async function routeShop(interaction) {
         );
     }
 
-    // ======================================
-    // 🎒 INVENTORY
-    // ======================================
-
     if (
         id === "shop_inventory"
     ) {
@@ -832,10 +803,6 @@ async function routeShop(interaction) {
             interaction
         );
     }
-
-    // ======================================
-    // ❌ CLOSE
-    // ======================================
 
     if (
         id === "shop_close"
@@ -852,10 +819,6 @@ async function routeShop(interaction) {
         });
     }
 
-    // ======================================
-    // ◀ PREVIOUS PAGE
-    // ======================================
-
     if (
         id.startsWith("shop_prev_")
     ) {
@@ -865,21 +828,14 @@ async function routeShop(interaction) {
                 id.split("_")[2]
             ) || 0;
 
-        const nextPage =
+        return updateShop(
+            interaction,
             Math.max(
                 0,
                 page - 1
-            );
-
-        return updateShop(
-            interaction,
-            nextPage
+            )
         );
     }
-
-    // ======================================
-    // ▶ NEXT PAGE
-    // ======================================
 
     if (
         id.startsWith("shop_next_")
@@ -895,10 +851,6 @@ async function routeShop(interaction) {
             page + 1
         );
     }
-
-    // ======================================
-    // 🔄 REFRESH SHOP
-    // ======================================
 
     if (
         id.startsWith("shop_refresh_")
@@ -932,30 +884,17 @@ async function updateShop(
             page
         );
 
-    const embed =
-        result.embed;
-
-    const currentPage =
-        result.page;
-
-    const maxPage =
-        result.maxPage;
-
-    // ======================================
-    // 🔄 UPDATE SHOP MESSAGE
-    // ======================================
-
     return interaction.update({
 
         embeds: [
-            embed
+            result.embed
         ],
 
         components: [
 
             shop.createButtons(
-                currentPage,
-                maxPage
+                result.page,
+                result.maxPage
             )
         ]
     });
@@ -968,3 +907,4 @@ async function updateShop(
 module.exports = {
     handleInteraction
 };
+
