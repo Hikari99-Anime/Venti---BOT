@@ -84,15 +84,14 @@ module.exports = {
                     [
                         "**MORA WALLET**",
                         "",
-                        "> `💰` **Tiền mặt**",
-                        `> \`+\` **${money(balance)} Mora**`,
+                        "- `💰` **Tiền mặt**",
+                        `> **${money(balance)} Mora**`,
                         "",
-                        "> `🏦` **Ngân hàng**",
-                        `> \`+\` **${money(bank)} Mora**`,
+                        "- `🏦` **Ngân hàng**",
+                        `> **${money(bank)} Mora**`,
                         "",
-                        "────────────────────",
                         "",
-                        "> `💎` **Tổng tài sản**",
+                        "- `💎` **Tổng tài sản**",
                         `> \`+\` **${money(total)} Mora**`
                     ].join("\n")
                 )

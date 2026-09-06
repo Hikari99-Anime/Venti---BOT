@@ -1,4 +1,3 @@
-
 const {
     EmbedBuilder,
     ActionRowBuilder,
@@ -44,12 +43,22 @@ const beg =
     require("../commands/economy/beg");
 
 // ==========================================
-// 🎒 INVENTORY DATA
+// 🎰 LOTTERY
+// ==========================================
+
+const lottery =
+    require("../commands/games/lottery");
+
+// ==========================================
+// 🎒 INVENTORY CATEGORIES
 // ==========================================
 
 const INVENTORY_CATEGORIES = {
+
     farm: {
-        name: "🌾 Nông sản",
+
+        name:
+            "🌾 Nông sản",
 
         items: [
             "apple",
@@ -59,7 +68,9 @@ const INVENTORY_CATEGORIES = {
     },
 
     fish: {
-        name: "🐟 Hải sản",
+
+        name:
+            "🐟 Hải sản",
 
         items: [
             "small_fish",
@@ -75,9 +86,8 @@ const INVENTORY_CATEGORIES = {
 // 🎯 MAIN INTERACTION HANDLER
 // ==========================================
 
-async function handleInteraction(
-    interaction
-) {
+async function handleInteraction(interaction) {
+
     try {
 
         // ======================================
@@ -91,13 +101,13 @@ async function handleInteraction(
 
             // ==================================
             // 🏦 BANK
-            // QUAN TRỌNG: PHẢI ĐẶT TRƯỚC
-            // CÁC ROUTER KHÁC
+            // QUAN TRỌNG: ĐẶT TRƯỚC ROUTER KHÁC
             // ==================================
 
             if (
                 id.startsWith("bank_")
             ) {
+
                 return bank.handleInteraction(
                     interaction
                 );
@@ -110,9 +120,31 @@ async function handleInteraction(
             if (
                 id.startsWith("beg_")
             ) {
+
                 return beg.handleInteraction(
                     interaction
                 );
+            }
+
+            // ==================================
+            // 🎰 LOTTERY
+            // ==================================
+
+            if (
+                id.startsWith("lottery_")
+            ) {
+
+                if (
+                    typeof lottery.handleInteraction ===
+                    "function"
+                ) {
+
+                    return lottery.handleInteraction(
+                        interaction
+                    );
+                }
+
+                return false;
             }
 
             // ==================================
@@ -122,6 +154,7 @@ async function handleInteraction(
             if (
                 id.startsWith("help_")
             ) {
+
                 return help.execute(
                     interaction
                 );
@@ -135,18 +168,7 @@ async function handleInteraction(
                 id.startsWith("profile_")
             ) {
 
-                if (
-                    id ===
-                        "profile_inventory" ||
-                    id ===
-                        "profile_shop"
-                ) {
-                    return routeProfile(
-                        interaction
-                    );
-                }
-
-                return profile.execute(
+                return routeProfile(
                     interaction
                 );
             }
@@ -158,6 +180,7 @@ async function handleInteraction(
             if (
                 id.startsWith("inventory_")
             ) {
+
                 return routeInventory(
                     interaction
                 );
@@ -170,6 +193,7 @@ async function handleInteraction(
             if (
                 id.startsWith("shop_")
             ) {
+
                 return routeShop(
                     interaction
                 );
@@ -182,6 +206,7 @@ async function handleInteraction(
             if (
                 id.startsWith("fish_")
             ) {
+
                 return fish.execute(
                     interaction
                 );
@@ -208,6 +233,7 @@ async function handleInteraction(
             if (
                 id === "help_menu"
             ) {
+
                 return helpMenu.execute(
                     interaction
                 );
@@ -218,9 +244,9 @@ async function handleInteraction(
             // ==================================
 
             if (
-                id ===
-                "inventory_category"
+                id === "inventory_category"
             ) {
+
                 return routeInventoryMenu(
                     interaction
                 );
@@ -230,7 +256,7 @@ async function handleInteraction(
         }
 
         // ======================================
-        // 🪟 MODAL
+        // 🪟 MODAL SUBMIT
         // ======================================
 
         if (
@@ -242,14 +268,12 @@ async function handleInteraction(
 
             // ==================================
             // 🏦 BANK MODAL
-            // QUAN TRỌNG
             // ==================================
 
             if (
-                id.startsWith(
-                    "bank_modal_"
-                )
+                id.startsWith("bank_modal_")
             ) {
+
                 return bank.handleInteraction(
                     interaction
                 );
@@ -260,10 +284,9 @@ async function handleInteraction(
             // ==================================
 
             if (
-                id.startsWith(
-                    "beg_modal_"
-                )
+                id.startsWith("beg_modal_")
             ) {
+
                 return beg.handleInteraction(
                     interaction
                 );
@@ -292,18 +315,24 @@ async function handleInteraction(
 
             return interaction
                 .followUp({
+
                     content:
                         "🍃 Có lỗi xảy ra khi xử lý thao tác này.",
-                    ephemeral: true
+
+                    ephemeral:
+                        true
                 })
                 .catch(() => {});
         }
 
         return interaction
             .reply({
+
                 content:
                     "🍃 Có lỗi xảy ra khi xử lý thao tác này.",
-                ephemeral: true
+
+                ephemeral:
+                    true
             })
             .catch(() => {});
     }
@@ -313,21 +342,19 @@ async function handleInteraction(
 // 👤 PROFILE ROUTER
 // ==========================================
 
-async function routeProfile(
-    interaction
-) {
+async function routeProfile(interaction) {
 
     const id =
-        interaction.customId;
+        interaction.customId || "";
 
     // ======================================
     // 🎒 INVENTORY
     // ======================================
 
     if (
-        id ===
-        "profile_inventory"
+        id === "profile_inventory"
     ) {
+
         return inventory.execute(
             interaction
         );
@@ -338,13 +365,17 @@ async function routeProfile(
     // ======================================
 
     if (
-        id ===
-        "profile_shop"
+        id === "profile_shop"
     ) {
+
         return shop.execute(
             interaction
         );
     }
+
+    // ======================================
+    // 👤 PROFILE
+    // ======================================
 
     return profile.execute(
         interaction
@@ -355,12 +386,10 @@ async function routeProfile(
 // 🎒 INVENTORY BUTTON ROUTER
 // ==========================================
 
-async function routeInventory(
-    interaction
-) {
+async function routeInventory(interaction) {
 
     const id =
-        interaction.customId;
+        interaction.customId || "";
 
     // ======================================
     // 🛒 SHOP
@@ -369,18 +398,20 @@ async function routeInventory(
     if (
         id === "inventory_shop"
     ) {
+
         return shop.execute(
             interaction
         );
     }
 
     // ======================================
-    // 👤 BACK
+    // 👤 BACK TO PROFILE
     // ======================================
 
     if (
         id === "inventory_back"
     ) {
+
         return profile.execute(
             interaction
         );
@@ -395,6 +426,7 @@ async function routeInventory(
     ) {
 
         return interaction.update({
+
             content:
                 "🍃 Chiếc túi đã được đóng lại.",
 
@@ -422,27 +454,30 @@ async function routeInventory(
 }
 
 // ==========================================
-// 📂 INVENTORY SELECT MENU
+// 📂 INVENTORY SELECT MENU ROUTER
 // ==========================================
 
-async function routeInventoryMenu(
-    interaction
-) {
+async function routeInventoryMenu(interaction) {
 
     const category =
-        interaction.values[0];
+        interaction.values?.[0];
+
+    // ======================================
+    // ❌ INVALID CATEGORY
+    // ======================================
 
     if (
-        !INVENTORY_CATEGORIES[
-            category
-        ]
+        !category ||
+        !INVENTORY_CATEGORIES[category]
     ) {
 
         return interaction.reply({
+
             content:
                 "🍃 Danh mục không hợp lệ.",
 
-            ephemeral: true
+            ephemeral:
+                true
         });
     }
 
@@ -461,6 +496,10 @@ async function updateInventory(
     category
 ) {
 
+    // ======================================
+    // 📦 DATABASE MODELS
+    // ======================================
+
     const User =
         require(
             "../database/models/User"
@@ -471,44 +510,71 @@ async function updateInventory(
             "../database/models/Item"
         );
 
+    // ======================================
+    // 👤 GET USER
+    // ======================================
+
     const user =
         User.getOrCreate(
             interaction.user.id
         );
 
-    const data =
-        INVENTORY_CATEGORIES[
-            category
-        ];
+    // ======================================
+    // 📂 CATEGORY
+    // ======================================
 
-    const inventory =
+    const data =
+        INVENTORY_CATEGORIES[category];
+
+    if (!data) {
+
+        return interaction.reply({
+
+            content:
+                "🍃 Danh mục không hợp lệ.",
+
+            ephemeral:
+                true
+        });
+    }
+
+    // ======================================
+    // 🎒 USER INVENTORY
+    // ======================================
+
+    const userInventory =
         user.inventory || {};
+
+    // ======================================
+    // 📦 ITEMS
+    // ======================================
 
     const items =
         data.items
             .map(itemId => {
 
                 const item =
-                    Item.get(
-                        itemId
-                    );
+                    Item.get(itemId);
 
                 if (!item) {
                     return null;
                 }
 
                 return {
+
                     ...item,
 
                     amount:
                         Number(
-                            inventory[
-                                itemId
-                            ] || 0
+                            userInventory[itemId] || 0
                         )
                 };
             })
             .filter(Boolean);
+
+    // ======================================
+    // 📝 INVENTORY CONTENT
+    // ======================================
 
     let content;
 
@@ -523,39 +589,55 @@ async function updateInventory(
 
         content =
             items
-                .map(item =>
-                    `${item.emoji || "📦"} **${item.name}** · ×${item.amount}`
-                )
+                .map(item => {
+
+                    return `${item.emoji || "📦"} **${item.name}** · ×${item.amount}`;
+
+                })
                 .join("\n");
     }
 
+    // ======================================
+    // 🔢 TOTAL ITEMS
+    // ======================================
+
     const total =
         Object.values(
-            inventory
-        ).reduce(
+            userInventory
+        )
+        .reduce(
             (
                 sum,
                 amount
-            ) =>
-                sum +
-                Number(
-                    amount || 0
-                ),
+            ) => {
+
+                return sum +
+                    Number(
+                        amount || 0
+                    );
+            },
             0
         );
 
+    // ======================================
+    // 🎨 EMBED
+    // ======================================
+
+    const displayName =
+        interaction.user.globalName ||
+        interaction.user.username;
+
     const embed =
         new EmbedBuilder()
+
             .setColor(
                 "#A8DCC0"
             )
 
             .setAuthor({
+
                 name:
-                    `☁️ ${
-                        interaction.user.globalName ||
-                        interaction.user.username
-                    } · Venti`
+                    `☁️ ${displayName} · Venti`
             })
 
             .setTitle(
@@ -564,19 +646,30 @@ async function updateInventory(
 
             .setDescription(
                 [
+
                     "୨୧ ───────── ୨୧",
+
                     `        ${data.name}`,
+
                     "୨୧ ───────── ୨୧",
+
                     "",
+
                     content,
+
                     "",
+
                     "୨୧ ───────── ୨୧",
+
                     `☁️ Tổng vật phẩm · **${total}**`,
+
                     "🍃 Một chiếc túi nhỏ của bạn."
+
                 ].join("\n")
             )
 
             .setFooter({
+
                 text:
                     "☕ Venti · Cozy Inventory"
             })
@@ -584,11 +677,12 @@ async function updateInventory(
             .setTimestamp();
 
     // ======================================
-    // 📂 SELECT MENU
+    // 📂 CATEGORY SELECT MENU
     // ======================================
 
     const menu =
         new StringSelectMenuBuilder()
+
             .setCustomId(
                 "inventory_category"
             )
@@ -597,40 +691,44 @@ async function updateInventory(
                 "☁️ Chọn danh mục..."
             )
 
-            .addOptions({
+            .addOptions(
 
-                label:
-                    "Nông sản",
+                {
 
-                description:
-                    "Hoa quả và vật phẩm nông nghiệp",
+                    label:
+                        "Nông sản",
 
-                value:
-                    "farm",
+                    description:
+                        "Hoa quả và vật phẩm nông nghiệp",
 
-                emoji:
-                    "🌾",
+                    value:
+                        "farm",
 
-                default:
-                    category === "farm"
+                    emoji:
+                        "🌾",
 
-            }, {
+                    default:
+                        category === "farm"
+                },
 
-                label:
-                    "Hải sản",
+                {
 
-                description:
-                    "Những thứ bạn câu được",
+                    label:
+                        "Hải sản",
 
-                value:
-                    "fish",
+                    description:
+                        "Những thứ bạn câu được",
 
-                emoji:
-                    "🐟",
+                    value:
+                        "fish",
 
-                default:
-                    category === "fish"
-            });
+                    emoji:
+                        "🐟",
+
+                    default:
+                        category === "fish"
+                }
+            );
 
     const selectRow =
         new ActionRowBuilder()
@@ -639,7 +737,7 @@ async function updateInventory(
             );
 
     // ======================================
-    // 🔘 BUTTONS
+    // 🔘 INVENTORY BUTTONS
     // ======================================
 
     const buttons =
@@ -647,33 +745,45 @@ async function updateInventory(
             .addComponents(
 
                 new ButtonBuilder()
+
                     .setCustomId(
                         "inventory_refresh"
                     )
+
                     .setLabel(
                         "Làm mới"
                     )
+
                     .setEmoji(
                         "🔃"
                     )
+
                     .setStyle(
                         ButtonStyle.Secondary
                     ),
 
                 new ButtonBuilder()
+
                     .setCustomId(
                         "inventory_close"
                     )
+
                     .setLabel(
                         "Đóng"
                     )
+
                     .setEmoji(
                         "✖️"
                     )
+
                     .setStyle(
                         ButtonStyle.Danger
                     )
             );
+
+    // ======================================
+    // 🔄 UPDATE MESSAGE
+    // ======================================
 
     return interaction.update({
 
@@ -692,12 +802,10 @@ async function updateInventory(
 // 🛒 SHOP ROUTER
 // ==========================================
 
-async function routeShop(
-    interaction
-) {
+async function routeShop(interaction) {
 
     const id =
-        interaction.customId;
+        interaction.customId || "";
 
     // ======================================
     // 👤 PROFILE
@@ -706,6 +814,7 @@ async function routeShop(
     if (
         id === "shop_profile"
     ) {
+
         return profile.execute(
             interaction
         );
@@ -718,6 +827,7 @@ async function routeShop(
     if (
         id === "shop_inventory"
     ) {
+
         return inventory.execute(
             interaction
         );
@@ -743,13 +853,11 @@ async function routeShop(
     }
 
     // ======================================
-    // ◀ PREVIOUS
+    // ◀ PREVIOUS PAGE
     // ======================================
 
     if (
-        id.startsWith(
-            "shop_prev_"
-        )
+        id.startsWith("shop_prev_")
     ) {
 
         const page =
@@ -770,13 +878,11 @@ async function routeShop(
     }
 
     // ======================================
-    // ▶ NEXT
+    // ▶ NEXT PAGE
     // ======================================
 
     if (
-        id.startsWith(
-            "shop_next_"
-        )
+        id.startsWith("shop_next_")
     ) {
 
         const page =
@@ -791,13 +897,11 @@ async function routeShop(
     }
 
     // ======================================
-    // 🔄 REFRESH
+    // 🔄 REFRESH SHOP
     // ======================================
 
     if (
-        id.startsWith(
-            "shop_refresh_"
-        )
+        id.startsWith("shop_refresh_")
     ) {
 
         const page =
@@ -823,14 +927,23 @@ async function updateShop(
     page
 ) {
 
-    const {
-        embed,
-        page: currentPage,
-        maxPage
-    } =
+    const result =
         shop.createShopEmbed(
             page
         );
+
+    const embed =
+        result.embed;
+
+    const currentPage =
+        result.page;
+
+    const maxPage =
+        result.maxPage;
+
+    // ======================================
+    // 🔄 UPDATE SHOP MESSAGE
+    // ======================================
 
     return interaction.update({
 
@@ -839,6 +952,7 @@ async function updateShop(
         ],
 
         components: [
+
             shop.createButtons(
                 currentPage,
                 maxPage
@@ -854,4 +968,3 @@ async function updateShop(
 module.exports = {
     handleInteraction
 };
-
