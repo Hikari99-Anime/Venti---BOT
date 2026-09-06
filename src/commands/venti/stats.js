@@ -215,41 +215,38 @@ module.exports = {
                 )
 
                 .setDescription(
-                    "୨୧ ─────────────── ୨୧\n" +
                     "☁️ `🍃` **Một góc nhỏ của hành trình**\n" +
-                    "୨୧ ─────────────── ୨୧\n\n" +
 
-                    "● `💰` **Tài chính**\n" +
+                    "- `💰` **Tài chính**\n" +
                     `> \`💵 Ví         : ${balance.toLocaleString()} Mora\`\n` +
                     `> \`🏦 Ngân hàng  : ${bank.toLocaleString()} Mora\`\n` +
                     `> \`💎 Tổng       : ${totalMoney.toLocaleString()} Mora\`\n\n` +
 
-                    "● `⭐` **Tiến trình**\n" +
+                    "- `⭐` **Tiến trình**\n" +
                     `> \`🌟 Level      : ${level}\`\n` +
                     `> \`✨ XP         : ${xp.toLocaleString()} / ${nextXP.toLocaleString()}\`\n` +
                     `> \`${progressBar} ${xpPercent}%\`\n\n` +
 
-                    "● `🎮` **Mini Game**\n" +
+                    "- `🎮` **Mini Game**\n" +
                     `> \`🎮 Games      : ${games.toLocaleString()}\`\n` +
                     `> \`🏆 Wins       : ${wins.toLocaleString()}\`\n` +
                     `> \`💀 Losses     : ${losses.toLocaleString()}\`\n` +
                     `> \`🍀 Win Rate   : ${winRate}%\`\n\n` +
 
-                    "● `🎣` **Phiêu lưu**\n" +
+                    "- `🎣` **Phiêu lưu**\n" +
                     `> \`🐟 Cá đã bắt  : ${fish.toLocaleString()}\`\n` +
                     `> \`🌾 Thu hoạch  : ${farm.toLocaleString()}\`\n` +
                     `> \`📜 Quest      : ${quest.toLocaleString()}\`\n\n` +
 
-                    "● `🏆` **Thành tựu**\n" +
+                    "- `🏆` **Thành tựu**\n" +
                     `> \`🏅 Đã mở khóa : ${achievementCount}\`\n` +
                     `> \`🔥 Daily      : ${streak} ngày\`\n\n` +
 
-                    "● `💼` **Công việc**\n" +
+                    "- `💼` **Công việc**\n" +
                     `> \`💼 Đã làm     : ${work.toLocaleString()} lần\`\n\n` +
 
-                    "୨୧ ─────────────── ୨୧\n" +
-                    "☕ `🍃` **Chúc bạn một ngày thật chill**\n" +
-                    "୨୧ ─────────────── ୨୧"
+                    "☕ `🍃` **Chúc bạn một ngày thật chill**\n" 
+                
                 )
 
                 .setThumbnail(

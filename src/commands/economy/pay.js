@@ -43,7 +43,7 @@ module.exports = {
                         )
 
                         .setDescription(
-                            "● `🍃` **Hãy mention người bạn muốn chuyển Mora.**"
+                            "- `🍃` **Hãy mention người bạn muốn chuyển Mora.**"
                         )
                 ]
             });
@@ -66,7 +66,7 @@ module.exports = {
                         )
 
                         .setDescription(
-                            "● `🤖` **Bạn không thể chuyển Mora cho bot.**"
+                            "- `🤖` **Bạn không thể chuyển Mora cho bot.**"
                         )
                 ]
             });
@@ -92,7 +92,7 @@ module.exports = {
                         )
 
                         .setDescription(
-                            "● `🍃` **Bạn không thể chuyển Mora cho chính mình.**"
+                            "- `🍃` **Bạn không thể chuyển Mora cho chính mình.**"
                         )
                 ]
             });
@@ -126,7 +126,7 @@ module.exports = {
                         )
 
                         .setDescription(
-                            "● `💰` **Số Mora không hợp lệ.**\n" +
+                            "- `💰` **Số Mora không hợp lệ.**\n" +
                             "> Vui lòng nhập một số nguyên dương."
                         )
                 ]
@@ -163,7 +163,7 @@ module.exports = {
 
                         .setDescription(
                             [
-                                "● `❌` **Không đủ Mora**",
+                                "- `❌` **Không đủ Mora**",
                                 "",
                                 `> \`💰\` Số dư: **+${balance.toLocaleString("vi-VN")} Mora**`,
                                 `> \`💸\` Cần: **+${amount.toLocaleString("vi-VN")} Mora**`
@@ -206,7 +206,7 @@ module.exports = {
                         )
 
                         .setDescription(
-                            "● `❌` **Không thể thực hiện giao dịch.**"
+                            "- `❌` **Không thể thực hiện giao dịch.**"
                         )
                 ]
             });
@@ -242,17 +242,17 @@ module.exports = {
 
                     .setDescription(
                         [
-                            `● \`👤\` **Người nhận**`,
+                            `- \`👤\` **Người nhận**`,
                             `> ${target}`,
 
                             "",
 
-                            `● \`💰\` **Số tiền**`,
+                            `- \`💰\` **Số tiền**`,
                             `> +${amount.toLocaleString("vi-VN")} Mora`,
 
                             "",
 
-                            `● \`💳\` **Số dư còn lại**`,
+                            `- \`💳\` **Số dư còn lại**`,
                             `> +${Number(
                                 updatedSender.balance || 0
                             ).toLocaleString("vi-VN")} Mora`

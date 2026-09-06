@@ -235,11 +235,9 @@ function createEmbed(
             "💣 Dò Bom"
         )
         .setDescription(
-            "୨୧ ───────── ୨୧\n" +
             "💠 Chọn ô để tìm đá quý.\n" +
             "💣 Trúng bom sẽ mất cược.\n" +
             "💎 Càng mở nhiều ô, thưởng càng cao.\n" +
-            "୨୧ ───────── ୨୧\n\n" +
 
             `> 💸 Cược: **${game.bet.toLocaleString()} Mora**\n` +
             `> 💎 An toàn: **${game.revealed.length}**\n` +
@@ -438,12 +436,11 @@ module.exports = {
                                     "💰 Rút tiền thành công!"
                                 )
                                 .setDescription(
-                                    "୨୧ ───────── ୨୧\n" +
                                     `> 💎 Ô an toàn: **${game.revealed.length}**\n` +
                                     `> 📈 Multiplier: **x${multiplier}**\n` +
                                     `> 💰 Nhận: **+${reward.toLocaleString()} Mora**\n` +
-                                    `> 📊 Lãi: **${profit >= 0 ? "+" : ""}${profit.toLocaleString()} Mora**\n` +
-                                    "୨୧ ───────── ୨୧"
+                                    `> 📊 Lãi: **${profit >= 0 ? "+" : ""}${profit.toLocaleString()} Mora**\n` 
+                                    
                                 );
 
                         await interaction.update({

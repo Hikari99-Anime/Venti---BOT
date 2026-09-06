@@ -351,10 +351,10 @@ function farmEmbed(userId) {
                 "",
                 lines.join("\n\n"),
                 "",
-                "● `🌾` **Ô đất**",
+                "- `🌾` **Ô đất**",
                 `> \`${unlocked}/${total}\` ô đang mở`,
                 "",
-                "● `🌱` **Hướng dẫn**",
+                "- `🌱` **Hướng dẫn**",
                 "> Chọn ô đất để trồng cây.",
                 "> Hạt giống có thể mua tại Vshop."
             ].join("\n")

@@ -98,10 +98,10 @@ module.exports = {
                             )
                             .setDescription(
                                 [
-                                    "● `🛒` **Cách sử dụng**",
+                                    "- `🛒` **Cách sử dụng**",
                                     "> `Vbuy <item> [số lượng]`",
                                     "",
-                                    "● `🌱` **Ví dụ**",
+                                    "- `🌱` **Ví dụ**",
                                     "> `Vbuy apple 5`",
                                     "> `Vbuy small_fish 10`"
                                 ].join("\n")
@@ -131,10 +131,10 @@ module.exports = {
                             )
                             .setDescription(
                                 [
-                                    "● `📦` **Item**",
+                                    "- `📦` **Item**",
                                     `> \`${itemId}\``,
                                     "",
-                                    "● `❌` Item này không tồn tại trong shop."
+                                    "- `❌` Item này không tồn tại trong shop."
                                 ].join("\n")
                             )
                     ]
@@ -167,10 +167,10 @@ module.exports = {
                             )
                             .setDescription(
                                 [
-                                    "● `📦` **Item**",
+                                    "- `📦` **Item**",
                                     `> ${safeEmoji(item.emoji)} ${item.name}`,
                                     "",
-                                    "● `❌` Item này chưa được thiết lập giá mua."
+                                    "- `❌` Item này chưa được thiết lập giá mua."
                                 ].join("\n")
                             )
                     ]
@@ -228,16 +228,16 @@ module.exports = {
                             )
                             .setDescription(
                                 [
-                                    `● \`${safeEmoji(item.emoji)}\` **${item.name}**`,
+                                    `- \`${safeEmoji(item.emoji)}\` **${item.name}**`,
                                     `> ×${amount}`,
                                     "",
-                                    "● `💰` **Cần**",
+                                    "- `💰` **Cần**",
                                     `> ${total.toLocaleString()} Mora`,
                                     "",
-                                    "● `💳` **Bạn có**",
+                                    "- `💳` **Bạn có**",
                                     `> ${balance.toLocaleString()} Mora`,
                                     "",
-                                    `● \`❌\` **Thiếu**`,
+                                    `- \`❌\` **Thiếu**`,
                                     `> ${(total - balance).toLocaleString()} Mora`
                                 ].join("\n")
                             )
@@ -335,19 +335,19 @@ module.exports = {
                         )
                         .setDescription(
                             [
-                                `● \`${emoji}\` **${item.name}**`,
+                                `- \`${emoji}\` **${item.name}**`,
                                 `> ×${amount}`,
                                 "",
-                                "● `💰` **Đơn giá**",
+                                "- `💰` **Đơn giá**",
                                 `> ${price.toLocaleString()} Mora`,
                                 "",
-                                "● `💸` **Đã trả**",
+                                "- `💸` **Đã trả**",
                                 `> -${total.toLocaleString()} Mora`,
                                 "",
-                                "● `💳` **Mora còn lại**",
+                                "- `💳` **Mora còn lại**",
                                 `> ${newBalance.toLocaleString()} Mora`,
                                 "",
-                                "● `🎒` **Inventory**",
+                                "- `🎒` **Inventory**",
                                 "> Đã thêm vật phẩm vào túi."
                             ].join("\n")
                         )

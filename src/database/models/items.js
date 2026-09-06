@@ -490,7 +490,7 @@ const items = {
         rarity: "Rare",
         description: "Quả dưa hấu lớn và mọng nước.",
         buyPrice: 800,
-        sellPrice: 400
+        sellPrice: 550
     },
 
     pineapple: {
@@ -629,7 +629,7 @@ const items = {
         rarity: "Rare",
         description: "Hạt giống bí ngô.",
         buyPrice: 800,
-        sellPrice: 400,
+        sellPrice: 450,
         growTime: 120000,
         minHarvest: 2,
         maxHarvest: 3
@@ -644,7 +644,7 @@ const items = {
         rarity: "Common",
         description: "Hạt giống cà rốt.",
         buyPrice: 200,
-        sellPrice: 100,
+        sellPrice: 130,
         growTime: 60000,
         minHarvest: 2,
         maxHarvest: 5
@@ -659,7 +659,7 @@ const items = {
         rarity: "Common",
         description: "Hạt giống khoai tây.",
         buyPrice: 250,
-        sellPrice: 125,
+        sellPrice: 150,
         growTime: 75000,
         minHarvest: 2,
         maxHarvest: 4
@@ -674,7 +674,7 @@ const items = {
         rarity: "Common",
         description: "Hạt giống bắp ngô.",
         buyPrice: 350,
-        sellPrice: 175,
+        sellPrice: 200,
         growTime: 90000,
         minHarvest: 2,
         maxHarvest: 5
@@ -689,7 +689,7 @@ const items = {
         rarity: "Common",
         description: "Hạt giống bắp cải.",
         buyPrice: 400,
-        sellPrice: 200,
+        sellPrice: 250,
         growTime: 100000,
         minHarvest: 2,
         maxHarvest: 4
@@ -704,7 +704,7 @@ const items = {
         rarity: "Common",
         description: "Hạt giống xà lách.",
         buyPrice: 450,
-        sellPrice: 225,
+        sellPrice: 275,
         growTime: 110000,
         minHarvest: 2,
         maxHarvest: 5
@@ -719,7 +719,7 @@ const items = {
         rarity: "Uncommon",
         description: "Hạt giống dâu tây.",
         buyPrice: 650,
-        sellPrice: 325,
+        sellPrice: 400,
         growTime: 120000,
         minHarvest: 2,
         maxHarvest: 4
@@ -734,7 +734,7 @@ const items = {
         rarity: "Uncommon",
         description: "Hạt giống nho.",
         buyPrice: 800,
-        sellPrice: 400,
+        sellPrice: 500,
         growTime: 150000,
         minHarvest: 2,
         maxHarvest: 4
@@ -749,7 +749,7 @@ const items = {
         rarity: "Rare",
         description: "Hạt giống dưa hấu.",
         buyPrice: 1200,
-        sellPrice: 600,
+        sellPrice: 1200,
         growTime: 180000,
         minHarvest: 1,
         maxHarvest: 3
