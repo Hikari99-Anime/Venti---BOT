@@ -1,1 +1,277 @@
-{}
+{
+  "743028655097380895": {
+    "id": "743028655097380895",
+    "balance": 0,
+    "bank": 0,
+    "bankData": {
+      "lastInterest": 0,
+      "totalInterest": 0
+    },
+    "xp": 0,
+    "level": 1,
+    "dailyStreak": 0,
+    "lastDaily": 0,
+    "lastWork": 0,
+    "lastBeg": 0,
+    "inventory": {},
+    "tools": {
+      "fishingRod": {
+        "level": 1,
+        "durability": 50
+      },
+      "hoe": {
+        "level": 1,
+        "durability": 50
+      }
+    },
+    "farm": {
+      "plots": [
+        {
+          "id": 1,
+          "unlocked": true,
+          "seed": "grape_seed",
+          "plantedAt": 1788705683941,
+          "readyAt": 1788705833941
+        }
+      ]
+    },
+    "stats": {
+      "games": 1,
+      "wins": 0,
+      "losses": 1,
+      "work": 0,
+      "fish": 0,
+      "farm": 0,
+      "quest": 0
+    },
+    "quests": {
+      "date": "",
+      "daily": []
+    },
+    "achievements": {},
+    "createdAt": 1788694982128
+  },
+  "lottery": {
+    "jackpot": 10000,
+    "round": 1,
+    "tickets": {},
+    "channelId": "1546104294447521902",
+    "messageId": "1546124178611118172",
+    "nextDrawAt": 1788695429962,
+    "previous": null
+  },
+  "__lottery": {
+    "round": 1,
+    "active": false,
+    "createdAt": 0,
+    "drawAt": 0,
+    "jackpot": 0,
+    "totalSales": 0,
+    "tickets": {},
+    "setupGuildId": null,
+    "setupChannelId": null,
+    "setupMessageId": null,
+    "history": [],
+    "winningNumber": null,
+    "winners": []
+  },
+  "__GLOBAL_LOTTERY__": {
+    "id": "__GLOBAL_LOTTERY__",
+    "lottery": {
+      "active": false,
+      "round": 0,
+      "createdAt": 0,
+      "drawAt": 0,
+      "setupGuildId": null,
+      "setupChannelId": null,
+      "setupMessageId": null,
+      "prizePool": 0,
+      "totalTickets": 0,
+      "participants": {},
+      "winningNumber": null,
+      "finished": false,
+      "winners": []
+    }
+  },
+  "1503721709776277594": {
+    "id": "1503721709776277594",
+    "balance": 0,
+    "bank": 0,
+    "bankData": {
+      "lastInterest": 0,
+      "totalInterest": 0
+    },
+    "xp": 0,
+    "level": 1,
+    "dailyStreak": 0,
+    "lastDaily": 0,
+    "lastWork": 0,
+    "lastBeg": 0,
+    "inventory": {},
+    "tools": {
+      "fishingRod": {
+        "level": 1,
+        "durability": 50
+      },
+      "hoe": {
+        "level": 1,
+        "durability": 50
+      }
+    },
+    "farm": {
+      "plots": [
+        {
+          "id": 1,
+          "unlocked": true,
+          "seed": null,
+          "plantedAt": null,
+          "readyAt": null
+        }
+      ]
+    },
+    "stats": {
+      "games": 1,
+      "wins": 0,
+      "losses": 1,
+      "work": 0,
+      "fish": 0,
+      "farm": 0,
+      "quest": 0
+    },
+    "quests": {
+      "date": "",
+      "daily": []
+    },
+    "achievements": {},
+    "createdAt": 1788705870754
+  },
+  "934279092314996747": {
+    "id": "934279092314996747",
+    "balance": 0,
+    "bank": 0,
+    "bankData": {
+      "lastInterest": 0,
+      "totalInterest": 0
+    },
+    "xp": 66,
+    "level": 1,
+    "dailyStreak": 0,
+    "lastDaily": 0,
+    "lastWork": 0,
+    "lastBeg": 0,
+    "inventory": {
+      "fishing_rod": {
+        "amount": 1,
+        "durability": 10,
+        "maxDurability": 20
+      },
+      "blue_fish": 2,
+      "small_fish": 7,
+      "golden_fish": 1
+    },
+    "tools": {
+      "fishingRod": {
+        "level": 1,
+        "durability": 50
+      },
+      "hoe": {
+        "level": 1,
+        "durability": 50
+      }
+    },
+    "farm": {
+      "plots": [
+        {
+          "id": 1,
+          "unlocked": true,
+          "seed": null,
+          "plantedAt": null,
+          "readyAt": null
+        }
+      ]
+    },
+    "stats": {
+      "games": 0,
+      "wins": 0,
+      "losses": 0,
+      "work": 0,
+      "fish": 10,
+      "farm": 0,
+      "quest": 0
+    },
+    "quests": {
+      "date": "2026-09-06",
+      "daily": [
+        {
+          "id": "fish",
+          "progress": 5,
+          "claimed": false
+        },
+        {
+          "id": "farm",
+          "progress": 0,
+          "claimed": false
+        },
+        {
+          "id": "sell",
+          "progress": 0,
+          "claimed": false
+        }
+      ]
+    },
+    "achievements": {},
+    "createdAt": 1788705904052
+  },
+  "1534397779525369971": {
+    "id": "1534397779525369971",
+    "balance": 2000,
+    "bank": 0,
+    "bankData": {
+      "lastInterest": 0,
+      "totalInterest": 0
+    },
+    "xp": 0,
+    "level": 1,
+    "dailyStreak": 0,
+    "lastDaily": 0,
+    "lastWork": 0,
+    "lastBeg": 0,
+    "inventory": {},
+    "tools": {
+      "fishingRod": {
+        "level": 1,
+        "durability": 50
+      },
+      "hoe": {
+        "level": 1,
+        "durability": 50
+      }
+    },
+    "farm": {
+      "plots": [
+        {
+          "id": 1,
+          "unlocked": true,
+          "seed": null,
+          "plantedAt": null,
+          "readyAt": null
+        }
+      ]
+    },
+    "stats": {
+      "games": 1,
+      "wins": 1,
+      "losses": 0,
+      "work": 0,
+      "fish": 0,
+      "farm": 0,
+      "quest": 0
+    },
+    "quests": {
+      "date": "",
+      "daily": []
+    },
+    "achievements": {},
+    "createdAt": 1788707432268
+  }
+}

@@ -584,7 +584,7 @@ const items = {
         rarity: "Common",
         description: "Hạt giống táo.",
         buyPrice: 100,
-        sellPrice: 50,
+        sellPrice: 75,
         growTime: 30000,
         minHarvest: 2,
         maxHarvest: 4
@@ -599,7 +599,7 @@ const items = {
         rarity: "Common",
         description: "Hạt giống lúa mì.",
         buyPrice: 150,
-        sellPrice: 75,
+        sellPrice: 60,
         growTime: 45000,
         minHarvest: 3,
         maxHarvest: 5
@@ -614,7 +614,7 @@ const items = {
         rarity: "Uncommon",
         description: "Hạt giống cà chua.",
         buyPrice: 300,
-        sellPrice: 150,
+        sellPrice: 200,
         growTime: 60000,
         minHarvest: 2,
         maxHarvest: 4
@@ -632,7 +632,7 @@ const items = {
         sellPrice: 450,
         growTime: 120000,
         minHarvest: 2,
-        maxHarvest: 3
+        maxHarvest: 5
     },
 
     carrot_seed: {
@@ -644,7 +644,7 @@ const items = {
         rarity: "Common",
         description: "Hạt giống cà rốt.",
         buyPrice: 200,
-        sellPrice: 130,
+        sellPrice: 150,
         growTime: 60000,
         minHarvest: 2,
         maxHarvest: 5
@@ -659,10 +659,10 @@ const items = {
         rarity: "Common",
         description: "Hạt giống khoai tây.",
         buyPrice: 250,
-        sellPrice: 150,
+        sellPrice: 100,
         growTime: 75000,
-        minHarvest: 2,
-        maxHarvest: 4
+        minHarvest: 3,
+        maxHarvest: 7
     },
 
     corn_seed: {
@@ -674,9 +674,9 @@ const items = {
         rarity: "Common",
         description: "Hạt giống bắp ngô.",
         buyPrice: 350,
-        sellPrice: 200,
+        sellPrice: 150,
         growTime: 90000,
-        minHarvest: 2,
+        minHarvest: 3,
         maxHarvest: 5
     },
 
@@ -689,7 +689,7 @@ const items = {
         rarity: "Common",
         description: "Hạt giống bắp cải.",
         buyPrice: 400,
-        sellPrice: 250,
+        sellPrice: 275,
         growTime: 100000,
         minHarvest: 2,
         maxHarvest: 4
@@ -704,7 +704,7 @@ const items = {
         rarity: "Common",
         description: "Hạt giống xà lách.",
         buyPrice: 450,
-        sellPrice: 275,
+        sellPrice: 300,
         growTime: 110000,
         minHarvest: 2,
         maxHarvest: 5
@@ -719,7 +719,7 @@ const items = {
         rarity: "Uncommon",
         description: "Hạt giống dâu tây.",
         buyPrice: 650,
-        sellPrice: 400,
+        sellPrice: 600,
         growTime: 120000,
         minHarvest: 2,
         maxHarvest: 4
@@ -734,7 +734,7 @@ const items = {
         rarity: "Uncommon",
         description: "Hạt giống nho.",
         buyPrice: 800,
-        sellPrice: 500,
+        sellPrice: 700,
         growTime: 150000,
         minHarvest: 2,
         maxHarvest: 4
@@ -749,9 +749,9 @@ const items = {
         rarity: "Rare",
         description: "Hạt giống dưa hấu.",
         buyPrice: 1200,
-        sellPrice: 1200,
+        sellPrice: 2000,
         growTime: 180000,
-        minHarvest: 1,
+        minHarvest: 2,
         maxHarvest: 3
     },
 
