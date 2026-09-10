@@ -31,18 +31,14 @@ if (!fs.existsSync(DATA_FILE)) {
 // ==========================================
 
 function load() {
-
     try {
-
         return JSON.parse(
             fs.readFileSync(
                 DATA_FILE,
                 "utf8"
             )
         );
-
     } catch (error) {
-
         console.error(
             "[Database] Load error:",
             error
@@ -57,7 +53,6 @@ function load() {
 // ==========================================
 
 function save(data) {
-
     fs.writeFileSync(
         DATA_FILE,
         JSON.stringify(
@@ -67,132 +62,6 @@ function save(data) {
         ),
         "utf8"
     );
-}
-
-// ==========================================
-// 🎟️ LOTTERY DEFAULT
-// ==========================================
-
-const LOTTERY_DEFAULT = {
-
-    // ======================================
-    // 🌍 GLOBAL LOTTERY
-    // ======================================
-
-    enabled:
-        false,
-
-    round:
-        1,
-
-    price:
-        1000,
-
-    jackpot:
-        10000,
-
-    duration:
-        5 * 60 * 1000,
-
-    startedAt:
-        0,
-
-    endsAt:
-        0,
-
-    // ======================================
-    // 🎫 TICKETS
-    // ======================================
-
-    tickets: {},
-
-    // ======================================
-    // 👤 USER TICKETS
-    // ======================================
-
-    userTickets: {},
-
-    // ======================================
-    // 📺 SETUP CHANNELS
-    // ======================================
-
-    channels: {},
-
-    // ======================================
-    // 🏆 LAST RESULT
-    // ======================================
-
-    lastResult:
-        null
-};
-
-// ==========================================
-// 🎟️ GET LOTTERY
-// ==========================================
-
-function getLottery(data = null) {
-
-    const db =
-        data || load();
-
-    if (
-        !db._lottery ||
-        typeof db._lottery !== "object"
-    ) {
-
-        db._lottery = {
-            ...LOTTERY_DEFAULT
-        };
-
-        save(db);
-    }
-
-    // ======================================
-    // 🛡️ MIGRATION
-    // ======================================
-
-    db._lottery = {
-
-        ...LOTTERY_DEFAULT,
-
-        ...db._lottery,
-
-        tickets:
-            db._lottery.tickets &&
-            typeof db._lottery.tickets === "object"
-                ? db._lottery.tickets
-                : {},
-
-        userTickets:
-            db._lottery.userTickets &&
-            typeof db._lottery.userTickets === "object"
-                ? db._lottery.userTickets
-                : {},
-
-        channels:
-            db._lottery.channels &&
-            typeof db._lottery.channels === "object"
-                ? db._lottery.channels
-                : {}
-    };
-
-    return db._lottery;
-}
-
-// ==========================================
-// 🎟️ SAVE LOTTERY
-// ==========================================
-
-function saveLottery(lottery) {
-
-    const data =
-        load();
-
-    data._lottery = lottery;
-
-    save(data);
-
-    return lottery;
 }
 
 // ==========================================
@@ -219,7 +88,7 @@ function createUser(userId) {
                 1000,
 
             bank:
-                0,
+                1000,
 
             bankData: {
 
@@ -270,7 +139,6 @@ function createUser(userId) {
             tools: {
 
                 fishingRod: {
-
                     level:
                         1,
 
@@ -279,7 +147,6 @@ function createUser(userId) {
                 },
 
                 hoe: {
-
                     level:
                         1,
 
@@ -297,7 +164,6 @@ function createUser(userId) {
                 plots: [
 
                     {
-
                         id:
                             1,
 
@@ -430,9 +296,7 @@ function updateUser(
     }
 
     data[userId] = {
-
         ...data[userId],
-
         ...updates
     };
 
@@ -442,7 +306,7 @@ function updateUser(
 }
 
 // ==========================================
-// 💰 ADD BALANCE
+// 💰 BALANCE
 // ==========================================
 
 function addBalance(
@@ -459,29 +323,28 @@ function addBalance(
         Number(amount);
 
     if (
-        !Number.isSafeInteger(amount) ||
+        !Number.isSafeInteger(
+            amount
+        ) ||
         amount <= 0
     ) {
         return false;
     }
 
-    const balance =
+    user.balance =
         Number(
             user.balance || 0
-        );
-
-    const newBalance =
-        balance + amount;
+        ) + amount;
 
     updateUser(
         userId,
         {
             balance:
-                newBalance
+                user.balance
         }
     );
 
-    return newBalance;
+    return user.balance;
 }
 
 // ==========================================
@@ -502,7 +365,9 @@ function removeBalance(
         Number(amount);
 
     if (
-        !Number.isSafeInteger(amount) ||
+        !Number.isSafeInteger(
+            amount
+        ) ||
         amount <= 0
     ) {
         return false;
@@ -519,863 +384,18 @@ function removeBalance(
         return false;
     }
 
-    const newBalance =
+    user.balance =
         balance - amount;
 
     updateUser(
         userId,
         {
             balance:
-                newBalance
+                user.balance
         }
     );
 
     return true;
-}
-
-// ==========================================
-// 🎟️ BUY LOTTERY TICKETS
-// ==========================================
-//
-// Dùng cho cả random và chọn số.
-//
-// quantity tối đa 5.
-// Mỗi user tối đa 5 vé / kỳ.
-// Số vé global không được trùng.
-//
-// ==========================================
-
-function buyTickets(
-    userId,
-    quantity,
-    pricePerTicket,
-    numbers = []
-) {
-
-    const user =
-        getOrCreate(
-            userId
-        );
-
-    const data =
-        load();
-
-    const lottery =
-        getLottery(data);
-
-    quantity =
-        Number(quantity);
-
-    pricePerTicket =
-        Number(pricePerTicket);
-
-    // ======================================
-    // 🔢 QUANTITY
-    // ======================================
-
-    if (
-        !Number.isSafeInteger(quantity) ||
-        quantity < 1
-    ) {
-
-        return {
-
-            success:
-                false,
-
-            reason:
-                "invalid_quantity"
-        };
-    }
-
-    if (quantity > 5) {
-
-        return {
-
-            success:
-                false,
-
-            reason:
-                "max_tickets",
-
-            max:
-                5
-        };
-    }
-
-    // ======================================
-    // 🎟️ USER MAX 5 / ROUND
-    // ======================================
-
-    const currentUserTickets =
-        Number(
-            lottery.userTickets[userId]?.length || 0
-        );
-
-    if (
-        currentUserTickets + quantity > 5
-    ) {
-
-        return {
-
-            success:
-                false,
-
-            reason:
-                "user_max_tickets",
-
-            max:
-                5,
-
-            current:
-                currentUserTickets
-        };
-    }
-
-    // ======================================
-    // 💰 PRICE
-    // ======================================
-
-    if (
-        !Number.isSafeInteger(pricePerTicket) ||
-        pricePerTicket <= 0
-    ) {
-
-        return {
-
-            success:
-                false,
-
-            reason:
-                "invalid_price"
-        };
-    }
-
-    // ======================================
-    // 💵 TOTAL
-    // ======================================
-
-    const total =
-        quantity *
-        pricePerTicket;
-
-    const balance =
-        Number(
-            user.balance || 0
-        );
-
-    if (
-        balance < total
-    ) {
-
-        return {
-
-            success:
-                false,
-
-            reason:
-                "insufficient_balance",
-
-            balance,
-
-            required:
-                total,
-
-            missing:
-                total - balance
-        };
-    }
-
-    // ======================================
-    // 🔢 VALIDATE NUMBERS
-    // ======================================
-
-    if (
-        !Array.isArray(numbers) ||
-        numbers.length !== quantity
-    ) {
-
-        return {
-
-            success:
-                false,
-
-            reason:
-                "invalid_numbers"
-        };
-    }
-
-    const normalized =
-        numbers.map(
-            number =>
-                String(number)
-                    .trim()
-                    .padStart(4, "0")
-        );
-
-    // ======================================
-    // 🚫 DUPLICATE IN PURCHASE
-    // ======================================
-
-    if (
-        new Set(normalized).size !==
-        normalized.length
-    ) {
-
-        return {
-
-            success:
-                false,
-
-            reason:
-                "duplicate_numbers"
-        };
-    }
-
-    // ======================================
-    // 🚫 GLOBAL DUPLICATE
-    // ======================================
-
-    for (
-        const number of normalized
-    ) {
-
-        if (
-            lottery.tickets[number]
-        ) {
-
-            return {
-
-                success:
-                    false,
-
-                reason:
-                    "number_taken",
-
-                number
-            };
-        }
-    }
-
-    // ======================================
-    // 💸 REMOVE MONEY
-    // ======================================
-
-    const newBalance =
-        balance - total;
-
-    user.balance =
-        newBalance;
-
-    // ======================================
-    // 🎟️ SAVE TICKETS
-    // ======================================
-
-    if (
-        !lottery.userTickets[userId]
-    ) {
-
-        lottery.userTickets[userId] =
-            [];
-    }
-
-    for (
-        const number of normalized
-    ) {
-
-        lottery.tickets[number] = {
-
-            userId,
-
-            number,
-
-            round:
-                lottery.round,
-
-            createdAt:
-                Date.now()
-        };
-
-        lottery.userTickets[userId].push(
-            number
-        );
-    }
-
-    // ======================================
-    // 💾 SAVE EVERYTHING
-    // ======================================
-
-    data[userId] =
-        user;
-
-    data._lottery =
-        lottery;
-
-    save(data);
-
-    return {
-
-        success:
-            true,
-
-        userId,
-
-        quantity,
-
-        numbers:
-            normalized,
-
-        pricePerTicket,
-
-        total,
-
-        balance:
-            newBalance
-    };
-}
-
-// ==========================================
-// 🎲 GENERATE RANDOM UNIQUE TICKETS
-// ==========================================
-
-function generateRandomTickets(
-    quantity
-) {
-
-    const data =
-        load();
-
-    const lottery =
-        getLottery(data);
-
-    quantity =
-        Number(quantity);
-
-    if (
-        !Number.isSafeInteger(quantity) ||
-        quantity < 1 ||
-        quantity > 5
-    ) {
-        return [];
-    }
-
-    const result = [];
-
-    let attempts = 0;
-
-    while (
-        result.length < quantity &&
-        attempts < 100000
-    ) {
-
-        attempts++;
-
-        const number =
-            String(
-                Math.floor(
-                    Math.random() * 10000
-                )
-            ).padStart(
-                4,
-                "0"
-            );
-
-        if (
-            lottery.tickets[number] ||
-            result.includes(number)
-        ) {
-            continue;
-        }
-
-        result.push(number);
-    }
-
-    return result;
-}
-
-// ==========================================
-// 🎟️ GET USER LOTTERY TICKETS
-// ==========================================
-
-function getUserLotteryTickets(
-    userId
-) {
-
-    const data =
-        load();
-
-    const lottery =
-        getLottery(data);
-
-    return [
-        ...(lottery.userTickets[userId] || [])
-    ];
-}
-
-// ==========================================
-// 🎟️ GET ALL LOTTERY TICKETS
-// ==========================================
-
-function getLotteryTickets() {
-
-    const data =
-        load();
-
-    const lottery =
-        getLottery(data);
-
-    return {
-        ...lottery.tickets
-    };
-}
-
-// ==========================================
-// 🎟️ SETUP CHANNEL
-// ==========================================
-
-function setupLotteryChannel(
-    guildId,
-    channelId,
-    messageId = null
-) {
-
-    const data =
-        load();
-
-    const lottery =
-        getLottery(data);
-
-    lottery.channels[guildId] = {
-
-        channelId,
-
-        messageId,
-
-        updatedAt:
-            Date.now()
-    };
-
-    data._lottery =
-        lottery;
-
-    save(data);
-
-    return lottery.channels[guildId];
-}
-
-// ==========================================
-// ❌ REMOVE SETUP CHANNEL
-// ==========================================
-
-function removeLotteryChannel(
-    guildId
-) {
-
-    const data =
-        load();
-
-    const lottery =
-        getLottery(data);
-
-    delete lottery.channels[guildId];
-
-    data._lottery =
-        lottery;
-
-    save(data);
-
-    return true;
-}
-
-// ==========================================
-// 📺 GET SETUP CHANNELS
-// ==========================================
-
-function getLotteryChannels() {
-
-    const data =
-        load();
-
-    const lottery =
-        getLottery(data);
-
-    return {
-        ...lottery.channels
-    };
-}
-
-// ==========================================
-// 🎟️ START NEW ROUND
-// ==========================================
-
-function startLotteryRound(
-    options = {}
-) {
-
-    const data =
-        load();
-
-    const oldLottery =
-        getLottery(data);
-
-    const price =
-        Number(
-            options.price ??
-            oldLottery.price ??
-            100
-        );
-
-    const duration =
-        Number(
-            options.duration ??
-            oldLottery.duration ??
-            5 * 60 * 1000
-        );
-
-    const jackpot =
-        Number(
-            options.jackpot ??
-            oldLottery.jackpot ??
-            1000
-        );
-
-    const now =
-        Date.now();
-
-    const lottery = {
-
-        ...LOTTERY_DEFAULT,
-
-        enabled:
-            true,
-
-        round:
-            Number(
-                oldLottery.round || 0
-            ) + 1,
-
-        price,
-
-        duration,
-
-        jackpot,
-
-        startedAt:
-            now,
-
-        endsAt:
-            now + duration,
-
-        tickets: {},
-
-        userTickets: {},
-
-        channels:
-            oldLottery.channels || {},
-
-        lastResult:
-            oldLottery.lastResult || null
-    };
-
-    data._lottery =
-        lottery;
-
-    save(data);
-
-    return lottery;
-}
-
-// ==========================================
-// ⏱️ GET LOTTERY STATE
-// ==========================================
-
-function getLotteryState() {
-
-    const data =
-        load();
-
-    const lottery =
-        getLottery(data);
-
-    return lottery;
-}
-
-// ==========================================
-// 🏆 DRAW LOTTERY
-// ==========================================
-
-function drawLottery() {
-
-    const data =
-        load();
-
-    const lottery =
-        getLottery(data);
-
-    if (
-        !lottery.enabled
-    ) {
-
-        return {
-
-            success:
-                false,
-
-            reason:
-                "not_started"
-        };
-    }
-
-    const now =
-        Date.now();
-
-    if (
-        lottery.endsAt > now
-    ) {
-
-        return {
-
-            success:
-                false,
-
-            reason:
-                "not_finished",
-
-            remaining:
-                lottery.endsAt - now
-        };
-    }
-
-    const numbers =
-        Object.keys(
-            lottery.tickets
-        );
-
-    // ======================================
-    // 🎯 NO TICKET
-    // ======================================
-
-    if (
-        numbers.length === 0
-    ) {
-
-        const jackpot =
-            Number(
-                lottery.jackpot || 0
-            );
-
-        const nextJackpot =
-            jackpot;
-
-        lottery.lastResult = {
-
-            round:
-                lottery.round,
-
-            winningNumber:
-                null,
-
-            winnerId:
-                null,
-
-            prize:
-                0,
-
-            jackpot:
-
-                nextJackpot,
-
-            totalTickets:
-                0,
-
-            drawnAt:
-                now
-        };
-
-        lottery.enabled =
-            false;
-
-        lottery.startedAt =
-            0;
-
-        lottery.endsAt =
-            0;
-
-        data._lottery =
-            lottery;
-
-        save(data);
-
-        return {
-
-            success:
-                true,
-
-            winner:
-                false,
-
-            winningNumber:
-                null,
-
-            winnerId:
-                null,
-
-            prize:
-                0,
-
-            jackpot:
-                nextJackpot,
-
-            totalTickets:
-                0,
-
-            round:
-                lottery.round
-        };
-    }
-
-    // ======================================
-    // 🎯 RANDOM WINNING NUMBER
-    // ======================================
-
-    const winningNumber =
-        numbers[
-            Math.floor(
-                Math.random() *
-                numbers.length
-            )
-        ];
-
-    const winningTicket =
-        lottery.tickets[
-            winningNumber
-        ];
-
-    const winnerId =
-        winningTicket.userId;
-
-    // ======================================
-    // 💰 JACKPOT
-    // ======================================
-
-    const prize =
-        Number(
-            lottery.jackpot || 0
-        ) +
-        (
-            numbers.length *
-            Number(
-                lottery.price || 0
-            )
-        );
-
-    // ======================================
-    // 💵 PAY WINNER
-    // ======================================
-
-    const winner =
-        data[winnerId] ||
-        createUser(winnerId);
-
-    winner.balance =
-        Number(
-            winner.balance || 0
-        ) + prize;
-
-    // ======================================
-    // 📊 STATS
-    // ======================================
-
-    if (!winner.stats) {
-        winner.stats = {};
-    }
-
-    winner.stats.wins =
-        Number(
-            winner.stats.wins || 0
-        ) + 1;
-
-    winner.stats.games =
-        Number(
-            winner.stats.games || 0
-        ) + 1;
-
-    data[winnerId] =
-        winner;
-
-    // ======================================
-    // 🏆 RESULT
-    // ======================================
-
-    lottery.lastResult = {
-
-        round:
-            lottery.round,
-
-        winningNumber,
-
-        winnerId,
-
-        prize,
-
-        jackpot:
-            prize,
-
-        totalTickets:
-            numbers.length,
-
-        drawnAt:
-            now
-    };
-
-    // ======================================
-    // 🔄 RESET ROUND
-    // ======================================
-
-    lottery.enabled =
-        false;
-
-    lottery.startedAt =
-        0;
-
-    lottery.endsAt =
-        0;
-
-    // ======================================
-    // 💰 NEXT JACKPOT
-    // ======================================
-
-    lottery.jackpot =
-        1000;
-
-    data._lottery =
-        lottery;
-
-    save(data);
-
-    return {
-
-        success:
-            true,
-
-        winner:
-            true,
-
-        winningNumber,
-
-        winnerId,
-
-        prize,
-
-        jackpot:
-            prize,
-
-        totalTickets:
-            numbers.length,
-
-        round:
-            lottery.round
-    };
 }
 
 // ==========================================
@@ -1396,7 +416,9 @@ function addBank(
         Number(amount);
 
     if (
-        !Number.isSafeInteger(amount) ||
+        !Number.isSafeInteger(
+            amount
+        ) ||
         amount <= 0
     ) {
         return false;
@@ -1436,7 +458,9 @@ function removeBank(
         Number(amount);
 
     if (
-        !Number.isSafeInteger(amount) ||
+        !Number.isSafeInteger(
+            amount
+        ) ||
         amount <= 0
     ) {
         return false;
@@ -1471,9 +495,11 @@ function removeBank(
 // 📈 BANK INTEREST
 // ==========================================
 
+// 1% mỗi ngày
 const BANK_INTEREST_RATE =
     0.01;
 
+// 24 giờ
 const BANK_INTEREST_COOLDOWN =
     24 * 60 * 60 * 1000;
 
@@ -1490,6 +516,7 @@ function calculateBankInterest(
             userId
         );
 
+    // Đảm bảo bankData tồn tại
     if (!user.bankData) {
 
         user.bankData = {
@@ -1517,7 +544,8 @@ function calculateBankInterest(
 
     const lastInterest =
         Number(
-            user.bankData.lastInterest || 0
+            user.bankData.lastInterest ||
+            0
         );
 
     const now =
@@ -1533,7 +561,8 @@ function calculateBankInterest(
         bank > 0 &&
         (
             lastInterest === 0 ||
-            now >= nextInterestAt
+            now >=
+                nextInterestAt
         );
 
     const amount =
@@ -1589,10 +618,10 @@ function claimBankInterest(
             user.bank || 0
         );
 
+    // Bank trống
     if (
         bank <= 0
     ) {
-
         return {
 
             success:
@@ -1608,7 +637,8 @@ function claimBankInterest(
 
     const lastInterest =
         Number(
-            user.bankData.lastInterest || 0
+            user.bankData.lastInterest ||
+            0
         );
 
     const nextInterestAt =
@@ -1617,11 +647,11 @@ function claimBankInterest(
               BANK_INTEREST_COOLDOWN
             : 0;
 
+    // Chưa đủ 24 giờ
     if (
         lastInterest > 0 &&
         now < nextInterestAt
     ) {
-
         return {
 
             success:
@@ -1634,16 +664,17 @@ function claimBankInterest(
         };
     }
 
+    // Tính 1%
     const interest =
         Math.floor(
             bank *
             BANK_INTEREST_RATE
         );
 
+    // Nếu tiền quá ít
     if (
         interest < 1
     ) {
-
         return {
 
             success:
@@ -1654,6 +685,10 @@ function claimBankInterest(
         };
     }
 
+    // ==================================
+    // 💵 CỘNG LÃI VÀO BANK
+    // ==================================
+
     user.bank =
         bank + interest;
 
@@ -1662,7 +697,8 @@ function claimBankInterest(
 
     user.bankData.totalInterest =
         Number(
-            user.bankData.totalInterest || 0
+            user.bankData.totalInterest ||
+            0
         ) + interest;
 
     updateUser(
@@ -1715,10 +751,11 @@ function addXP(
         Number(amount);
 
     if (
-        !Number.isSafeInteger(amount) ||
+        !Number.isSafeInteger(
+            amount
+        ) ||
         amount <= 0
     ) {
-
         return {
 
             xp:
@@ -1771,7 +808,7 @@ function addXP(
 }
 
 // ==========================================
-// 🎒 ADD ITEM
+// 🎒 ITEMS
 // ==========================================
 
 function addItem(
@@ -1789,7 +826,9 @@ function addItem(
         Number(amount);
 
     if (
-        !Number.isSafeInteger(amount) ||
+        !Number.isSafeInteger(
+            amount
+        ) ||
         amount <= 0
     ) {
         return false;
@@ -1819,7 +858,9 @@ function addItem(
         }
     );
 
-    return user.inventory[itemId];
+    return user.inventory[
+        itemId
+    ];
 }
 
 // ==========================================
@@ -1861,7 +902,6 @@ function removeItem(
         user.inventory[itemId] <=
         0
     ) {
-
         delete user.inventory[
             itemId
         ];
@@ -1879,12 +919,10 @@ function removeItem(
 }
 
 // ==========================================
-// 🔧 GET TOOLS
+// 🔧 TOOLS
 // ==========================================
 
-function getTools(
-    userId
-) {
+function getTools(userId) {
 
     const user =
         getOrCreate(
@@ -1896,7 +934,6 @@ function getTools(
         user.tools = {
 
             fishingRod: {
-
                 level:
                     1,
 
@@ -1905,7 +942,6 @@ function getTools(
             },
 
             hoe: {
-
                 level:
                     1,
 
@@ -2051,40 +1087,25 @@ function useTool(
 }
 
 // ==========================================
-// 🌾 GET FARM
+// 🌾 FARM
 // ==========================================
 
-function getFarm(
-    userId
-) {
+function getFarm(userId) {
 
     const user =
-        getOrCreate(
-            userId
-        );
+        getOrCreate(userId);
 
     if (!user.farm) {
 
         user.farm = {
 
             plots: [
-
                 {
-
-                    id:
-                        1,
-
-                    unlocked:
-                        true,
-
-                    seed:
-                        null,
-
-                    plantedAt:
-                        null,
-
-                    readyAt:
-                        null
+                    id: 1,
+                    unlocked: true,
+                    seed: null,
+                    plantedAt: null,
+                    readyAt: null
                 }
             ]
         };
@@ -2092,44 +1113,27 @@ function getFarm(
         updateUser(
             userId,
             {
-                farm:
-                    user.farm
+                farm: user.farm
             }
         );
     }
 
-    if (
-        !Array.isArray(
-            user.farm.plots
-        )
-    ) {
+    if (!Array.isArray(user.farm.plots)) {
 
         user.farm.plots = [
-
             {
-
-                id:
-                    1,
-
-                unlocked:
-                    true,
-
-                seed:
-                    null,
-
-                plantedAt:
-                    null,
-
-                readyAt:
-                    null
+                id: 1,
+                unlocked: true,
+                seed: null,
+                plantedAt: null,
+                readyAt: null
             }
         ];
 
         updateUser(
             userId,
             {
-                farm:
-                    user.farm
+                farm: user.farm
             }
         );
     }
@@ -2163,6 +1167,7 @@ function updateFarm(
     return farm;
 }
 
+
 // ==========================================
 // ⏰ COOLDOWN SYSTEM
 // ==========================================
@@ -2174,65 +1179,49 @@ function checkCooldown(
 ) {
 
     const user =
-        getOrCreate(
-            userId
-        );
+        getOrCreate(userId);
 
     const now =
         Date.now();
 
     let last = 0;
 
-    if (
-        type === "daily"
-    ) {
+    // ======================================
+    // 📌 LẤY THỜI GIAN CUỐI
+    // ======================================
 
+    if (type === "daily") {
         last =
             Number(
                 user.lastDaily || 0
             );
+    }
 
-    } else if (
-        type === "work"
-    ) {
-
+    else if (type === "work") {
         last =
             Number(
                 user.lastWork || 0
             );
+    }
 
-    } else if (
-        type === "beg"
-    ) {
-
+    else if (type === "beg") {
         last =
             Number(
                 user.lastBeg || 0
             );
+    }
 
-    } else {
-
+    else {
         return {
-
-            ready:
-                true,
-
-            remaining:
-                0,
-
-            last:
-                0,
-
-            next:
-                0
+            ready: true,
+            remaining: 0,
+            last: 0,
+            next: 0
         };
     }
 
     const next =
-        last +
-        Number(
-            cooldown || 0
-        );
+        last + Number(cooldown || 0);
 
     const remaining =
         Math.max(
@@ -2241,7 +1230,6 @@ function checkCooldown(
         );
 
     return {
-
         ready:
             remaining <= 0,
 
@@ -2267,29 +1255,19 @@ function setCooldown(
 
     const updates = {};
 
-    if (
-        type === "daily"
-    ) {
+    if (type === "daily") {
+        updates.lastDaily = now;
+    }
 
-        updates.lastDaily =
-            now;
+    else if (type === "work") {
+        updates.lastWork = now;
+    }
 
-    } else if (
-        type === "work"
-    ) {
+    else if (type === "beg") {
+        updates.lastBeg = now;
+    }
 
-        updates.lastWork =
-            now;
-
-    } else if (
-        type === "beg"
-    ) {
-
-        updates.lastBeg =
-            now;
-
-    } else {
-
+    else {
         return false;
     }
 
@@ -2311,32 +1289,21 @@ function getCooldown(
 ) {
 
     const user =
-        getOrCreate(
-            userId
-        );
+        getOrCreate(userId);
 
-    if (
-        type === "daily"
-    ) {
-
+    if (type === "daily") {
         return Number(
             user.lastDaily || 0
         );
     }
 
-    if (
-        type === "work"
-    ) {
-
+    if (type === "work") {
         return Number(
             user.lastWork || 0
         );
     }
 
-    if (
-        type === "beg"
-    ) {
-
+    if (type === "beg") {
         return Number(
             user.lastBeg || 0
         );
@@ -2344,6 +1311,7 @@ function getCooldown(
 
     return 0;
 }
+
 
 // ==========================================
 // 📦 EXPORT
@@ -2364,20 +1332,6 @@ module.exports = {
     // MONEY
     addBalance,
     removeBalance,
-
-    // 🎟️ LOTTERY
-    buyTickets,
-    generateRandomTickets,
-    getUserLotteryTickets,
-    getLotteryTickets,
-    getLottery,
-    saveLottery,
-    setupLotteryChannel,
-    removeLotteryChannel,
-    getLotteryChannels,
-    startLotteryRound,
-    getLotteryState,
-    drawLottery,
 
     // BANK
     addBank,
@@ -2401,13 +1355,13 @@ module.exports = {
     upgradeTool,
     useTool,
 
-    // FARM
-    getFarm,
+    // FARM 
+    getFarm, 
     updateFarm,
 
-    // COOLDOWN
-    checkCooldown,
-    setCooldown,
-    getCooldown
+    // COOLDOWN 
+    checkCooldown, 
+    setCooldown, 
+    getCooldown,
 };
 
