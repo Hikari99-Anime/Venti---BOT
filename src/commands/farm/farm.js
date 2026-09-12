@@ -9,13 +9,15 @@ const {
 
 const User =
     require("../../database/models/User");
+
 const Quest =
     require("../../database/models/Quest");
+
 const Item =
     require("../../database/models/Item");
 
 // ==========================================
-// VENTI • FARM
+// 🍃 VENTI FARM
 // ==========================================
 
 const COLORS = {
@@ -26,7 +28,7 @@ const COLORS = {
 };
 
 // ==========================================
-// USER
+// 👤 USER
 // ==========================================
 
 function ensureUser(userId) {
@@ -43,7 +45,7 @@ function ensureUser(userId) {
 }
 
 // ==========================================
-// FARM
+// 🌱 DEFAULT FARM
 // ==========================================
 
 function createDefaultFarm() {
@@ -59,6 +61,10 @@ function createDefaultFarm() {
         ]
     };
 }
+
+// ==========================================
+// 🌾 GET FARM
+// ==========================================
 
 function getFarm(userId) {
     ensureUser(userId);
@@ -103,7 +109,7 @@ function getFarm(userId) {
 }
 
 // ==========================================
-// INVENTORY
+// 🎒 INVENTORY
 // ==========================================
 
 function getInventory(userId) {
@@ -132,6 +138,10 @@ function getAmount(value) {
     return 0;
 }
 
+// ==========================================
+// 🌱 SEEDS
+// ==========================================
+
 function getSeeds(userId) {
     const inventory =
         getInventory(userId);
@@ -144,6 +154,10 @@ function getSeeds(userId) {
             ) > 0
     );
 }
+
+// ==========================================
+// ➖ REMOVE ITEM
+// ==========================================
 
 function removeItem(
     userId,
@@ -188,6 +202,10 @@ function removeItem(
     return true;
 }
 
+// ==========================================
+// ➕ ADD ITEM
+// ==========================================
+
 function addItem(
     userId,
     itemId,
@@ -201,7 +219,7 @@ function addItem(
 }
 
 // ==========================================
-// PLOT
+// 🔎 GET PLOT
 // ==========================================
 
 function getPlot(
@@ -216,7 +234,7 @@ function getPlot(
 }
 
 // ==========================================
-// TIME
+// ⏱️ FORMAT TIME
 // ==========================================
 
 function formatTime(ms) {
@@ -249,7 +267,7 @@ function formatTime(ms) {
 }
 
 // ==========================================
-// PLOT STATUS
+// 🌱 PLOT STATUS
 // ==========================================
 
 function getPlotStatus(plot) {
@@ -293,7 +311,7 @@ function getPlotStatus(plot) {
 }
 
 // ==========================================
-// FARM EMBED
+// 🏡 FARM EMBED
 // ==========================================
 
 function farmEmbed(userId) {
@@ -338,13 +356,25 @@ function farmEmbed(userId) {
     const total =
         farm.plots.length;
 
+    const readyCount =
+        farm.plots.filter(
+            plot =>
+                plot.unlocked &&
+                plot.seed &&
+                Number(
+                    plot.readyAt || 0
+                ) <= Date.now()
+        ).length;
+
     return new EmbedBuilder()
         .setColor(
             COLORS.primary
         )
+
         .setTitle(
             "`🌱` Venti Farm"
         )
+
         .setDescription(
             [
                 "`🍃` **Trang trại của bạn**",
@@ -354,20 +384,28 @@ function farmEmbed(userId) {
                 "- `🌾` **Ô đất**",
                 `> \`${unlocked}/${total}\` ô đang mở`,
                 "",
+                "- `🌾` **Có thể thu hoạch**",
+                `> \`${readyCount}\` ô`,
+                "",
                 "- `🌱` **Hướng dẫn**",
                 "> Chọn ô đất để trồng cây.",
-                "> Hạt giống có thể mua tại Vshop."
+                "> Hạt giống có thể mua tại Vshop.",
+                "",
+                "୨୧ ─────────────── ୨୧",
+                "`🍃` Trồng • Chờ • Thu hoạch"
             ].join("\n")
         )
+
         .setFooter({
             text:
-                "Venti Farm • Windrise"
+                "Columbina Farm • Windrise"
         })
+
         .setTimestamp();
 }
 
 // ==========================================
-// PLOT MENU
+// 📋 PLOT MENU
 // ==========================================
 
 function plotMenu(userId) {
@@ -425,12 +463,26 @@ function plotMenu(userId) {
 }
 
 // ==========================================
-// FARM BUTTONS
+// 🔘 FARM BUTTONS
 // ==========================================
 
 function farmButtons(userId) {
     return new ActionRowBuilder()
         .addComponents(
+
+            new ButtonBuilder()
+                .setCustomId(
+                    `farm_quick_harvest_${userId}`
+                )
+                .setLabel(
+                    "Thu hoạch nhanh"
+                )
+                .setEmoji(
+                    "🌾"
+                )
+                .setStyle(
+                    ButtonStyle.Success
+                ),
 
             new ButtonBuilder()
                 .setCustomId(
@@ -463,7 +515,7 @@ function farmButtons(userId) {
 }
 
 // ==========================================
-// BACK BUTTON
+// ◀️ BACK BUTTON
 // ==========================================
 
 function backButton(userId) {
@@ -486,7 +538,7 @@ function backButton(userId) {
 }
 
 // ==========================================
-// SHOW PLOT
+// 🌱 SHOW PLOT
 // ==========================================
 
 async function showPlot(
@@ -515,7 +567,7 @@ async function showPlot(
     }
 
     // ======================================
-    // EMPTY
+    // 🟫 EMPTY
     // ======================================
 
     if (!plot.seed) {
@@ -562,13 +614,13 @@ async function showPlot(
             });
         }
 
+        const inventory =
+            getInventory(
+                userId
+            );
+
         const options =
             seeds.map(seed => {
-                const inventory =
-                    getInventory(
-                        userId
-                    );
-
                 const amount =
                     getAmount(
                         inventory[
@@ -630,7 +682,7 @@ async function showPlot(
     }
 
     // ======================================
-    // PLANTED
+    // 🌾 PLANTED
     // ======================================
 
     const seed =
@@ -722,6 +774,7 @@ async function showPlot(
         components.push(
             new ActionRowBuilder()
                 .addComponents(
+
                     new ButtonBuilder()
                         .setCustomId(
                             `farm_harvest_${userId}_${plot.id}`
@@ -731,6 +784,20 @@ async function showPlot(
                         )
                         .setEmoji(
                             "🌾"
+                        )
+                        .setStyle(
+                            ButtonStyle.Success
+                        ),
+
+                    new ButtonBuilder()
+                        .setCustomId(
+                            `farm_quick_harvest_${userId}`
+                        )
+                        .setLabel(
+                            "Thu hoạch nhanh"
+                        )
+                        .setEmoji(
+                            "⚡"
                         )
                         .setStyle(
                             ButtonStyle.Success
@@ -773,7 +840,7 @@ async function showPlot(
 }
 
 // ==========================================
-// PLANT
+// 🌱 PLANT
 // ==========================================
 
 async function plantSeed(
@@ -918,7 +985,102 @@ async function plantSeed(
 }
 
 // ==========================================
-// HARVEST
+// 🌾 HARVEST ONE
+// ==========================================
+
+function harvestPlot(
+    userId,
+    farm,
+    plot
+) {
+    if (
+        !plot ||
+        !plot.unlocked ||
+        !plot.seed
+    ) {
+        return null;
+    }
+
+    const now =
+        Date.now();
+
+    const readyAt =
+        Number(
+            plot.readyAt || 0
+        );
+
+    if (
+        now < readyAt
+    ) {
+        return null;
+    }
+
+    const seed =
+        Item.get(
+            plot.seed
+        );
+
+    if (!seed) {
+        return null;
+    }
+
+    const cropId =
+        seed.seedType ||
+        String(seed.id)
+            .replace(
+                /_seed$/,
+                ""
+            );
+
+    const crop =
+        Item.get(
+            cropId
+        );
+
+    if (!crop) {
+        return null;
+    }
+
+    const min =
+        Number(
+            seed.minHarvest ||
+            1
+        );
+
+    const max =
+        Number(
+            seed.maxHarvest ||
+            min
+        );
+
+    const amount =
+        randomInt(
+            min,
+            Math.max(
+                min,
+                max
+            )
+        );
+
+    addItem(
+        userId,
+        crop.id,
+        amount
+    );
+
+    plot.seed = null;
+    plot.plantedAt = null;
+    plot.readyAt = null;
+
+    return {
+        crop,
+        amount,
+        seed
+    };
+}
+
+// ==========================================
+// 🌾 HARVEST ONE BUTTON
 // ==========================================
 
 async function harvest(
@@ -973,103 +1135,35 @@ async function harvest(
         });
     }
 
-    const seed =
-        Item.get(
-            plot.seed
+    const result =
+        harvestPlot(
+            userId,
+            farm,
+            plot
         );
 
-    if (!seed) {
+    if (!result) {
         return interaction.reply({
             content:
-                "`❌` Không tìm thấy dữ liệu hạt giống.",
+                "`❌` Không thể thu hoạch cây này.",
             ephemeral: true
         });
     }
-
-    const cropId =
-        seed.seedType ||
-        String(seed.id)
-            .replace(
-                /_seed$/,
-                ""
-            );
-
-    const crop =
-        Item.get(
-            cropId
-        );
-
-    if (!crop) {
-        return interaction.reply({
-            content:
-                `\`❌\` Không tìm thấy nông sản \`${cropId}\`.`,
-            ephemeral: true
-        });
-    }
-
-    const min =
-        Number(
-            seed.minHarvest ||
-            1
-        );
-
-    const max =
-        Number(
-            seed.maxHarvest ||
-            min
-        );
-
-    const amount =
-        randomInt(
-            min,
-            Math.max(
-                min,
-                max
-            )
-        );
-
-    addItem(
-        userId,
-        crop.id,
-        amount
-    );
-    Quest.addProgress(
-    userId,
-    "farm",
-    amount
-    );  
-
-    const harvestedSeed =
-        seed.id;
-
-    plot.seed = null;
-    plot.plantedAt = null;
-    plot.readyAt = null;
 
     User.updateFarm(
         userId,
         farm
     );
 
-    const latest =
-        User.getOrCreate(
-            userId
-        );
-
-    const stats = {
-        ...(latest.stats || {})
-    };
-
-    stats.harvest =
-        Number(
-            stats.harvest || 0
-        ) + amount;
-
-    User.update(
+    updateHarvestStats(
         userId,
-        {
-            stats
-        }
+        result.amount
+    );
+
+    Quest.addProgress(
+        userId,
+        "farm",
+        result.amount
     );
 
     return interaction.update({
@@ -1084,17 +1178,18 @@ async function harvest(
                 .setDescription(
                     [
                         "`🌾` **Nông sản nhận được**",
-                        `> \`${crop.name} ×${amount}\``,
+                        `> \`${result.crop.name} ×${result.amount}\``,
                         "",
                         "`💰` **Giá bán mỗi cái**",
                         `> \`${Number(
-                            crop.sellPrice || 0
+                            result.crop.sellPrice ||
+                            0
                         ).toLocaleString(
                             "vi-VN"
                         )} Mora\``,
                         "",
                         "`🌱` **Hạt đã dùng**",
-                        `> \`${harvestedSeed} ×1\``,
+                        `> \`${result.seed.id} ×1\``,
                         "",
                         "`🎒` Nông sản đã được thêm vào inventory."
                     ].join("\n")
@@ -1109,7 +1204,191 @@ async function harvest(
 }
 
 // ==========================================
-// RANDOM
+// ⚡ QUICK HARVEST
+// ==========================================
+
+async function quickHarvest(
+    interaction,
+    userId
+) {
+    const farm =
+        getFarm(userId);
+
+    const readyPlots =
+        farm.plots.filter(
+            plot =>
+                plot.unlocked &&
+                plot.seed &&
+                Number(
+                    plot.readyAt || 0
+                ) <= Date.now()
+        );
+
+    if (!readyPlots.length) {
+        return interaction.reply({
+            content:
+                "`🌱` Hiện chưa có cây nào sẵn sàng thu hoạch.",
+            ephemeral: true
+        });
+    }
+
+    const results = [];
+
+    for (
+        const plot of readyPlots
+    ) {
+        const result =
+            harvestPlot(
+                userId,
+                farm,
+                plot
+            );
+
+        if (result) {
+            results.push(result);
+        }
+    }
+
+    if (!results.length) {
+        return interaction.reply({
+            content:
+                "`❌` Không thể thu hoạch các cây hiện tại.",
+            ephemeral: true
+        });
+    }
+
+    User.updateFarm(
+        userId,
+        farm
+    );
+
+    let totalHarvest = 0;
+
+    const summary = {};
+
+    for (
+        const result of results
+    ) {
+        totalHarvest +=
+            result.amount;
+
+        if (
+            !summary[
+                result.crop.id
+            ]
+        ) {
+            summary[
+                result.crop.id
+            ] = {
+                name:
+                    result.crop.name,
+                emoji:
+                    result.crop.emoji ||
+                    "🌾",
+                amount: 0
+            };
+        }
+
+        summary[
+            result.crop.id
+        ].amount +=
+            result.amount;
+    }
+
+    updateHarvestStats(
+        userId,
+        totalHarvest
+    );
+
+    Quest.addProgress(
+        userId,
+        "farm",
+        totalHarvest
+    );
+
+    const rewardLines =
+        Object.values(
+            summary
+        ).map(
+            item =>
+                `> ${item.emoji} \`${item.name} ×${item.amount}\``
+        );
+
+    const embed =
+        new EmbedBuilder()
+            .setColor(
+                COLORS.success
+            )
+            .setTitle(
+                "`⚡` Thu hoạch nhanh"
+            )
+            .setDescription(
+                [
+                    "`🌾` **Đã thu hoạch**",
+                    `> \`${results.length}\` ô đất`,
+                    "",
+                    "`🎒` **Nông sản nhận được**",
+                    rewardLines.join("\n"),
+                    "",
+                    "`📊` **Tổng số lượng**",
+                    `> \`${totalHarvest}\` nông sản`,
+                    "",
+                    "`🍃` Tất cả nông sản đã được thêm vào inventory.",
+                    "",
+                    "୨୧ ─────────────── ୨୧",
+                    "`🌱` Các ô đất đã sẵn sàng để trồng vụ mới."
+                ].join("\n")
+            )
+            .setFooter({
+                text:
+                    "Venti Farm • Quick Harvest"
+            })
+            .setTimestamp();
+
+    return interaction.update({
+        embeds: [
+            embed
+        ],
+        components: [
+            backButton(
+                userId
+            )
+        ]
+    });
+}
+
+// ==========================================
+// 📊 HARVEST STATS
+// ==========================================
+
+function updateHarvestStats(
+    userId,
+    amount
+) {
+    const latest =
+        User.getOrCreate(
+            userId
+        );
+
+    const stats = {
+        ...(latest.stats || {})
+    };
+
+    stats.harvest =
+        Number(
+            stats.harvest || 0
+        ) + Number(amount || 0);
+
+    User.update(
+        userId,
+        {
+            stats
+        }
+    );
+}
+
+// ==========================================
+// 🎲 RANDOM
 // ==========================================
 
 function randomInt(
@@ -1123,7 +1402,7 @@ function randomInt(
 }
 
 // ==========================================
-// COMMAND
+// 🚜 FARM COMMAND
 // ==========================================
 
 async function farmCommand(
@@ -1142,7 +1421,9 @@ async function farmCommand(
                 userId
             );
 
-        if (!farm.plots.length) {
+        if (
+            !farm.plots.length
+        ) {
             return message.reply({
                 content:
                     "`❌` Trang trại chưa có ô đất."
@@ -1156,6 +1437,7 @@ async function farmCommand(
                         userId
                     )
                 ],
+
                 components: [
                     plotMenu(
                         userId
@@ -1168,7 +1450,8 @@ async function farmCommand(
 
         const collector =
             msg.createMessageComponentCollector({
-                time: 120000
+                time:
+                    120000
             });
 
         collector.on(
@@ -1190,6 +1473,10 @@ async function farmCommand(
                     const id =
                         interaction.customId;
 
+                    // ==========================
+                    // 🌱 PLOT
+                    // ==========================
+
                     if (
                         id ===
                         `farm_plot_${userId}`
@@ -1200,6 +1487,10 @@ async function farmCommand(
                             interaction.values[0]
                         );
                     }
+
+                    // ==========================
+                    // 🌱 SEED
+                    // ==========================
 
                     if (
                         id.startsWith(
@@ -1220,6 +1511,10 @@ async function farmCommand(
                         );
                     }
 
+                    // ==========================
+                    // 🌾 SINGLE HARVEST
+                    // ==========================
+
                     if (
                         id.startsWith(
                             `farm_harvest_${userId}_`
@@ -1235,6 +1530,24 @@ async function farmCommand(
                         );
                     }
 
+                    // ==========================
+                    // ⚡ QUICK HARVEST
+                    // ==========================
+
+                    if (
+                        id ===
+                        `farm_quick_harvest_${userId}`
+                    ) {
+                        return quickHarvest(
+                            interaction,
+                            userId
+                        );
+                    }
+
+                    // ==========================
+                    // 🏠 HOME
+                    // ==========================
+
                     if (
                         id ===
                         `farm_home_${userId}`
@@ -1245,6 +1558,7 @@ async function farmCommand(
                                     userId
                                 )
                             ],
+
                             components: [
                                 plotMenu(
                                     userId
@@ -1256,6 +1570,10 @@ async function farmCommand(
                         });
                     }
 
+                    // ==========================
+                    // 🔃 REFRESH
+                    // ==========================
+
                     if (
                         id ===
                         `farm_refresh_${userId}`
@@ -1266,6 +1584,7 @@ async function farmCommand(
                                     userId
                                 )
                             ],
+
                             components: [
                                 plotMenu(
                                     userId
@@ -1276,6 +1595,10 @@ async function farmCommand(
                             ]
                         });
                     }
+
+                    // ==========================
+                    // ❌ CLOSE
+                    // ==========================
 
                     if (
                         id ===
@@ -1356,11 +1679,12 @@ async function farmCommand(
 }
 
 // ==========================================
-// EXPORT
+// 📦 EXPORT
 // ==========================================
 
 module.exports = {
-    name: "farm",
+    name:
+        "farm",
 
     aliases: [
         "f",
