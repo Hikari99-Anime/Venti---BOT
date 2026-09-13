@@ -42,10 +42,21 @@ module.exports = {
                             "#f2a7a7"
                         )
 
-                        .setDescription(
-                            "- `🍃` **Hãy mention người bạn muốn chuyển Mora.**"
+                        .setTitle(
+                            "🍃 Không thể chuyển Mora"
                         )
+
+                        .setDescription(
+                            [
+                                "☁️ `🍃` **Bạn chưa chọn người nhận.**",
+                                "",
+                                "> Hãy mention người bạn muốn chuyển Mora.",
+                                "> Ví dụ: `Vpay @user 1000`"
+                            ].join("\n")
+                        )
+
                 ]
+
             });
         }
 
@@ -65,10 +76,20 @@ module.exports = {
                             "#f2a7a7"
                         )
 
-                        .setDescription(
-                            "- `🤖` **Bạn không thể chuyển Mora cho bot.**"
+                        .setTitle(
+                            "🤖 Không thể chuyển Mora"
                         )
+
+                        .setDescription(
+                            [
+                                "☁️ `🤖` **Người nhận là bot.**",
+                                "",
+                                "> Bạn chỉ có thể chuyển Mora cho người chơi."
+                            ].join("\n")
+                        )
+
                 ]
+
             });
         }
 
@@ -91,10 +112,20 @@ module.exports = {
                             "#f2a7a7"
                         )
 
-                        .setDescription(
-                            "- `🍃` **Bạn không thể chuyển Mora cho chính mình.**"
+                        .setTitle(
+                            "🍃 Không thể chuyển Mora"
                         )
+
+                        .setDescription(
+                            [
+                                "☁️ `🍃` **Bạn không thể chuyển Mora cho chính mình.**",
+                                "",
+                                "> Hãy chọn một người chơi khác."
+                            ].join("\n")
+                        )
+
                 ]
+
             });
         }
 
@@ -125,11 +156,21 @@ module.exports = {
                             "#f2a7a7"
                         )
 
-                        .setDescription(
-                            "- `💰` **Số Mora không hợp lệ.**\n" +
-                            "> Vui lòng nhập một số nguyên dương."
+                        .setTitle(
+                            "💰 Số Mora không hợp lệ"
                         )
+
+                        .setDescription(
+                            [
+                                "☁️ `💰` **Vui lòng nhập số Mora hợp lệ.**",
+                                "",
+                                "> Số tiền phải là số nguyên dương.",
+                                "> Ví dụ: `Vpay @user 1000`"
+                            ].join("\n")
+                        )
+
                 ]
+
             });
         }
 
@@ -147,8 +188,13 @@ module.exports = {
                 sender.balance || 0
             );
 
+        // =====================================
+        // 💸 NOT ENOUGH MONEY
+        // =====================================
+
         if (
-            balance < amount
+            balance <
+            amount
         ) {
 
             return message.reply({
@@ -161,15 +207,31 @@ module.exports = {
                             "#f2a7a7"
                         )
 
+                        .setTitle(
+                            "💸 Không đủ Mora"
+                        )
+
                         .setDescription(
                             [
-                                "- `❌` **Không đủ Mora**",
+                                "☁️ `💰` **Số dư của bạn không đủ để thực hiện giao dịch.**",
                                 "",
-                                `> \`💰\` Số dư: **+${balance.toLocaleString("vi-VN")} Mora**`,
-                                `> \`💸\` Cần: **+${amount.toLocaleString("vi-VN")} Mora**`
+                                "- `💳` **Tài chính**",
+
+                                `> \`💵 Ví         : ${balance.toLocaleString("vi-VN")} Mora\``,
+
+                                `> \`💸 Cần       : ${amount.toLocaleString("vi-VN")} Mora\``,
+
+                                `> \`📉 Thiếu     : ${(amount - balance).toLocaleString("vi-VN")} Mora\``
                             ].join("\n")
                         )
+
+                        .setFooter({
+                            text:
+                                "☁️ Venti • Cozy Corner 🍃"
+                        })
+
                 ]
+
             });
         }
 
@@ -182,7 +244,7 @@ module.exports = {
         );
 
         // =====================================
-        // 💸 TRANSFER
+        // 💸 REMOVE SENDER MONEY
         // =====================================
 
         const removed =
@@ -205,12 +267,27 @@ module.exports = {
                             "#f2a7a7"
                         )
 
-                        .setDescription(
-                            "- `❌` **Không thể thực hiện giao dịch.**"
+                        .setTitle(
+                            "❌ Giao dịch thất bại"
                         )
+
+                        .setDescription(
+                            [
+                                "☁️ `🍃` **Không thể thực hiện giao dịch.**",
+                                "",
+                                "> Mora của bạn chưa được chuyển.",
+                                "> Vui lòng thử lại."
+                            ].join("\n")
+                        )
+
                 ]
+
             });
         }
+
+        // =====================================
+        // 💰 ADD TARGET MONEY
+        // =====================================
 
         User.addBalance(
             target.id,
@@ -218,7 +295,7 @@ module.exports = {
         );
 
         // =====================================
-        // ✅ SUCCESS
+        // 📊 UPDATED STATS
         // =====================================
 
         const updatedSender =
@@ -226,45 +303,122 @@ module.exports = {
                 message.author.id
             );
 
+        const updatedTarget =
+            User.getOrCreate(
+                target.id
+            );
+
+        const senderBalance =
+            Number(
+                updatedSender.balance || 0
+            );
+
+        const receiverBalance =
+            Number(
+                updatedTarget.balance || 0
+            );
+
+        // =====================================
+        // 👤 RECEIVER NAME
+        // =====================================
+
+        const receiverName =
+            target.globalName ||
+            target.username;
+
+        // =====================================
+        // 👤 SENDER NAME
+        // =====================================
+
+        const senderName =
+            message.author.globalName ||
+            message.author.username;
+
+        // =====================================
+        // ✅ SUCCESS EMBED
+        // =====================================
+
+        const embed =
+            new EmbedBuilder()
+
+                .setColor(
+                    "#A8DCC0"
+                )
+
+                .setAuthor({
+                    name:
+                        `☁️ ${senderName} · Venti`,
+
+                    iconURL:
+                        message.author.displayAvatarURL({
+                            extension:
+                                "png",
+
+                            size:
+                                128
+                        })
+                })
+
+                .setTitle(
+                    "💸 Chuyển Mora thành công"
+                )
+
+                .setDescription(
+                    [
+                        "☁️ `🍃` **Giao dịch Mora đã hoàn tất.**",
+                        "",
+
+                        "- `👤` **Người nhận**",
+
+                        `> ${target}`,
+
+                        `> \`👤\` ${receiverName}`,
+
+                        "",
+
+                        "- `💰` **Giao dịch**",
+
+                        `> \`💸\` +${amount.toLocaleString("vi-VN")} Mora`,
+
+                        "",
+
+                        "- `💳` **Tài chính của bạn**",
+
+                        `> \`💵 Ví         : ${senderBalance.toLocaleString("vi-VN")} Mora\``,
+
+                        "",
+
+                        "- `🍃` **Trạng thái**",
+
+                        "> `✅` Mora đã được chuyển thành công.",
+
+                        "",
+
+                        "☕ `🍃` **Chúc bạn giao dịch vui vẻ.**"
+                    ].join("\n")
+                )
+
+                .setThumbnail(
+                    target.displayAvatarURL({
+                        extension:
+                            "png",
+
+                        size:
+                            256
+                    })
+                )
+
+                .setFooter({
+                    text:
+                        "☁️ Venti • Cozy Corner 🍃"
+                })
+
+                .setTimestamp();
+
         return message.reply({
 
             embeds: [
-
-                new EmbedBuilder()
-
-                    .setColor(
-                        "#a8d8a8"
-                    )
-
-                    .setTitle(
-                        "`💸` Chuyển Mora thành công"
-                    )
-
-                    .setDescription(
-                        [
-                            `- \`👤\` **Người nhận**`,
-                            `> ${target}`,
-
-                            "",
-
-                            `- \`💰\` **Số tiền**`,
-                            `> +${amount.toLocaleString("vi-VN")} Mora`,
-
-                            "",
-
-                            `- \`💳\` **Số dư còn lại**`,
-                            `> +${Number(
-                                updatedSender.balance || 0
-                            ).toLocaleString("vi-VN")} Mora`
-                        ].join("\n")
-                    )
-
-                    .setFooter({
-                        text:
-                            "Venti • Mora Transfer"
-                    })
-
-                    .setTimestamp()
+                embed
             ]
 
         });

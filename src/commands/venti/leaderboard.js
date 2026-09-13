@@ -30,25 +30,6 @@ const TYPES = {
             "Những người chơi có Level cao nhất.",
         unit: "Level"
     },
-
-    fishing: {
-        label: "Fishing",
-        emoji: "🎣",
-        color: "#3498DB",
-        description:
-            "Những người câu được nhiều cá nhất.",
-        unit: "con cá"
-    },
-
-    farming: {
-        label: "Farming",
-        emoji: "🌾",
-        color: "#2ECC71",
-        description:
-            "Những người thu hoạch nhiều nông sản nhất.",
-        unit: "lần thu hoạch"
-    },
-
     daily: {
         label: "Daily Streak",
         emoji: "🔥",

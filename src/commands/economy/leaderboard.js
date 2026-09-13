@@ -17,7 +17,7 @@ module.exports = {
     ],
 
     description:
-        "Xem bảng xếp hạng Mora.",
+        "Xem bảng xếp hạng người chơi.",
 
     async execute(message) {
 
@@ -48,12 +48,33 @@ module.exports = {
                     new EmbedBuilder()
 
                         .setColor(
-                            "#f2a7a7"
+                            "#A8DCC0"
+                        )
+
+                        .setAuthor({
+                            name:
+                                `☁️ ${message.author.globalName || message.author.username} · Columbina`,
+                            iconURL:
+                                message.author.displayAvatarURL({
+                                    extension: "png",
+                                    size: 128
+                                })
+                        })
+
+                        .setTitle(
+                            "🍃 Mora Leaderboard"
                         )
 
                         .setDescription(
-                            "● `🍃` **Chưa có dữ liệu leaderboard.**"
+                            "☁️ `🍃` **Chưa có dữ liệu leaderboard.**"
                         )
+
+                        .setFooter({
+                            text:
+                                "☁️ Columbina • Cozy Corner 🍃"
+                        })
+
+                        .setTimestamp()
                 ]
             });
         }
@@ -83,6 +104,7 @@ module.exports = {
                     );
 
             const name =
+                discordUser?.globalName ||
                 discordUser?.username ||
                 "Unknown Traveler";
 
@@ -91,8 +113,18 @@ module.exports = {
                     user.balance || 0
                 );
 
+            const level =
+                Number(
+                    user.level || 1
+                );
+
+            const streak =
+                Number(
+                    user.dailyStreak || 0
+                );
+
             // =================================
-            // 🏅 RANK SYMBOL
+            // 🏅 RANK
             // =================================
 
             let rank;
@@ -124,11 +156,13 @@ module.exports = {
 
             lines.push(
 
-                `    ${rank} **${name}**\n` +
+                `${rank} **${name}**\n` +
 
-                `> \`💰\` +${balance.toLocaleString(
-                    "vi-VN"
-                )} Mora`
+                `> \`💰\` Mora      : **${balance.toLocaleString("vi-VN")}**\n` +
+
+                `> \`⭐\` Level     : **${level}**\n` +
+
+                `> \`🔥\` Daily     : **${streak} ngày**`
             );
         }
 
@@ -140,26 +174,40 @@ module.exports = {
             new EmbedBuilder()
 
                 .setColor(
-                    "#8FD3FF"
+                    "#A8DCC0"
                 )
 
+                .setAuthor({
+                    name:
+                        `☁️ ${message.author.globalName || message.author.username} · Columbina`,
+                    iconURL:
+                        message.author.displayAvatarURL({
+                            extension: "png",
+                            size: 128
+                        })
+                })
+
                 .setTitle(
-                    "`🏆` Mora Leaderboard"
+                    "🍃 Mora Leaderboard"
                 )
 
                 .setDescription(
                     [
-                        "- `🍃` **Top 10 người chơi giàu nhất**",
+                        "☁️ `🍃` **Bảng xếp hạng hành trình**",
+                        "",
+                        "- `🏆` **Top 10 người chơi**",
                         "",
                         lines.join(
                             "\n\n"
-                        )
+                        ),
+                        "",
+                        "☕ `🍃` **Chúc mọi người có một hành trình thật chill**"
                     ].join("\n")
                 )
 
                 .setFooter({
                     text:
-                        "Venti • May the wind guide your fortune."
+                        "☁️ Columbina • Cozy Corner 🍃"
                 })
 
                 .setTimestamp();
@@ -173,4 +221,3 @@ module.exports = {
         });
     }
 };
-

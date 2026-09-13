@@ -501,7 +501,7 @@ const BANK_INTEREST_RATE =
 
 // 24 giờ
 const BANK_INTEREST_COOLDOWN =
-    24 * 60 * 60 * 1000;
+    6 * 60 * 60 * 1000;
 
 // ==========================================
 // 📈 CALCULATE INTEREST

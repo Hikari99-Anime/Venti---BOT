@@ -54,10 +54,10 @@ function parseMoney(value) {
 // ==========================================
 
 const COLORS = {
-    primary: "#9ccfd8",
-    success: "#a8d8a8",
-    error: "#f2a7a7",
-    warning: "#ffd166"
+    primary: "#A8DCC0",
+    success: "#A8DCC0",
+    error: "#F2A7A7",
+    warning: "#FFD166"
 };
 
 // ==========================================
@@ -69,22 +69,57 @@ function requestEmbed(
     target
 ) {
     return new EmbedBuilder()
-        .setColor(COLORS.primary)
-        .setTitle("🍃 Yêu cầu xin Mora")
+
+        .setColor(
+            COLORS.primary
+        )
+
+        .setAuthor({
+            name:
+                `☁️ ${requester.globalName || requester.username} · Columbina`,
+            iconURL:
+                requester.displayAvatarURL({
+                    extension: "png",
+                    size: 128
+                })
+        })
+
+        .setTitle(
+            "🍃 Yêu Cầu Xin Mora"
+        )
+
         .setDescription(
             [
-                `> \`🍃\` ${requester} đang xin Mora từ ${target}.`,
+                "☁️ `🍃` **Một lời xin nhỏ trong hành trình**",
                 "",
-                `\`👤\` **Người xin:** ${requester}`,
-                `\`💰\` **Người cho:** ${target}`,
+
+                "- `👤` **Người xin**",
+                `> ${requester}`,
+
                 "",
-                "Nhấn **Xác nhận** để chọn số Mora muốn cho.",
-                "Nhấn **Từ chối** nếu bạn không muốn cho."
+
+                "- `💰` **Người được xin**",
+                `> ${target}`,
+
+                "",
+
+                "☕ `🍃` **Nhấn Xác nhận để chọn số Mora muốn cho.**",
+                "☁️ `🍃` **Nhấn Từ chối nếu bạn không muốn cho.**"
             ].join("\n")
         )
+
+        .setThumbnail(
+            requester.displayAvatarURL({
+                extension: "png",
+                size: 256
+            })
+        )
+
         .setFooter({
-            text: "Venti • Yêu cầu xin Mora"
+            text:
+                "☁️ Columbina • Cozy Corner 🍃"
         })
+
         .setTimestamp();
 }
 
@@ -104,8 +139,12 @@ function requestButtons(
                     .setCustomId(
                         `beg_accept_${requesterId}_${targetId}`
                     )
-                    .setLabel("Xác nhận")
-                    .setEmoji("🟢")
+                    .setLabel(
+                        "Xác nhận"
+                    )
+                    .setEmoji(
+                        "🟢"
+                    )
                     .setStyle(
                         ButtonStyle.Success
                     ),
@@ -114,8 +153,12 @@ function requestButtons(
                     .setCustomId(
                         `beg_deny_${requesterId}_${targetId}`
                     )
-                    .setLabel("Từ chối")
-                    .setEmoji("🔴")
+                    .setLabel(
+                        "Từ chối"
+                    )
+                    .setEmoji(
+                        "🔴"
+                    )
                     .setStyle(
                         ButtonStyle.Danger
                     )
@@ -154,9 +197,15 @@ function amountModal(
             .setStyle(
                 TextInputStyle.Short
             )
-            .setRequired(true)
-            .setMinLength(1)
-            .setMaxLength(15);
+            .setRequired(
+                true
+            )
+            .setMinLength(
+                1
+            )
+            .setMaxLength(
+                15
+            );
 
     modal.addComponents(
         new ActionRowBuilder()
@@ -186,10 +235,39 @@ async function sendRequest(
     // ======================================
 
     if (!target) {
-        return message.reply(
-            "🍃 Bạn muốn xin Mora từ ai?\n\n" +
-            "Cách dùng: `Vbeg @user`"
-        );
+        return message.reply({
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(
+                        COLORS.error
+                    )
+                    .setAuthor({
+                        name:
+                            `☁️ ${requester.globalName || requester.username} · Columbina`,
+                        iconURL:
+                            requester.displayAvatarURL({
+                                extension: "png",
+                                size: 128
+                            })
+                    })
+                    .setTitle(
+                        "🍃 Yêu Cầu Xin Mora"
+                    )
+                    .setDescription(
+                        [
+                            "☁️ `🍃` **Bạn muốn xin Mora từ ai?**",
+                            "",
+                            "- `📝` **Cách dùng**",
+                            "> `Vbeg @user`"
+                        ].join("\n")
+                    )
+                    .setFooter({
+                        text:
+                            "☁️ Columbina • Cozy Corner 🍃"
+                    })
+                    .setTimestamp()
+            ]
+        });
     }
 
     // ======================================
@@ -200,9 +278,34 @@ async function sendRequest(
         target.id ===
         requester.id
     ) {
-        return message.reply(
-            "🍃 Bạn không thể xin Mora của chính mình."
-        );
+        return message.reply({
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(
+                        COLORS.error
+                    )
+                    .setAuthor({
+                        name:
+                            `☁️ ${requester.globalName || requester.username} · Columbina`,
+                        iconURL:
+                            requester.displayAvatarURL({
+                                extension: "png",
+                                size: 128
+                            })
+                    })
+                    .setTitle(
+                        "🍃 Không Thể Thực Hiện"
+                    )
+                    .setDescription(
+                        "☁️ `🍃` **Bạn không thể xin Mora của chính mình.**"
+                    )
+                    .setFooter({
+                        text:
+                            "☁️ Columbina • Cozy Corner 🍃"
+                    })
+                    .setTimestamp()
+            ]
+        });
     }
 
     // ======================================
@@ -222,13 +325,16 @@ async function sendRequest(
     // ======================================
 
     return message.reply({
-        content: `${target}`,
+        content:
+            `${target}`,
+
         embeds: [
             requestEmbed(
                 requester,
                 target
             )
         ],
+
         components:
             requestButtons(
                 requester.id,
@@ -257,7 +363,9 @@ async function handleInteraction(
                 interaction.customId || "";
 
             if (
-                !id.startsWith("beg_")
+                !id.startsWith(
+                    "beg_"
+                )
             ) {
                 return false;
             }
@@ -282,7 +390,7 @@ async function handleInteraction(
             }
 
             // ==================================
-            // 🔐 CHỈ NGƯỜI ĐƯỢC XIN ĐƯỢC BẤM
+            // 🔐 CHỈ NGƯỜI ĐƯỢC XIN
             // ==================================
 
             if (
@@ -301,7 +409,8 @@ async function handleInteraction(
             // ==================================
 
             if (
-                action === "accept"
+                action ===
+                "accept"
             ) {
                 return interaction.showModal(
                     amountModal(
@@ -316,7 +425,8 @@ async function handleInteraction(
             // ==================================
 
             if (
-                action === "deny"
+                action ===
+                "deny"
             ) {
                 return interaction.update({
                     embeds: [
@@ -324,15 +434,31 @@ async function handleInteraction(
                             .setColor(
                                 COLORS.error
                             )
+                            .setAuthor({
+                                name:
+                                    `☁️ ${interaction.user.globalName || interaction.user.username} · Columbina`,
+                                iconURL:
+                                    interaction.user.displayAvatarURL({
+                                        extension: "png",
+                                        size: 128
+                                    })
+                            })
                             .setTitle(
-                                "🍃 Yêu cầu bị từ chối"
+                                "🍃 Yêu Cầu Bị Từ Chối"
                             )
                             .setDescription(
-                                `> \`🔴\` ${interaction.user} đã từ chối yêu cầu xin Mora.`
+                                [
+                                    "☁️ `🍃` **Yêu cầu xin Mora đã bị từ chối.**",
+                                    "",
+                                    `- \`🔴\` **Người từ chối**`,
+                                    `> ${interaction.user}`,
+                                    "",
+                                    "☕ `🍃` **Giao dịch chưa được thực hiện.**"
+                                ].join("\n")
                             )
                             .setFooter({
                                 text:
-                                    "Venti • Yêu cầu xin Mora"
+                                    "☁️ Columbina • Cozy Corner 🍃"
                             })
                             .setTimestamp()
                     ],
@@ -396,7 +522,9 @@ async function handleInteraction(
                     );
 
             const amount =
-                parseMoney(value);
+                parseMoney(
+                    value
+                );
 
             if (
                 !Number.isSafeInteger(
@@ -487,39 +615,83 @@ async function handleInteraction(
 
             const requesterUser =
                 await interaction.client.users
-                    .fetch(requesterId)
-                    .catch(() => null);
+                    .fetch(
+                        requesterId
+                    )
+                    .catch(
+                        () => null
+                    );
 
             return interaction.update({
                 content:
                     requesterUser
                         ? `${requesterUser}`
                         : "",
+
                 embeds: [
                     new EmbedBuilder()
                         .setColor(
                             COLORS.success
                         )
+
+                        .setAuthor({
+                            name:
+                                `☁️ ${interaction.user.globalName || interaction.user.username} · Columbina`,
+                            iconURL:
+                                interaction.user.displayAvatarURL({
+                                    extension: "png",
+                                    size: 128
+                                })
+                        })
+
                         .setTitle(
-                            "🍃 Đã cho Mora"
+                            "🍃 Đã Cho Mora"
                         )
+
                         .setDescription(
                             [
-                                `> \`🟢\` ${interaction.user} đã đồng ý cho Mora.`,
+                                "☁️ `🍃` **Giao dịch đã được hoàn tất.**",
                                 "",
-                                `\`👤\` **Người nhận:** ${requesterUser || `<@${requesterId}>`}`,
-                                `\`💰\` **Số tiền:** +${money(amount)} Mora`,
-                                `\`✨\` **XP:** +10`,
+
+                                "- `👤` **Người nhận**",
+                                `> ${requesterUser || `<@${requesterId}>`}`,
+
                                 "",
-                                `\`💳\` **Số dư còn lại:** ${money(giverBalance - amount)} Mora`
+
+                                "- `💰` **Số tiền**",
+                                `> +${money(amount)} Mora`,
+
+                                "",
+
+                                "- `✨` **Kinh nghiệm**",
+                                "> +10 XP",
+
+                                "",
+
+                                "- `💳` **Số dư còn lại**",
+                                `> ${money(giverBalance - amount)} Mora`,
+
+                                "",
+
+                                "☕ `🍃` **Một chút Mora cho hành trình phía trước.**"
                             ].join("\n")
                         )
+
+                        .setThumbnail(
+                            interaction.user.displayAvatarURL({
+                                extension: "png",
+                                size: 256
+                            })
+                        )
+
                         .setFooter({
                             text:
-                                "Venti • Giao dịch xin Mora"
+                                "☁️ Columbina • Cozy Corner 🍃"
                         })
+
                         .setTimestamp()
                 ],
+
                 components: []
             });
         }
@@ -543,7 +715,9 @@ async function handleInteraction(
                         "🍃 Có lỗi xảy ra khi xử lý yêu cầu xin Mora.",
                     ephemeral: true
                 })
-                .catch(() => {});
+                .catch(
+                    () => {}
+                );
         }
 
         return interaction
@@ -552,7 +726,9 @@ async function handleInteraction(
                     "🍃 Có lỗi xảy ra khi xử lý yêu cầu xin Mora.",
                 ephemeral: true
             })
-            .catch(() => {});
+            .catch(
+                () => {}
+            );
     }
 }
 
@@ -562,9 +738,14 @@ async function handleInteraction(
 
 module.exports = {
     name: "beg",
-    aliases: ["xin"],
+
+    aliases: [
+        "xin"
+    ],
+
     description:
         "Xin Mora từ người chơi khác.",
+
     usage:
         "Vbeg @user",
 
@@ -573,3 +754,4 @@ module.exports = {
 
     handleInteraction
 };
+

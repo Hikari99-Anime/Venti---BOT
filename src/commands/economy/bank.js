@@ -1,4 +1,3 @@
-
 const {
     EmbedBuilder,
     ActionRowBuilder,
@@ -9,17 +8,18 @@ const {
     TextInputStyle
 } = require("discord.js");
 
-const db = require("../../database/database");
+const db =
+    require("../../database/database");
 
 // ==========================================
 // 🏦 COLORS
 // ==========================================
 
 const COLORS = {
-    primary: "#9ccfd8",
-    success: "#a8d8a8",
-    warning: "#ffd166",
-    error: "#f2a7a7"
+    primary: "#A8DCC0",
+    success: "#A8D8A8",
+    warning: "#FFD166",
+    error: "#F2A7A7"
 };
 
 // ==========================================
@@ -138,54 +138,50 @@ function bankEmbed(userId) {
         )
 
         .setTitle(
-            "`🏦` Venti Bank"
+            "🏦 Thống Kê Ngân Hàng"
         )
 
         .setDescription(
             [
-                "- `💰` **Tiền mặt**",
-                `> +${money(balance)} Mora`,
+                "☁️ `🏦` **Một góc nhỏ tài chính của bạn**",
                 "",
 
-                "- `🏦` **Tiền trong Bank**",
-                `> +${money(bank)} Mora`,
+                "- `💰` **Tài chính**",
+                `> \`💵\` Tiền mặt     : ${money(balance)} Mora`,
+                `> \`🏦\` Ngân hàng    : ${money(bank)} Mora`,
+                `> \`💎\` Tổng tài sản : ${money(total)} Mora`,
                 "",
 
-                "- `💎` **Tổng tài sản**",
-                `> +${money(total)} Mora`,
+                "- `📈` **Lãi suất**",
+                "> `📊` Lãi suất      : +1% / ngày",
+                `> \`💵\` Lãi hôm nay  : ${
+                    interest.canClaim
+                        ? `+${money(interestAmount)} Mora`
+                        : "Chưa thể nhận"
+                }`,
+                `> \`💎\` Tổng lãi     : +${money(totalInterest)} Mora`,
                 "",
 
-                "○ `📈` **Lãi suất**",
-                "> +1% / ngày",
-                "",
-
-                "○ `💵` **Lãi hôm nay**",
+                "- `⏰` **Trạng thái**",
                 interest.canClaim
-                    ? `> +${money(interestAmount)} Mora`
-                    : "> Chưa thể nhận",
+                    ? "> `🌿` **Bạn có thể nhận lãi ngay!**"
+                    : `> \`⏳\` Nhận lãi sau : ${countdown(
+                        interest.nextInterestAt
+                    )}`,
                 "",
 
-                "○ `📊` **Tổng lãi đã nhận**",
-                `> +${money(totalInterest)} Mora`,
+                "- `🔒` **Bảo vệ tài sản**",
+                "> Tiền trong Bank được bảo toàn",
+                "> Số dư Bank tự động sinh lãi",
                 "",
-
-                "────────────────────────────",
-                "",
-
-                interest.canClaim
-                    ? "◉ `🌿` **Bạn có thể nhận lãi ngay!**"
-                    : `○ \`⏰\` Lần nhận lãi tiếp theo: **${countdown(interest.nextInterestAt)}**`,
-
-                "",
-
-                "- `🔒` Tiền trong Bank được bảo toàn",
-                "- `📈` Số dư Bank sinh lãi mỗi ngày"
+                
+                "☕ `🏦` **Quản lý Mora thật chill cùng Columbina**"
             ].join("\n")
         )
 
         .setFooter({
             text:
-                "Venti Bank • An toàn • Sinh lời"
+                "Columbina • Cozy Bank"
         })
 
         .setTimestamp();
@@ -198,10 +194,6 @@ function bankEmbed(userId) {
 function bankButtons(userId) {
 
     return [
-
-        // ==============================
-        // ROW 1
-        // ==============================
 
         new ActionRowBuilder()
             .addComponents(
@@ -234,10 +226,6 @@ function bankButtons(userId) {
                         ButtonStyle.Primary
                     )
             ),
-
-        // ==============================
-        // ROW 2
-        // ==============================
 
         new ActionRowBuilder()
             .addComponents(
@@ -715,7 +703,9 @@ async function claimInterest(
         ) {
             return interaction.reply({
                 content:
-                    `⏰ Bạn đã nhận lãi hôm nay rồi.\n\nLần nhận tiếp theo sau **${countdown(result.nextInterestAt)}**.`,
+                    `⏰ Bạn đã nhận lãi rồi.\n\nLần nhận tiếp theo sau **${countdown(
+                        result.nextInterestAt
+                    )}**.`,
                 ephemeral:
                     true
             });
@@ -853,10 +843,6 @@ async function handleInteraction(
                 });
             }
 
-            // ==============================
-            // 💰 DEPOSIT
-            // ==============================
-
             if (
                 action ===
                 "deposit"
@@ -867,10 +853,6 @@ async function handleInteraction(
                     )
                 );
             }
-
-            // ==============================
-            // 💸 WITHDRAW
-            // ==============================
 
             if (
                 action ===
@@ -883,10 +865,6 @@ async function handleInteraction(
                 );
             }
 
-            // ==============================
-            // 📈 INTEREST
-            // ==============================
-
             if (
                 action ===
                 "interest"
@@ -896,10 +874,6 @@ async function handleInteraction(
                     userId
                 );
             }
-
-            // ==============================
-            // 🔃 REFRESH
-            // ==============================
 
             if (
                 action ===
@@ -919,10 +893,6 @@ async function handleInteraction(
                 });
             }
 
-            // ==============================
-            // ✖️ CLOSE
-            // ==============================
-
             if (
                 action ===
                 "close"
@@ -930,7 +900,7 @@ async function handleInteraction(
 
                 return interaction.update({
                     content:
-                        "🏦 Đã đóng Venti Bank.",
+                        "🏦 Đã đóng Columbina Bank.",
                     embeds: [],
                     components: []
                 });
@@ -980,10 +950,6 @@ async function handleInteraction(
                 });
             }
 
-            // ==============================
-            // 💰 DEPOSIT
-            // ==============================
-
             if (
                 action ===
                 "deposit"
@@ -1003,10 +969,6 @@ async function handleInteraction(
                     amount
                 );
             }
-
-            // ==============================
-            // 💸 WITHDRAW
-            // ==============================
 
             if (
                 action ===
@@ -1047,7 +1009,7 @@ async function handleInteraction(
             return interaction
                 .followUp({
                     content:
-                        "🏦 Có lỗi xảy ra khi xử lý Venti Bank.",
+                        "🏦 Có lỗi xảy ra khi xử lý Columbina Bank.",
                     ephemeral:
                         true
                 })
@@ -1059,7 +1021,7 @@ async function handleInteraction(
         return interaction
             .reply({
                 content:
-                    "🏦 Có lỗi xảy ra khi xử lý Venti Bank.",
+                    "🏦 Có lỗi xảy ra khi xử lý Columbina Bank.",
                 ephemeral:
                     true
             })
@@ -1077,4 +1039,3 @@ module.exports = {
     ...command,
     handleInteraction
 };
-

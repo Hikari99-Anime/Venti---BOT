@@ -1,4 +1,3 @@
-
 const {
     EmbedBuilder,
     ActionRowBuilder,
@@ -74,31 +73,45 @@ module.exports = {
 
                 .setAuthor({
                     name:
-                        `${message.author.username} • Wallet`,
+                        `☁️ ${message.author.globalName || message.author.username} · Columbina`,
                     iconURL:
                         message.author
-                            .displayAvatarURL()
+                            .displayAvatarURL({
+                                extension: "png",
+                                size: 128
+                            })
                 })
+
+                .setTitle(
+                    "🍃 Ví Mora"
+                )
 
                 .setDescription(
                     [
-                        "**MORA WALLET**",
+                        "☁️ `🍃` **Một góc nhỏ tài chính của bạn**",
                         "",
-                        "- `💰` **Tiền mặt**",
-                        `> **${money(balance)} Mora**`,
+
+                        "- `💰` **Tài chính**",
+                        `> \`💵\` Tiền mặt     : ${money(balance)} Mora`,
+                        `> \`🏦\` Ngân hàng    : ${money(bank)} Mora`,
+                        `> \`💎\` Tổng tài sản : ${money(total)} Mora`,
                         "",
-                        "- `🏦` **Ngân hàng**",
-                        `> **${money(bank)} Mora**`,
-                        "",
-                        "",
-                        "- `💎` **Tổng tài sản**",
-                        `> \`+\` **${money(total)} Mora**`
+
+                        "☕ `🍃` **Chúc bạn một ngày thật chill**"
                     ].join("\n")
+                )
+
+                .setThumbnail(
+                    message.author
+                        .displayAvatarURL({
+                            extension: "png",
+                            size: 256
+                        })
                 )
 
                 .setFooter({
                     text:
-                        "Venti • Wandering Bard of Mondstadt"
+                        "☁️ Columbina • Cozy Corner 🍃"
                 })
 
                 .setTimestamp();
@@ -150,4 +163,3 @@ module.exports = {
         });
     }
 };
-

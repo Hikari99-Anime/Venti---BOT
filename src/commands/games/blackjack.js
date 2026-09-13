@@ -1,4 +1,3 @@
-
 const {
     EmbedBuilder,
     ActionRowBuilder,
@@ -21,59 +20,31 @@ const SUITS = [
 ];
 
 const VALUES = [
-    {
-        name: "A",
-        value: 11
-    },
-    {
-        name: "2",
-        value: 2
-    },
-    {
-        name: "3",
-        value: 3
-    },
-    {
-        name: "4",
-        value: 4
-    },
-    {
-        name: "5",
-        value: 5
-    },
-    {
-        name: "6",
-        value: 6
-    },
-    {
-        name: "7",
-        value: 7
-    },
-    {
-        name: "8",
-        value: 8
-    },
-    {
-        name: "9",
-        value: 9
-    },
-    {
-        name: "10",
-        value: 10
-    },
-    {
-        name: "J",
-        value: 10
-    },
-    {
-        name: "Q",
-        value: 10
-    },
-    {
-        name: "K",
-        value: 10
-    }
+    { name: "A", value: 11 },
+    { name: "2", value: 2 },
+    { name: "3", value: 3 },
+    { name: "4", value: 4 },
+    { name: "5", value: 5 },
+    { name: "6", value: 6 },
+    { name: "7", value: 7 },
+    { name: "8", value: 8 },
+    { name: "9", value: 9 },
+    { name: "10", value: 10 },
+    { name: "J", value: 10 },
+    { name: "Q", value: 10 },
+    { name: "K", value: 10 }
 ];
+
+// ==========================================
+// 🎨 COLORS
+// ==========================================
+
+const COLORS = {
+    primary: "#A8DCC0",
+    success: "#A8D8A8",
+    error: "#F2A7A7",
+    warning: "#FFD166"
+};
 
 // ==========================================
 // 🃏 DECK
@@ -225,7 +196,7 @@ module.exports = {
     ],
 
     description:
-        "Chơi Blackjack với Venti.",
+        "Chơi Blackjack với Columbina.",
 
     async execute(
         message,
@@ -251,14 +222,24 @@ module.exports = {
         if (
             user.balance < bet
         ) {
-            return message.reply(
-                `> ❌ Bạn không đủ Mora.\n` +
-                `> 💰 Cần: \`${bet.toLocaleString()}\` Mora\n` +
-                `> 💵 Có: \`${Number(user.balance || 0).toLocaleString()}\` Mora`
-            );
+            return message.reply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(
+                            COLORS.error
+                        )
+                        .setDescription(
+                            [
+                                "- `❌` **Không đủ Mora**",
+                                "",
+                                `> \`💰\` Cần: **${bet.toLocaleString("vi-VN")} Mora**`,
+                                `> \`💳\` Có: **${Number(user.balance || 0).toLocaleString("vi-VN")} Mora**`
+                            ].join("\n")
+                        )
+                ]
+            });
         }
 
-        // Trừ tiền cược
         User.removeBalance(
             userId,
             bet
@@ -286,9 +267,6 @@ module.exports = {
         if (
             isBlackjack(player)
         ) {
-            const playerBlackjack =
-                true;
-
             const dealerBlackjack =
                 isBlackjack(
                     dealer
@@ -356,6 +334,7 @@ module.exports = {
             await message.reply({
                 embeds: [
                     createGameEmbed(
+                        message,
                         player,
                         dealer,
                         bet
@@ -386,7 +365,7 @@ module.exports = {
                 ) {
                     return interaction.reply({
                         content:
-                            "❌ Đây không phải ván Blackjack của bạn.",
+                            "🍃 Đây không phải ván Blackjack của bạn.",
                         ephemeral: true
                     });
                 }
@@ -414,7 +393,6 @@ module.exports = {
                             player
                         );
 
-                    // Bust
                     if (
                         value > 21
                     ) {
@@ -444,7 +422,6 @@ module.exports = {
                         });
                     }
 
-                    // 21
                     if (
                         value === 21
                     ) {
@@ -456,6 +433,7 @@ module.exports = {
                     return interaction.update({
                         embeds: [
                             createGameEmbed(
+                                message,
                                 player,
                                 dealer,
                                 bet
@@ -596,13 +574,17 @@ module.exports = {
                                     "🃏 Blackjack • Hết giờ"
                                 )
                                 .setDescription(
-                                    "> ⏰ Bạn đã không đưa ra lựa chọn.\n" +
-                                    "> 💸 Tiền cược đã bị mất."
+                                    [
+                                        "- `⏰` **Ván Blackjack đã hết thời gian**",
+                                        "",
+                                        "> `💸` Tiền cược đã bị mất."
+                                    ].join("\n")
                                 )
                                 .setFooter({
                                     text:
-                                        "🍃 Venti • Blackjack"
+                                        "☁️ Columbina • Cozy Corner"
                                 })
+                                .setTimestamp()
                         ],
                         components: []
                     });
@@ -617,35 +599,64 @@ module.exports = {
 // ==========================================
 
 function createGameEmbed(
+    message,
     player,
     dealer,
     bet
 ) {
+    const name =
+        message.author.globalName ||
+        message.author.username;
+
     return new EmbedBuilder()
         .setColor(
-            "#9B59B6"
+            COLORS.primary
         )
+
+        .setAuthor({
+            name:
+                `☁️ ${name} · Columbina`,
+            iconURL:
+                message.author.displayAvatarURL({
+                    extension: "png",
+                    size: 128
+                })
+        })
+
         .setTitle(
             "🃏 Blackjack"
         )
+
         .setDescription(
-            `> 💰 Cược: \`${bet.toLocaleString()} Mora\`\n\n` +
+            [
+                "☁️ `🍃` **Một ván bài nhỏ trong hành trình**",
+                "",
 
-            `- ### 🤵 Dealer\n` +
-            `> \`${dealer[0].name}${dealer[0].suit}\`  \`??\`\n\n` +
+                "- `💰` **Cược**",
+                `> \`${bet.toLocaleString("vi-VN")} Mora\``,
+                "",
 
-            `- ### 👤 Bạn\n` +
-            `> ${formatHand(player)}\n` +
-            `> ⭐ Điểm: **${getHandValue(player)}**\n\n` +
+                "- `🤵` **Dealer**",
+                `> \`${dealer[0].name}${dealer[0].suit}\`  \`??\``,
+                "",
 
-            "────────────────────\n" +
-            "> 🎴 **Hit** để rút thêm\n" +
-            "> 🛑 **Stand** để dừng"
+                "- `👤` **Bạn**",
+                `> ${formatHand(player)}`,
+                `> \`⭐\` Điểm: **${getHandValue(player)}**`,
+                "",
+
+                "- `🎴` **Lựa chọn**",
+                "> Nhấn **Hit** để rút thêm",
+                "> Nhấn **Stand** để dừng"
+            ].join("\n")
         )
+
         .setFooter({
             text:
-                "🍃 Columbina • Blackjack"
-        });
+                "☁️ Columbina • Cozy Corner"
+        })
+
+        .setTimestamp();
 }
 
 // ==========================================
@@ -660,72 +671,92 @@ function createResultEmbed(
     reward
 ) {
     let color =
-        "#ED4245";
+        COLORS.error;
 
     let title =
-        "💀 Blackjack • Thua";
+        "🃏 Blackjack • Thua";
 
-    let message =
-        `> 💸 -${bet.toLocaleString()} Mora`;
+    let resultText =
+        `> \`💸\` -${bet.toLocaleString("vi-VN")} Mora`;
 
     if (
         result === "win"
     ) {
         color =
-            "#57F287";
+            COLORS.success;
 
         title =
-            "🎉 Blackjack • Thắng";
+            "🃏 Blackjack • Thắng";
 
-        message =
-            `> 💰 +${reward.toLocaleString()} Mora`;
+        resultText =
+            `> \`💰\` +${reward.toLocaleString("vi-VN")} Mora`;
     }
 
     if (
         result === "draw"
     ) {
         color =
-            "#FEE75C";
+            COLORS.warning;
 
         title =
-            "🤝 Blackjack • Hòa";
+            "🃏 Blackjack • Hòa";
 
-        message =
-            `> 💰 Hoàn lại \`${reward.toLocaleString()} Mora\``;
+        resultText =
+            `> \`💰\` Hoàn lại **${reward.toLocaleString("vi-VN")} Mora**`;
     }
 
     if (
         result === "blackjack"
     ) {
         color =
-            "#F1C40F";
+            "#E8C36A";
 
         title =
-            "👑 BLACKJACK!";
+            "👑 Blackjack!";
 
-        message =
-            `> 💎 +${reward.toLocaleString()} Mora`;
+        resultText =
+            `> \`💎\` +${reward.toLocaleString("vi-VN")} Mora`;
     }
 
     return new EmbedBuilder()
-        .setColor(color)
-        .setTitle(title)
-        .setDescription(
-            `### 🤵 Dealer\n` +
-            `> ${formatHand(dealer)}\n` +
-            `> ⭐ Điểm: **${getHandValue(dealer)}**\n\n` +
-
-            `### 👤 Bạn\n` +
-            `> ${formatHand(player)}\n` +
-            `> ⭐ Điểm: **${getHandValue(player)}**\n\n` +
-
-            "────────────────────\n" +
-            message
+        .setColor(
+            color
         )
+
+        .setTitle(
+            title
+        )
+
+        .setDescription(
+            [
+                "☁️ `🍃` **Kết quả ván bài**",
+                "",
+
+                "- `🤵` **Dealer**",
+                `> ${formatHand(dealer)}`,
+                `> \`⭐\` Điểm: **${getHandValue(dealer)}**`,
+                "",
+
+                "- `👤` **Bạn**",
+                `> ${formatHand(player)}`,
+                `> \`⭐\` Điểm: **${getHandValue(player)}**`,
+                "",
+
+                "- `💰` **Cược**",
+                `> \`${bet.toLocaleString("vi-VN")} Mora\``,
+                "",
+
+                "- `🎁` **Kết quả**",
+                resultText
+            ].join("\n")
+        )
+
         .setFooter({
             text:
-                "🍃 Columbina • Blackjack"
-        });
+                "☁️ Columbina • Cozy Corner"
+        })
+
+        .setTimestamp();
 }
 
 // ==========================================
@@ -737,6 +768,7 @@ function createButtons(
 ) {
     return new ActionRowBuilder()
         .addComponents(
+
             new ButtonBuilder()
                 .setCustomId(
                     `bj_hit_${userId}`
@@ -766,4 +798,3 @@ function createButtons(
                 )
         );
 }
-

@@ -28,7 +28,9 @@ function money(amount) {
 
 function formatTime(ms) {
     const totalSeconds =
-        Math.ceil(ms / 1000);
+        Math.ceil(
+            ms / 1000
+        );
 
     const hours =
         Math.floor(
@@ -114,26 +116,47 @@ module.exports = {
             const embed =
                 new EmbedBuilder()
                     .setColor(
-                        "#5865F2"
+                        "#A8DCC0"
                     )
+
+                    .setAuthor({
+                        name:
+                            `☁️ ${message.author.globalName || message.author.username} · Columbina`,
+                        iconURL:
+                            message.author.displayAvatarURL({
+                                extension: "png",
+                                size: 128
+                            })
+                    })
+
                     .setTitle(
-                        "⏳ Daily chưa sẵn sàng"
+                        "🍃 Daily Chưa Sẵn Sàng"
                     )
+
                     .setDescription(
-                        [
-                            `> \`🎁\` Bạn đã nhận phần thưởng hôm nay rồi.`,
-                            "",
-                            `> \`⏰\` **Nhận lại sau**`,
-                            `> **${formatTime(remaining)}**`,
-                            "",
-                            `> \`🔥\` **Daily Streak**`,
-                            `> **${oldStreak} ngày**`
-                        ].join("\n")
+                        "☁️ `🍃` **Phần thưởng hôm nay đã được nhận**\n\n" +
+
+                        "- `⏰` **Thời gian**\n" +
+                        `> \`🕐 Nhận lại sau : ${formatTime(remaining)}\`\n\n` +
+
+                        "- `🔥` **Daily Streak**\n" +
+                        `> \`🔥 Streak      : ${oldStreak} ngày\`\n\n` +
+
+                        "☕ `🍃` **Quay lại sau nhé.**"
                     )
+
+                    .setThumbnail(
+                        message.author.displayAvatarURL({
+                            extension: "png",
+                            size: 256
+                        })
+                    )
+
                     .setFooter({
                         text:
-                            "Venti • Daily Reward"
+                            "☁️ Columbina • Cozy Corner 🍃"
                     })
+
                     .setTimestamp();
 
             return message.reply({
@@ -226,33 +249,50 @@ module.exports = {
         const embed =
             new EmbedBuilder()
                 .setColor(
-                    "#FFD166"
+                    "#A8DCC0"
                 )
+
                 .setAuthor({
                     name:
-                        `${message.author.username} • Daily`,
+                        `☁️ ${message.author.globalName || message.author.username} · Columbina`,
                     iconURL:
-                        message.author
-                            .displayAvatarURL()
+                        message.author.displayAvatarURL({
+                            extension: "png",
+                            size: 128
+                        })
                 })
-                .setDescription(
-                    [
-                        "**DAILY REWARD**",
-                        "",
-                        "> `🎁` **Phần thưởng**",
-                        `> \`+\` **${money(reward)} Mora**`,
-                        "",
-                        "> `🔥` **Daily Streak**",
-                        `> **${streak} ngày**`,
-                        "",
-                        "> `💳` **Số dư**",
-                        `> \`+\` **${money(balance)} Mora**`
-                    ].join("\n")
+
+                .setTitle(
+                    "🍃 Daily Reward"
                 )
+
+                .setDescription(
+                    "☁️ `🍃` **Một phần thưởng nhỏ cho hành trình của bạn**\n\n" +
+
+                    "- `🎁` **Phần thưởng**\n" +
+                    `> \`💰 Phần thưởng : +${money(reward)} Mora\`\n\n` +
+
+                    "- `🔥` **Daily Streak**\n" +
+                    `> \`🔥 Streak      : ${streak} ngày\`\n\n` +
+
+                    "- `💳` **Tài chính**\n" +
+                    `> \`💵 Số dư      : +${money(balance)} Mora\`\n\n` +
+
+                    "☕ `🍃` **Chúc bạn một ngày thật chill**"
+                )
+
+                .setThumbnail(
+                    message.author.displayAvatarURL({
+                        extension: "png",
+                        size: 256
+                    })
+                )
+
                 .setFooter({
                     text:
-                        "Venti • Quay lại ngày mai để giữ streak!"
+                        "☁️ Columbina • Cozy Corner 🍃"
                 })
+
                 .setTimestamp();
 
         return message.reply({
