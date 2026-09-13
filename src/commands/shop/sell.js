@@ -356,7 +356,7 @@ function createItemsEmbed(
     const lines = [];
 
     lines.push(
-        `● ${getCategoryName(category)}`
+        `- ${getCategoryName(category)}`
     );
 
     lines.push("");
@@ -396,7 +396,7 @@ function createItemsEmbed(
     }
 
     lines.push(
-        "● 📌 **Lưu ý**"
+        "- 📌 **Lưu ý**"
     );
 
     lines.push(
@@ -540,14 +540,14 @@ function createSellItemEmbed(
 
         .setDescription(
             [
-                `● ${safeEmoji(item.emoji)} **Thông tin vật phẩm**`,
+                `- ${safeEmoji(item.emoji)} **Thông tin vật phẩm**`,
                 "",
                 `> 📦 Tên: **${item.name}**`,
                 `> 🎒 Đang có: **${amount}**`,
                 `> 💰 Giá bán: **${money(price)} Mora / cái**`,
                 `> 💵 Bán toàn bộ: **${money(allPrice)} Mora**`,
                 "",
-                "● 🛒 **Chọn số lượng**",
+                "- 🛒 **Chọn số lượng**",
                 "> 💰 Bán 1 cái",
                 "> 💰 Bán 5 cái",
                 "> 💸 Bán toàn bộ"

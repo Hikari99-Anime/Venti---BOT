@@ -644,7 +644,7 @@ function createGameEmbed(
         )
         .setFooter({
             text:
-                "🍃 Venti • Blackjack"
+                "🍃 Columbina • Blackjack"
         });
 }
 
@@ -724,7 +724,7 @@ function createResultEmbed(
         )
         .setFooter({
             text:
-                "🍃 Venti • Blackjack"
+                "🍃 Columbina • Blackjack"
         });
 }
 

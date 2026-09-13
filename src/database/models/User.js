@@ -12,20 +12,12 @@ class User {
     // 👤 USER
     // ======================================
 
-    static get(
-        userId
-    ) {
-        return db.getUser(
-            userId
-        );
+    static get(userId) {
+        return db.getUser(userId);
     }
 
-    static getOrCreate(
-        userId
-    ) {
-        return db.getOrCreate(
-            userId
-        );
+    static getOrCreate(userId) {
+        return db.getOrCreate(userId);
     }
 
     static update(
@@ -69,34 +61,6 @@ class User {
         return db.removeBalance(
             userId,
             amount
-        );
-    }
-
-    // ======================================
-    // 🎟️ LOTTERY
-    // ======================================
-
-    /**
-     * Mua vé xổ số.
-     *
-     * quantity:
-     * Số vé muốn mua.
-     *
-     * pricePerTicket:
-     * Giá của 1 vé.
-     *
-     * Giới hạn:
-     * Tối đa 5 vé mỗi lần mua.
-     */
-    static buyTickets(
-        userId,
-        quantity,
-        pricePerTicket
-    ) {
-        return db.buyTickets(
-            userId,
-            quantity,
-            pricePerTicket
         );
     }
 
@@ -272,3 +236,4 @@ class User {
 }
 
 module.exports = User;
+
