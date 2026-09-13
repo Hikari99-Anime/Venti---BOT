@@ -14,7 +14,7 @@ const Item =
     require("../../database/models/Item");
 
 // ═══════════════════════════════════════
-// 🍃 COLUMBINA • SHOP
+// 🍃 VENTI • SHOP
 // ═══════════════════════════════════════
 
 const PLOTS = [
@@ -69,24 +69,12 @@ const PLOTS = [
 ];
 
 // ═══════════════════════════════════════
-// 🌱 RANDOM SEED SHOP
+// ⚙️ SHOP CONFIG
 // ═══════════════════════════════════════
 
-const SEED_SHOP_DURATION =
-    15 * 60 * 1000;
-
 const SEED_SHOP_SIZE = 5;
-
-const SEED_REFRESH_PRICE = 100;
-
-// userId => {
-//     items: [itemId...],
-//     bought: {
-//         itemId: number
-//     },
-//     createdAt: number
-// }
-const seedShops = new Map();
+const SEED_SHOP_DURATION = 15 * 60 * 1000;
+const REFRESH_PRICE = 100;
 
 // ═══════════════════════════════════════
 // 🛡️ SAFE EMOJI
@@ -119,66 +107,88 @@ function safeEmoji(
 }
 
 // ═══════════════════════════════════════
-// 🎲 RANDOM
+// 🔀 RANDOM
 // ═══════════════════════════════════════
 
-function randomArray(array) {
-    return [...array]
-        .sort(
-            () => Math.random() - 0.5
-        );
+function shuffle(array) {
+    return [...array].sort(
+        () => Math.random() - 0.5
+    );
 }
 
 // ═══════════════════════════════════════
-// 🌱 GET ALL SEEDS
-// ═══════════════════════════════════════
-
-function getAllSeeds() {
-    return Item
-        .getAll()
-        .filter(
-            item =>
-                item.category ===
-                "seed"
-        );
-}
-
-// ═══════════════════════════════════════
-// 🌱 CREATE USER SEED SHOP
+// 🌱 CREATE USER SHOP
 // ═══════════════════════════════════════
 
 function createSeedShop(userId) {
-    const seeds =
-        getAllSeeds();
-
-    if (!seeds.length) {
-        return null;
-    }
-
-    const selected =
-        randomArray(seeds)
-            .slice(
-                0,
-                Math.min(
-                    SEED_SHOP_SIZE,
-                    seeds.length
-                )
+    const allSeeds =
+        Item
+            .getAll()
+            .filter(
+                item =>
+                    item.category === "seed"
             );
 
-    const shop = {
-        items: selected.map(
-            item =>
-                String(item.id)
-        ),
+    if (!allSeeds.length) {
+        return [];
+    }
 
-        bought: {},
+    return shuffle(allSeeds)
+        .slice(0, SEED_SHOP_SIZE)
+        .map(item => ({
+            itemId: item.id,
+            bought: 0
+        }));
+}
 
-        createdAt:
-            Date.now()
-    };
+// ═══════════════════════════════════════
+// 🌱 GET USER SHOP
+// ═══════════════════════════════════════
 
-    seedShops.set(
-        String(userId),
+function getSeedShop(userId) {
+    const user =
+        User.getOrCreate(userId);
+
+    const now =
+        Date.now();
+
+    /*
+     * Dùng field:
+     *
+     * user.seedShop = {
+     *     items: [],
+     *     createdAt: 0
+     * }
+     *
+     * Nếu project của bạn lưu object trực tiếp
+     * thì vẫn hoạt động.
+     */
+
+    const current =
+        user.seedShop;
+
+    if (
+        current &&
+        Array.isArray(current.items) &&
+        current.items.length > 0 &&
+        Number(current.createdAt || 0) +
+            SEED_SHOP_DURATION >
+            now
+    ) {
+        return current;
+    }
+
+    const shop =
+        {
+            items:
+                createSeedShop(userId),
+            createdAt:
+                now
+        };
+
+    saveUserField(
+        userId,
+        "seedShop",
         shop
     );
 
@@ -186,173 +196,61 @@ function createSeedShop(userId) {
 }
 
 // ═══════════════════════════════════════
-// 🌱 GET USER SEED SHOP
+// 🔄 REFRESH USER SHOP
 // ═══════════════════════════════════════
 
-function getSeedShop(userId) {
-    const key =
-        String(userId);
+function refreshSeedShop(userId) {
+    const shop =
+        {
+            items:
+                createSeedShop(userId),
+            createdAt:
+                Date.now()
+        };
 
-    let shop =
-        seedShops.get(key);
-
-    if (!shop) {
-        return createSeedShop(
-            userId
-        );
-    }
-
-    const expired =
-        Date.now() -
-            shop.createdAt >=
-        SEED_SHOP_DURATION;
-
-    if (expired) {
-        return createSeedShop(
-            userId
-        );
-    }
+    saveUserField(
+        userId,
+        "seedShop",
+        shop
+    );
 
     return shop;
 }
 
 // ═══════════════════════════════════════
-// 🌱 REFRESH USER SEED SHOP
+// ⏳ SHOP TIME
 // ═══════════════════════════════════════
 
-function refreshSeedShop(userId) {
-    return createSeedShop(
-        userId
+function getRemainingShopTime(
+    shop
+) {
+    const expires =
+        Number(shop.createdAt || 0) +
+        SEED_SHOP_DURATION;
+
+    return Math.max(
+        0,
+        expires - Date.now()
     );
 }
 
 // ═══════════════════════════════════════
-// 🌱 GET RANDOM SEED ITEMS
+// 🌱 GET CURRENT SEEDS
 // ═══════════════════════════════════════
 
-function getSeedItems(userId) {
+function getCurrentSeeds(userId) {
     const shop =
         getSeedShop(userId);
 
-    if (!shop) {
-        return [];
-    }
-
-    const allSeeds =
-        getAllSeeds();
-
     return shop.items
-        .map(
-            id =>
-                allSeeds.find(
-                    item =>
-                        String(
-                            item.id
-                        ) === String(id)
-                )
+        .map(entry =>
+            Item.get(entry.itemId)
         )
         .filter(Boolean);
 }
 
 // ═══════════════════════════════════════
-// 🌱 BOUGHT COUNT
-// ═══════════════════════════════════════
-
-function getBoughtCount(
-    userId,
-    itemId
-) {
-    const shop =
-        getSeedShop(userId);
-
-    if (!shop) {
-        return 0;
-    }
-
-    return Number(
-        shop.bought[
-            String(itemId)
-        ] || 0
-    );
-}
-
-// ═══════════════════════════════════════
-// 🌱 MAX BUY
-// ═══════════════════════════════════════
-
-function canBuySeed(
-    userId,
-    itemId
-) {
-    return (
-        getBoughtCount(
-            userId,
-            itemId
-        ) < 10
-    );
-}
-
-// ═══════════════════════════════════════
-// 🌱 INCREASE BOUGHT COUNT
-// ═══════════════════════════════════════
-
-function increaseBoughtCount(
-    userId,
-    itemId,
-    amount = 1
-) {
-    const shop =
-        getSeedShop(userId);
-
-    if (!shop) {
-        return false;
-    }
-
-    const id =
-        String(itemId);
-
-    const current =
-        Number(
-            shop.bought[id] || 0
-        );
-
-    if (
-        current + amount >
-        10
-    ) {
-        return false;
-    }
-
-    shop.bought[id] =
-        current + amount;
-
-    return true;
-}
-
-// ═══════════════════════════════════════
-// ⏳ REMAINING TIME
-// ═══════════════════════════════════════
-
-function getRemainingShopTime(
-    userId
-) {
-    const shop =
-        getSeedShop(userId);
-
-    if (!shop) {
-        return 0;
-    }
-
-    return Math.max(
-        0,
-        SEED_SHOP_DURATION -
-            (Date.now() -
-                shop.createdAt)
-    );
-}
-
-// ═══════════════════════════════════════
-// COMMAND
+// 🏠 COMMAND
 // ═══════════════════════════════════════
 
 const command = {
@@ -363,7 +261,7 @@ const command = {
     ],
 
     description:
-        "🛒 Cửa hàng của Columbina.",
+        "🛒 Cửa hàng của Venti.",
 
     usage:
         "Vshop",
@@ -380,7 +278,11 @@ const command = {
                 userId
             );
 
-            // Tạo shop hạt ngay khi mở
+            /*
+             * Tạo shop ngay khi mở Vshop.
+             * Mỗi user có shop riêng.
+             */
+
             getSeedShop(
                 userId
             );
@@ -392,7 +294,6 @@ const command = {
                             userId
                         )
                     ],
-
                     components: [
                         categoryRow(
                             userId
@@ -428,9 +329,9 @@ const command = {
                         const id =
                             interaction.customId;
 
-                        // ═════════════════════
+                        // ═══════════════════
                         // CATEGORY
-                        // ═════════════════════
+                        // ═══════════════════
 
                         if (
                             id ===
@@ -449,9 +350,9 @@ const command = {
                             );
                         }
 
-                        // ═════════════════════
+                        // ═══════════════════
                         // ITEM
-                        // ═════════════════════
+                        // ═══════════════════
 
                         if (
                             id ===
@@ -468,9 +369,9 @@ const command = {
                             );
                         }
 
-                        // ═════════════════════
+                        // ═══════════════════
                         // BUY
-                        // ═════════════════════
+                        // ═══════════════════
 
                         if (
                             id ===
@@ -484,9 +385,9 @@ const command = {
                             );
                         }
 
-                        // ═════════════════════
-                        // REFRESH SEED SHOP
-                        // ═════════════════════
+                        // ═══════════════════
+                        // REFRESH SEEDS
+                        // ═══════════════════
 
                         if (
                             id ===
@@ -498,9 +399,9 @@ const command = {
                             );
                         }
 
-                        // ═════════════════════
+                        // ═══════════════════
                         // HOME
-                        // ═════════════════════
+                        // ═══════════════════
 
                         if (
                             id ===
@@ -518,7 +419,6 @@ const command = {
                                         userId
                                     )
                                 ],
-
                                 components: [
                                     categoryRow(
                                         userId
@@ -527,9 +427,9 @@ const command = {
                             });
                         }
 
-                        // ═════════════════════
+                        // ═══════════════════
                         // BACK
-                        // ═════════════════════
+                        // ═══════════════════
 
                         if (
                             id ===
@@ -542,9 +442,9 @@ const command = {
                             );
                         }
 
-                        // ═════════════════════
+                        // ═══════════════════
                         // CLOSE
-                        // ═════════════════════
+                        // ═══════════════════
 
                         if (
                             id ===
@@ -554,10 +454,8 @@ const command = {
 
                             return interaction.update({
                                 content:
-                                    "🍃 Columbina đã đóng cửa hàng.",
-
+                                    "🍃 Venti đã đóng cửa hàng.",
                                 embeds: [],
-
                                 components: []
                             });
                         }
@@ -614,7 +512,7 @@ const command = {
             return message
                 .reply({
                     content:
-                        "🍃 Không thể mở Columbina Shop."
+                        "🍃 Không thể mở Venti Shop."
                 })
                 .catch(
                     () => {}
@@ -642,14 +540,13 @@ function homeEmbed(userId) {
         .setColor("#9ccfd8")
 
         .setTitle(
-            "🛒 Columbina Shop"
+            "🛒 Venti Shop"
         )
 
         .setDescription(
             [
                 "- `🌱` **Hạt giống**",
-                "> Mỗi người chơi có 5 loại hạt riêng.",
-                "> Shop hạt thay đổi sau mỗi 15 phút.",
+                "> Mỗi người chơi sẽ nhận 5 hạt giống ngẫu nhiên.",
 
                 "",
 
@@ -694,7 +591,7 @@ function categoryRow(userId) {
                             "Hạt giống",
 
                         description:
-                            "5 hạt giống riêng của bạn.",
+                            "5 hạt giống riêng cho bạn.",
 
                         value:
                             "seeds",
@@ -742,19 +639,17 @@ function getItems(
     category,
     userId
 ) {
+    // 🌱 SEEDS
     if (
         category ===
         "seeds"
     ) {
-        // QUAN TRỌNG:
-        // Không trả toàn bộ seed.
-        // Chỉ trả đúng 5 seed
-        // đã random cho user.
-        return getSeedItems(
+        return getCurrentSeeds(
             userId
         );
     }
 
+    // 🎣 RODS
     if (
         category ===
         "rods"
@@ -768,6 +663,7 @@ function getItems(
             );
     }
 
+    // 🟫 PLOTS
     if (
         category ===
         "plots"
@@ -827,7 +723,7 @@ function createCategoryEmbed(
         );
 
     let title =
-        "🛒 Columbina Shop";
+        "🛒 Venti Shop";
 
     let description =
         "";
@@ -836,14 +732,24 @@ function createCategoryEmbed(
         category ===
         "seeds"
     ) {
+        const shop =
+            getSeedShop(
+                userId
+            );
+
+        const remaining =
+            getRemainingShopTime(
+                shop
+            );
+
         title =
             "● `🌱` Hạt giống";
 
         description =
             [
-                "> Đây là 5 loại hạt giống",
-                "> dành riêng cho bạn.",
-                "> Shop thay đổi mỗi 15 phút."
+                "> 5 hạt giống được chọn riêng cho bạn.",
+                `> 🔄 Làm mới sau: **${formatTime(remaining)}**`,
+                `> 💰 Đổi shop ngay: **${REFRESH_PRICE.toLocaleString()} Mora**`
             ].join("\n");
     }
 
@@ -887,81 +793,19 @@ function createCategoryEmbed(
         let extra =
             [];
 
-        // ═════════════════════
-        // SEED
-        // ═════════════════════
-
+        // 🌱 LIMIT
         if (
             category ===
             "seeds"
         ) {
-            const bought =
+            const count =
                 getBoughtCount(
                     userId,
                     item.id
                 );
 
-            if (
-                bought >= 10
-            ) {
-                extra.push(
-                    "> 📦 Đã mua: **10/10**"
-                );
-
-                extra.push(
-                    "> 🔒 **Đã đạt giới hạn**"
-                );
-            } else {
-                extra.push(
-                    `> 📦 Đã mua: **${bought}/10**`
-                );
-            }
-
-            if (
-                item.growTime
-            ) {
-                extra.push(
-                    `> ⏳ Lớn trong: **${formatTime(item.growTime)}**`
-                );
-            }
-
-            if (
-                item.minHarvest ||
-                item.maxHarvest
-            ) {
-                extra.push(
-                    `> 🌾 Thu hoạch: **${item.minHarvest || 1} - ${item.maxHarvest || item.minHarvest || 1}**`
-                );
-            }
-        }
-
-        // ═════════════════════
-        // ROD
-        // ═════════════════════
-
-        if (
-            category ===
-            "rods"
-        ) {
             extra.push(
-                `> ⭐ Cấp cần: **Level ${item.rodLevel || 1}**`
-            );
-
-            extra.push(
-                `> 🛡️ Độ bền: **${item.durability || item.maxDurability || 20}**`
-            );
-        }
-
-        // ═════════════════════
-        // PLOT
-        // ═════════════════════
-
-        if (
-            category ===
-            "plots"
-        ) {
-            extra.push(
-                `> 🟫 Ô đất: **#${item.id}**`
+                `> 🛒 Đã mua: **${count}/10**`
             );
         }
 
@@ -974,6 +818,50 @@ function createCategoryEmbed(
             ].join("\n")
         );
 
+        if (
+            category ===
+            "seeds"
+        ) {
+            if (
+                item.growTime
+            ) {
+                lines.push(
+                    `> ⏳ Lớn trong: **${formatTime(item.growTime)}**`
+                );
+            }
+
+            if (
+                item.minHarvest ||
+                item.maxHarvest
+            ) {
+                lines.push(
+                    `> 🌾 Thu hoạch: **${item.minHarvest || 1} - ${item.maxHarvest || item.minHarvest || 1}**`
+                );
+            }
+        }
+
+        if (
+            category ===
+            "rods"
+        ) {
+            lines.push(
+                `> ⭐ Cấp cần: **Level ${item.rodLevel || 1}**`
+            );
+
+            lines.push(
+                `> 🛡️ Độ bền: **${item.durability || item.maxDurability || 20}**`
+            );
+        }
+
+        if (
+            category ===
+            "plots"
+        ) {
+            lines.push(
+                `> 🟫 Ô đất: **#${item.id}**`
+            );
+        }
+
         lines.push("");
     }
 
@@ -985,36 +873,6 @@ function createCategoryEmbed(
         );
     }
 
-    const finalLines = [
-        description,
-        "",
-        ...lines,
-        `● \`💰\` **Mora hiện có**`,
-        `> ${balance.toLocaleString()} Mora`
-    ];
-
-    if (
-        category ===
-        "seeds"
-    ) {
-        const remaining =
-            getRemainingShopTime(
-                userId
-            );
-
-        finalLines.push(
-            "",
-            `⏰ **Shop mới sau: ${formatDuration(remaining)}**`,
-            "",
-            "🔄 Có thể đổi shop ngay với **100 Mora**."
-        );
-    }
-
-    finalLines.push(
-        "",
-        "♡ Chọn sản phẩm bên dưới để xem và mua."
-    );
-
     return new EmbedBuilder()
         .setColor("#9ccfd8")
 
@@ -1023,7 +881,15 @@ function createCategoryEmbed(
         )
 
         .setDescription(
-            finalLines.join("\n")
+            [
+                description,
+                "",
+                ...lines,
+                `● \`💰\` **Mora hiện có**`,
+                `> ${balance.toLocaleString()} Mora`,
+                "",
+                "♡ Chọn sản phẩm bên dưới để xem và mua."
+            ].join("\n")
         )
 
         .setFooter({
@@ -1061,13 +927,12 @@ async function showCategory(
                     )
                     .setDescription(
                         [
-                            "> Danh mục này hiện không còn sản phẩm.",
+                            "> Danh mục này hiện không có sản phẩm.",
                             "",
-                            "♡ Hãy quay lại sau nhé."
+                            "♡ Hãy kiểm tra lại Item.js."
                         ].join("\n")
                     )
             ],
-
             components: [
                 homeButton(
                     userId
@@ -1078,7 +943,10 @@ async function showCategory(
 
     const options =
         items
-            .slice(0, 25)
+            .slice(
+                0,
+                25
+            )
             .map(
                 item => {
                     const price =
@@ -1086,22 +954,13 @@ async function showCategory(
                             item
                         );
 
-                    let description =
-                        `${price.toLocaleString()} Mora`;
-
-                    if (
-                        category ===
-                        "seeds"
-                    ) {
-                        const bought =
-                            getBoughtCount(
+                    const bought =
+                        category === "seeds"
+                            ? getBoughtCount(
                                 userId,
                                 item.id
-                            );
-
-                        description =
-                            `${price.toLocaleString()} Mora • ${bought}/10`;
-                    }
+                            )
+                            : 0;
 
                     return {
                         label:
@@ -1113,10 +972,13 @@ async function showCategory(
                             ),
 
                         description:
-                            description.slice(
-                                0,
-                                100
-                            ),
+                            category === "seeds"
+                                ? `${price.toLocaleString()} Mora • ${bought}/10`
+                                : `${price.toLocaleString()} Mora`
+                                    .slice(
+                                        0,
+                                        100
+                                    ),
 
                         value:
                             String(
@@ -1131,9 +993,7 @@ async function showCategory(
                 }
             );
 
-    const components = [];
-
-    components.push(
+    const rows = [
         new ActionRowBuilder()
             .addComponents(
                 new StringSelectMenuBuilder()
@@ -1141,20 +1001,20 @@ async function showCategory(
                         `shop_item_${userId}`
                     )
                     .setPlaceholder(
-                        "📦 Chọn sản phẩm để xem..."
+                        "📦 Chọn sản phẩm để mua..."
                     )
                     .addOptions(
                         options
                     )
             )
-    );
+    ];
 
-    // Nút riêng cho shop hạt
+    // 🌱 REFRESH BUTTON
     if (
         category ===
         "seeds"
     ) {
-        components.push(
+        rows.push(
             new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
@@ -1162,7 +1022,7 @@ async function showCategory(
                             `shop_refresh_${userId}`
                         )
                         .setLabel(
-                            "Đổi shop"
+                            `Đổi shop • ${REFRESH_PRICE} Mora`
                         )
                         .setEmoji(
                             "🔄"
@@ -1195,7 +1055,7 @@ async function showCategory(
                 )
         );
     } else {
-        components.push(
+        rows.push(
             new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
@@ -1232,7 +1092,8 @@ async function showCategory(
             )
         ],
 
-        components
+        components:
+            rows
     });
 }
 
@@ -1286,8 +1147,21 @@ async function showItem(
             user?.balance || 0
         );
 
-    let canBuy =
-        balance >= price;
+    const bought =
+        category === "seeds"
+            ? getBoughtCount(
+                userId,
+                item.id
+            )
+            : 0;
+
+    const limitReached =
+        category === "seeds" &&
+        bought >= 10;
+
+    const canBuy =
+        balance >= price &&
+        !limitReached;
 
     const emoji =
         safeEmoji(
@@ -1305,36 +1179,15 @@ async function showItem(
         `> ${balance.toLocaleString()} Mora`
     ];
 
-    // ═════════════════════
-    // SEED
-    // ═════════════════════
-
     if (
         category ===
         "seeds"
     ) {
-        const bought =
-            getBoughtCount(
-                userId,
-                item.id
-            );
-
         lines.push(
             "",
-            "● `📦` **Giới hạn mua**",
+            "● `🛒` **Giới hạn mua**",
             `> ${bought}/10`
         );
-
-        if (
-            bought >= 10
-        ) {
-            canBuy =
-                false;
-
-            lines.push(
-                "> 🔒 Bạn đã mua đủ 10 lần loại hạt này trong shop hiện tại."
-            );
-        }
 
         if (
             item.growTime
@@ -1358,10 +1211,6 @@ async function showItem(
         }
     }
 
-    // ═════════════════════
-    // ROD
-    // ═════════════════════
-
     if (
         category ===
         "rods"
@@ -1377,10 +1226,6 @@ async function showItem(
         );
     }
 
-    // ═════════════════════
-    // PLOT
-    // ═════════════════════
-
     if (
         category ===
         "plots"
@@ -1390,6 +1235,30 @@ async function showItem(
             "● `🟫` **Ô đất**",
             `> Ô đất #${item.id}`
         );
+    }
+
+    let buttonLabel =
+        "Mua";
+
+    let buttonEmoji =
+        "🛒";
+
+    if (
+        limitReached
+    ) {
+        buttonLabel =
+            "Đã đạt giới hạn";
+
+        buttonEmoji =
+            "🔒";
+    } else if (
+        balance < price
+    ) {
+        buttonLabel =
+            "Không đủ Mora";
+
+        buttonEmoji =
+            "💸";
     }
 
     const embed =
@@ -1419,26 +1288,13 @@ async function showItem(
                             `shop_buy_${userId}`
                         )
                         .setLabel(
-                            canBuy
-                                ? "Mua"
-                                : category ===
-                                  "seeds" &&
-                                  getBoughtCount(
-                                      userId,
-                                      item.id
-                                  ) >= 10
-                                    ? "Đã đủ 10 lần"
-                                    : "Không đủ Mora"
+                            buttonLabel
                         )
                         .setEmoji(
-                            canBuy
-                                ? "🛒"
-                                : "🔒"
+                            buttonEmoji
                         )
                         .setStyle(
-                            canBuy
-                                ? ButtonStyle.Success
-                                : ButtonStyle.Secondary
+                            ButtonStyle.Success
                         )
                         .setDisabled(
                             !canBuy
@@ -1497,10 +1353,12 @@ async function buyItem(
         });
     }
 
-    // ═════════════════════
-    // SEED LIMIT
-    // ═════════════════════
+    const price =
+        getPrice(
+            item
+        );
 
+    // 🌱 LIMIT
     if (
         category ===
         "seeds"
@@ -1516,16 +1374,11 @@ async function buyItem(
         ) {
             return interaction.reply({
                 content:
-                    "🔒 Bạn đã mua đủ 10 lần loại hạt này trong shop hiện tại.",
+                    "🔒 Bạn đã mua đủ 10 lần loại hạt này trong shop.",
                 ephemeral: true
             });
         }
     }
-
-    const price =
-        getPrice(
-            item
-        );
 
     const user =
         User.getOrCreate(
@@ -1548,10 +1401,7 @@ async function buyItem(
         });
     }
 
-    // ═════════════════════
-    // PLOT
-    // ═════════════════════
-
+    // 🟫 PLOT
     if (
         category ===
         "plots"
@@ -1563,10 +1413,6 @@ async function buyItem(
             userId
         );
     }
-
-    // ═════════════════════
-    // REMOVE MONEY
-    // ═════════════════════
 
     const removed =
         removeBalance(
@@ -1589,34 +1435,15 @@ async function buyItem(
             1
         );
 
-        // ═════════════════════
-        // INCREASE SEED COUNT
-        // ═════════════════════
-
+        // 🌱 COUNT SHOP PURCHASE
         if (
             category ===
             "seeds"
         ) {
-            const increased =
-                increaseBoughtCount(
-                    userId,
-                    item.id,
-                    1
-                );
-
-            if (!increased) {
-                // Hoàn tiền nếu count lỗi
-                addBalance(
-                    userId,
-                    price
-                );
-
-                return interaction.reply({
-                    content:
-                        "🍃 Không thể cập nhật giới hạn mua.",
-                    ephemeral: true
-                });
-            }
+            increaseBoughtCount(
+                userId,
+                item.id
+            );
         }
     } catch (error) {
         addBalance(
@@ -1632,48 +1459,6 @@ async function buyItem(
             item.emoji
         );
 
-    const newBought =
-        category ===
-        "seeds"
-            ? getBoughtCount(
-                  userId,
-                  item.id
-              )
-            : null;
-
-    const description = [
-        `● \`${emoji}\` **${item.name} ×1**`,
-        `> ${item.description || "Vật phẩm đã được thêm vào túi đồ."}`,
-        "",
-        "● `💰` **Đã trả**",
-        `> ${price.toLocaleString()} Mora`
-    ];
-
-    if (
-        category ===
-        "seeds"
-    ) {
-        description.push(
-            "",
-            "● `📦` **Đã mua trong shop**",
-            `> ${newBought}/10`
-        );
-
-        if (
-            newBought >= 10
-        ) {
-            description.push(
-                "> 🔒 Đã đạt giới hạn 10 lần."
-            );
-        }
-    }
-
-    description.push(
-        "",
-        "● `🎒` **Inventory**",
-        "> Đã thêm vật phẩm vào túi đồ."
-    );
-
     return interaction.update({
         embeds: [
             new EmbedBuilder()
@@ -1684,9 +1469,22 @@ async function buyItem(
                     "● `♡` Mua thành công"
                 )
                 .setDescription(
-                    description.join(
-                        "\n"
-                    )
+                    [
+                        `● \`${emoji}\` **${item.name} ×1**`,
+                        `> ${item.description || "Vật phẩm đã được thêm vào túi đồ."}`,
+                        "",
+                        "● `💰` **Đã trả**",
+                        `> ${price.toLocaleString()} Mora`,
+                        "",
+                        "● `🎒` **Inventory**",
+                        "> Đã thêm vật phẩm vào túi đồ.",
+                        "",
+                        category === "seeds"
+                            ? `● \`🛒\` Đã mua: **${getBoughtCount(userId, item.id)}/10**`
+                            : ""
+                    ]
+                        .filter(Boolean)
+                        .join("\n")
                 )
         ],
 
@@ -1696,6 +1494,60 @@ async function buyItem(
             )
         ]
     });
+}
+
+// ═══════════════════════════════════════
+// 🔄 REFRESH SHOP
+// ═══════════════════════════════════════
+
+async function refreshShop(
+    interaction,
+    userId
+) {
+    const user =
+        User.getOrCreate(
+            userId
+        );
+
+    const balance =
+        Number(
+            user?.balance || 0
+        );
+
+    if (
+        balance <
+        REFRESH_PRICE
+    ) {
+        return interaction.reply({
+            content:
+                `💸 Bạn cần **${REFRESH_PRICE.toLocaleString()} Mora** để đổi shop.`,
+            ephemeral: true
+        });
+    }
+
+    const removed =
+        removeBalance(
+            userId,
+            REFRESH_PRICE
+        );
+
+    if (!removed) {
+        return interaction.reply({
+            content:
+                "💸 Không thể trừ Mora.",
+            ephemeral: true
+        });
+    }
+
+    refreshSeedShop(
+        userId
+    );
+
+    return showCategory(
+        interaction,
+        "seeds",
+        userId
+    );
 }
 
 // ═══════════════════════════════════════
@@ -1823,210 +1675,6 @@ async function buyPlot(
 }
 
 // ═══════════════════════════════════════
-// 🔄 REFRESH SHOP
-// ═══════════════════════════════════════
-
-async function refreshShop(
-    interaction,
-    userId
-) {
-    const user =
-        User.getOrCreate(
-            userId
-        );
-
-    const balance =
-        Number(
-            user?.balance || 0
-        );
-
-    if (
-        balance <
-        SEED_REFRESH_PRICE
-    ) {
-        return interaction.reply({
-            content:
-                `💸 Bạn cần **${SEED_REFRESH_PRICE} Mora** để đổi shop.`,
-            ephemeral: true
-        });
-    }
-
-    const removed =
-        removeBalance(
-            userId,
-            SEED_REFRESH_PRICE
-        );
-
-    if (!removed) {
-        return interaction.reply({
-            content:
-                "💸 Không thể trừ Mora.",
-            ephemeral: true
-        });
-    }
-
-    const oldShop =
-        getSeedShop(
-            userId
-        );
-
-    const oldIds =
-        oldShop?.items || [];
-
-    let newShop =
-        refreshSeedShop(
-            userId
-        );
-
-    // Cố gắng tránh trường hợp
-    // random ra đúng nguyên bộ cũ
-    if (
-        newShop &&
-        newShop.items.length > 1 &&
-        arraysEqual(
-            newShop.items,
-            oldIds
-        )
-    ) {
-        newShop =
-            refreshSeedShop(
-                userId
-            );
-    }
-
-    return interaction.update({
-        embeds: [
-            createCategoryEmbed(
-                "seeds",
-                getSeedItems(
-                    userId
-                ),
-                userId
-            )
-        ],
-
-        components: [
-            seedShopComponents(
-                userId
-            )
-        ]
-    });
-}
-
-// ═══════════════════════════════════════
-// 🌱 SEED COMPONENTS
-// ═══════════════════════════════════════
-
-function seedShopComponents(
-    userId
-) {
-    const items =
-        getSeedItems(
-            userId
-        );
-
-    const options =
-        items
-            .slice(0, 25)
-            .map(
-                item => {
-                    const price =
-                        getPrice(
-                            item
-                        );
-
-                    const bought =
-                        getBoughtCount(
-                            userId,
-                            item.id
-                        );
-
-                    return {
-                        label:
-                            String(
-                                item.name
-                            ).slice(
-                                0,
-                                100
-                            ),
-
-                        description:
-                            `${price.toLocaleString()} Mora • ${bought}/10`
-                                .slice(
-                                    0,
-                                    100
-                                ),
-
-                        value:
-                            String(
-                                item.id
-                            ),
-
-                        emoji:
-                            safeEmoji(
-                                item.emoji
-                            )
-                    };
-                }
-            );
-
-    return [
-        new ActionRowBuilder()
-            .addComponents(
-                new StringSelectMenuBuilder()
-                    .setCustomId(
-                        `shop_item_${userId}`
-                    )
-                    .setPlaceholder(
-                        "🌱 Chọn hạt giống..."
-                    )
-                    .addOptions(
-                        options
-                    )
-            ),
-
-        new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId(
-                        `shop_refresh_${userId}`
-                    )
-                    .setLabel(
-                        "Đổi shop"
-                    )
-                    .setEmoji(
-                        "🔄"
-                    )
-                    .setStyle(
-                        ButtonStyle.Primary
-                    ),
-
-                new ButtonBuilder()
-                    .setCustomId(
-                        `shop_home_${userId}`
-                    )
-                    .setLabel(
-                        "Trang chủ"
-                    )
-                    .setStyle(
-                        ButtonStyle.Secondary
-                    ),
-
-                new ButtonBuilder()
-                    .setCustomId(
-                        `shop_close_${userId}`
-                    )
-                    .setLabel(
-                        "Đóng"
-                    )
-                    .setStyle(
-                        ButtonStyle.Danger
-                    )
-            )
-    ];
-}
-
-// ═══════════════════════════════════════
 // 🎒 INVENTORY
 // ═══════════════════════════════════════
 
@@ -2038,7 +1686,7 @@ function addInventoryItem(
     if (
         Item &&
         typeof Item.add ===
-            "function"
+        "function"
     ) {
         return Item.add(
             userId,
@@ -2050,7 +1698,7 @@ function addInventoryItem(
     if (
         User &&
         typeof User.addItem ===
-            "function"
+        "function"
     ) {
         return User.addItem(
             userId,
@@ -2276,8 +1924,8 @@ function getPrice(
 ) {
     return Number(
         item.price ??
-            item.buyPrice ??
-            0
+        item.buyPrice ??
+        0
     );
 }
 
@@ -2296,8 +1944,7 @@ function formatTime(
         );
 
     if (
-        seconds <
-        60
+        seconds < 60
     ) {
         return `${seconds} giây`;
     }
@@ -2312,8 +1959,7 @@ function formatTime(
         60;
 
     if (
-        remain ===
-        0
+        remain === 0
     ) {
         return `${minutes} phút`;
     }
@@ -2322,76 +1968,114 @@ function formatTime(
 }
 
 // ═══════════════════════════════════════
-// ⏰ FORMAT DURATION
+// 💾 SAVE USER FIELD
 // ═══════════════════════════════════════
 
-function formatDuration(
-    ms
+function saveUserField(
+    userId,
+    field,
+    value
 ) {
-    const totalSeconds =
-        Math.max(
-            0,
-            Math.floor(
-                Number(ms || 0) /
-                    1000
-            )
+    if (
+        typeof User.updateUser ===
+        "function"
+    ) {
+        return User.updateUser(
+            userId,
+            {
+                [field]:
+                    value
+            }
+        );
+    }
+
+    if (
+        typeof User.update ===
+        "function"
+    ) {
+        return User.update(
+            userId,
+            {
+                [field]:
+                    value
+            }
+        );
+    }
+
+    const user =
+        User.getOrCreate(
+            userId
         );
 
-    const minutes =
-        Math.floor(
-            totalSeconds / 60
-        );
+    user[field] =
+        value;
 
-    const seconds =
-        totalSeconds %
-        60;
-
-    return `${minutes} phút ${String(
-        seconds
-    ).padStart(
-        2,
-        "0"
-    )} giây`;
+    return true;
 }
 
 // ═══════════════════════════════════════
-// 🔍 ARRAY EQUAL
+// 🛒 PURCHASE COUNT
 // ═══════════════════════════════════════
 
-function arraysEqual(
-    a,
-    b
+function getBoughtMap(
+    userId
 ) {
-    if (
-        !Array.isArray(a) ||
-        !Array.isArray(b)
-    ) {
-        return false;
-    }
+    const user =
+        User.getOrCreate(
+            userId
+        );
 
-    if (
-        a.length !==
-        b.length
-    ) {
-        return false;
-    }
+    /*
+     * seedShopBought lưu:
+     *
+     * {
+     *     wheat_seed: 2,
+     *     carrot_seed: 5
+     * }
+     */
 
-    const x =
-        [...a]
-            .map(String)
-            .sort();
+    return {
+        ...(user.seedShopBought || {})
+    };
+}
 
-    const y =
-        [...b]
-            .map(String)
-            .sort();
+function getBoughtCount(
+    userId,
+    itemId
+) {
+    const map =
+        getBoughtMap(
+            userId
+        );
 
-    return x.every(
-        (value, index) =>
-            value ===
-            y[index]
+    return Number(
+        map[itemId] || 0
     );
 }
 
-module.exports = command;
+function increaseBoughtCount(
+    userId,
+    itemId
+) {
+    const map =
+        getBoughtMap(
+            userId
+        );
+
+    map[itemId] =
+        Number(
+            map[itemId] || 0
+        ) + 1;
+
+    saveUserField(
+        userId,
+        "seedShopBought",
+        map
+    );
+
+    return map[itemId];
+}
+
+module.exports =
+    command;
 
