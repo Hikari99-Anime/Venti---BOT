@@ -11,7 +11,7 @@ const items = {
         category: "seafood",
         rarity: "Common",
         description: "Một chú cá nhỏ.",
-        buyPrice: 80,
+        buyPrice: 80,///////////////////////////
         sellPrice: 40
     },
 
@@ -810,4 +810,3 @@ const items = {
 };
 
 module.exports = items;
-

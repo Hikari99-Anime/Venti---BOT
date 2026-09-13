@@ -124,7 +124,7 @@ module.exports = {
 
             lines.push(
 
-                `● ${rank} **${name}**\n` +
+                `    ${rank} **${name}**\n` +
 
                 `> \`💰\` +${balance.toLocaleString(
                     "vi-VN"
@@ -149,7 +149,7 @@ module.exports = {
 
                 .setDescription(
                     [
-                        "● `🍃` **Top 10 người chơi giàu nhất**",
+                        "- `🍃` **Top 10 người chơi giàu nhất**",
                         "",
                         lines.join(
                             "\n\n"

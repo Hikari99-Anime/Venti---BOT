@@ -143,20 +143,15 @@ function bankEmbed(userId) {
 
         .setDescription(
             [
-                "╭────────────────────────────╮",
-                "        `🏦` **VENTI BANK**",
-                "╰────────────────────────────╯",
-                "",
-
-                "● `💰` **Tiền mặt**",
+                "- `💰` **Tiền mặt**",
                 `> +${money(balance)} Mora`,
                 "",
 
-                "● `🏦` **Tiền trong Bank**",
+                "- `🏦` **Tiền trong Bank**",
                 `> +${money(bank)} Mora`,
                 "",
 
-                "● `💎` **Tổng tài sản**",
+                "- `💎` **Tổng tài sản**",
                 `> +${money(total)} Mora`,
                 "",
 
@@ -183,8 +178,8 @@ function bankEmbed(userId) {
 
                 "",
 
-                "● `🔒` Tiền trong Bank được bảo toàn",
-                "● `📈` Số dư Bank sinh lãi mỗi ngày"
+                "- `🔒` Tiền trong Bank được bảo toàn",
+                "- `📈` Số dư Bank sinh lãi mỗi ngày"
             ].join("\n")
         )
 

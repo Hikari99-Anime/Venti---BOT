@@ -246,7 +246,7 @@ function createEmbed(
         )
         .setFooter({
             text:
-                "💣 Venti • Dò Bom"
+                "💣 Columbina • Dò Bom"
         });
 }
 

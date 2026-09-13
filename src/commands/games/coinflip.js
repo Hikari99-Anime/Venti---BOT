@@ -82,7 +82,7 @@ module.exports = {
         return message.reply({
             embeds: [
                 new EmbedBuilder()
-                    .setColor(
+                    .setColour(
                         heads
                             ? "#57F287"
                             : "#ED4245"
