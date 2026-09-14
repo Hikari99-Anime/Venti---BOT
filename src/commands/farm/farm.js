@@ -1,4 +1,3 @@
-
 const {
     EmbedBuilder,
     ActionRowBuilder,
@@ -21,11 +20,20 @@ const Item =
 // ==========================================
 
 const COLORS = {
-    primary: "#9ccfd8",
-    success: "#a8d8a8",
-    warning: "#ffd166",
-    error: "#f2a7a7"
+    primary: "#A8DCC0",
+    success: "#A8D8A8",
+    warning: "#FFD166",
+    error: "#F2A7A7"
 };
+
+// ==========================================
+// ⚙️ FARM CONFIG
+// ==========================================
+
+const MAX_PLOTS = 10;
+
+// User mới mặc định có ô #1
+const DEFAULT_UNLOCKED_PLOTS = 1;
 
 // ==========================================
 // 👤 USER
@@ -50,16 +58,127 @@ function ensureUser(userId) {
 
 function createDefaultFarm() {
     return {
-        plots: [
+        plots: Array.from(
             {
-                id: 1,
-                unlocked: true,
-                seed: null,
-                plantedAt: null,
-                readyAt: null
-            }
-        ]
+                length: MAX_PLOTS
+            },
+            (_, index) => ({
+                id: index + 1,
+
+                unlocked:
+                    index <
+                    DEFAULT_UNLOCKED_PLOTS,
+
+                seed:
+                    null,
+
+                plantedAt:
+                    null,
+
+                readyAt:
+                    null
+            })
+        )
     };
+}
+
+// ==========================================
+// 🧹 NORMALIZE FARM
+// ==========================================
+
+function normalizeFarm(farm) {
+    if (
+        !farm ||
+        typeof farm !== "object"
+    ) {
+        return createDefaultFarm();
+    }
+
+    if (
+        !Array.isArray(
+            farm.plots
+        )
+    ) {
+        farm.plots = [];
+    }
+
+    // Chỉ giữ tối đa 10 ô
+    farm.plots =
+        farm.plots
+            .filter(plot =>
+                Number(plot.id) >= 1 &&
+                Number(plot.id) <= MAX_PLOTS
+            )
+            .map(plot => ({
+                id:
+                    Number(plot.id),
+
+                unlocked:
+                    Boolean(
+                        plot.unlocked
+                    ),
+
+                seed:
+                    plot.seed || null,
+
+                plantedAt:
+                    plot.plantedAt || null,
+
+                readyAt:
+                    plot.readyAt || null
+            }));
+
+    // Đảm bảo đủ 10 slot
+    for (
+        let i = 1;
+        i <= MAX_PLOTS;
+        i++
+    ) {
+        const exists =
+            farm.plots.find(
+                plot =>
+                    Number(plot.id) === i
+            );
+
+        if (!exists) {
+            farm.plots.push({
+                id: i,
+
+                unlocked:
+                    i <=
+                    DEFAULT_UNLOCKED_PLOTS,
+
+                seed:
+                    null,
+
+                plantedAt:
+                    null,
+
+                readyAt:
+                    null
+            });
+        }
+    }
+
+    farm.plots.sort(
+        (a, b) =>
+            Number(a.id) -
+            Number(b.id)
+    );
+
+    // Nếu farm cũ chỉ có 1 ô,
+    // vẫn đảm bảo ô #1 được mở.
+    const firstPlot =
+        farm.plots.find(
+            plot =>
+                Number(plot.id) === 1
+        );
+
+    if (firstPlot) {
+        firstPlot.unlocked = true;
+    }
+
+    return farm;
 }
 
 // ==========================================
@@ -80,25 +199,22 @@ function getFarm(userId) {
             userId,
             farm
         );
+
+        return farm;
     }
+
+    const oldJSON =
+        JSON.stringify(farm);
+
+    farm =
+        normalizeFarm(farm);
+
+    const newJSON =
+        JSON.stringify(farm);
 
     if (
-        !Array.isArray(
-            farm.plots
-        )
+        oldJSON !== newJSON
     ) {
-        farm.plots = [];
-    }
-
-    if (!farm.plots.length) {
-        farm.plots.push({
-            id: 1,
-            unlocked: true,
-            seed: null,
-            plantedAt: null,
-            readyAt: null
-        });
-
         User.updateFarm(
             userId,
             farm
@@ -118,6 +234,10 @@ function getInventory(userId) {
 
     return user.inventory || {};
 }
+
+// ==========================================
+// 🔢 GET AMOUNT
+// ==========================================
 
 function getAmount(value) {
     if (
@@ -139,7 +259,7 @@ function getAmount(value) {
 }
 
 // ==========================================
-// 🌱 SEEDS
+// 🌱 GET SEEDS
 // ==========================================
 
 function getSeeds(userId) {
@@ -177,15 +297,19 @@ function removeItem(
         );
 
     if (
-        currentAmount < amount
+        currentAmount <
+        amount
     ) {
         return false;
     }
 
     const newAmount =
-        currentAmount - amount;
+        currentAmount -
+        amount;
 
-    if (newAmount <= 0) {
+    if (
+        newAmount <= 0
+    ) {
         delete inventory[itemId];
     } else {
         inventory[itemId] =
@@ -247,7 +371,9 @@ function formatTime(ms) {
             )
         );
 
-    if (seconds < 60) {
+    if (
+        seconds < 60
+    ) {
         return `${seconds} giây`;
     }
 
@@ -271,7 +397,10 @@ function formatTime(ms) {
 // ==========================================
 
 function getPlotStatus(plot) {
-    if (!plot.unlocked) {
+    if (
+        !plot ||
+        !plot.unlocked
+    ) {
         return {
             emoji: "🔒",
             text: "Chưa mở"
@@ -311,41 +440,53 @@ function getPlotStatus(plot) {
 }
 
 // ==========================================
+// 📊 FARM PROGRESS BAR
+// ==========================================
+
+function createFarmProgress(
+    unlocked
+) {
+    const barLength = 10;
+
+    const percent =
+        Math.min(
+            100,
+            Math.round(
+                (unlocked /
+                    MAX_PLOTS) *
+                100
+            )
+        );
+
+    const filled =
+        Math.round(
+            (percent / 100) *
+            barLength
+        );
+
+    const bar =
+        "🟩".repeat(filled) +
+        "⬜".repeat(
+            barLength -
+            filled
+        );
+
+    return {
+        bar,
+        percent
+    };
+}
+
+// ==========================================
 // 🏡 FARM EMBED
 // ==========================================
 
-function farmEmbed(userId) {
+function farmEmbed(
+    userId,
+    author
+) {
     const farm =
         getFarm(userId);
-
-    const lines = [];
-
-    for (
-        const plot of farm.plots
-    ) {
-        const status =
-            getPlotStatus(plot);
-
-        let name =
-            `Ô đất #${plot.id}`;
-
-        if (plot.seed) {
-            const seed =
-                Item.get(
-                    plot.seed
-                );
-
-            if (seed) {
-                name =
-                    `${seed.emoji || "🌱"} ${seed.name}`;
-            }
-        }
-
-        lines.push(
-            `${status.emoji} **${name}**\n` +
-            `> \`${status.text}\``
-        );
-    }
 
     const unlocked =
         farm.plots.filter(
@@ -353,8 +494,12 @@ function farmEmbed(userId) {
                 plot.unlocked
         ).length;
 
-    const total =
-        farm.plots.length;
+    const locked =
+        Math.max(
+            0,
+            MAX_PLOTS -
+            unlocked
+        );
 
     const readyCount =
         farm.plots.filter(
@@ -366,42 +511,195 @@ function farmEmbed(userId) {
                 ) <= Date.now()
         ).length;
 
-    return new EmbedBuilder()
-        .setColor(
-            COLORS.primary
-        )
+    const growingCount =
+        farm.plots.filter(
+            plot =>
+                plot.unlocked &&
+                plot.seed &&
+                Number(
+                    plot.readyAt || 0
+                ) > Date.now()
+        ).length;
 
-        .setTitle(
-            "`🌱` Venti Farm"
-        )
+    const emptyCount =
+        farm.plots.filter(
+            plot =>
+                plot.unlocked &&
+                !plot.seed
+        ).length;
 
-        .setDescription(
-            [
-                "`🍃` **Trang trại của bạn**",
-                "",
-                lines.join("\n\n"),
-                "",
-                "- `🌾` **Ô đất**",
-                `> \`${unlocked}/${total}\` ô đang mở`,
-                "",
-                "- `🌾` **Có thể thu hoạch**",
-                `> \`${readyCount}\` ô`,
-                "",
-                "- `🌱` **Hướng dẫn**",
-                "> Chọn ô đất để trồng cây.",
-                "> Hạt giống có thể mua tại Vshop.",
-                "",
-                "୨୧ ─────────────── ୨୧",
-                "`🍃` Trồng • Chờ • Thu hoạch"
-            ].join("\n")
-        )
+    const progress =
+        createFarmProgress(
+            unlocked
+        );
 
+    // ==========================================
+    // 🟫 PLOT LIST
+    // ==========================================
+
+    const plotLines = [];
+
+    for (
+        let i = 1;
+        i <= MAX_PLOTS;
+        i++
+    ) {
+        const plot =
+            getPlot(
+                farm,
+                i
+            );
+
+        if (
+            !plot ||
+            !plot.unlocked
+        ) {
+            plotLines.push(
+                `> \`🔒 Ô #${i}       : Chưa mở\``
+            );
+
+            continue;
+        }
+
+        if (!plot.seed) {
+            plotLines.push(
+                `> \`🟫 Ô #${i}       : Đất trống\``
+            );
+
+            continue;
+        }
+
+        const seed =
+            Item.get(
+                plot.seed
+            );
+
+        const emoji =
+            seed?.emoji ||
+            "🌱";
+
+        const name =
+            seed?.name ||
+            "Cây trồng";
+
+        const readyAt =
+            Number(
+                plot.readyAt || 0
+            );
+
+        if (
+            readyAt &&
+            Date.now() >= readyAt
+        ) {
+            plotLines.push(
+                `> \`${emoji} Ô #${i}       : ${name} • 🌾 Sẵn sàng\``
+            );
+
+            continue;
+        }
+
+        plotLines.push(
+            `> \`${emoji} Ô #${i}       : ${name} • ⏳ ${formatTime(
+                readyAt -
+                Date.now()
+            )}\``
+        );
+    }
+
+    // ==========================================
+    // 👤 AUTHOR
+    // ==========================================
+
+    const authorName =
+        author?.globalName ||
+        author?.username ||
+        "Nông dân";
+
+    const embed =
+        new EmbedBuilder()
+            .setColor(
+                COLORS.primary
+            )
+
+            .setAuthor({
+                name:
+                    `☁️ ${authorName} · Venti`,
+
+                ...(author
+                    ? {
+                        iconURL:
+                            author.displayAvatarURL({
+                                extension:
+                                    "png",
+
+                                size:
+                                    128
+                            })
+                    }
+                    : {})
+            })
+
+            .setTitle(
+                "🍃 Trang Trại Venti"
+            )
+
+            .setDescription(
+                [
+                    "☁️ `🍃` **Một góc nhỏ của hành trình**",
+                    "",
+
+                    "- `🟫` **Đất trang trại**",
+                    `> \`🌱 Đã mở      : ${unlocked}/${MAX_PLOTS} ô\``,
+                    `> \`🔒 Chưa mở    : ${locked} ô\``,
+                    `> \`${progress.bar} ${progress.percent}%\``,
+                    "",
+
+                    "- `🌾` **Tình trạng mùa vụ**",
+                    `> \`🌾 Sẵn sàng   : ${readyCount} ô\``,
+                    `> \`🌱 Đang lớn   : ${growingCount} ô\``,
+                    `> \`🟫 Đất trống  : ${emptyCount} ô\``,
+                    "",
+
+                    "- `🏡` **Các ô đất**",
+                    ...plotLines,
+                    "",
+
+                    "- `📊` **Thống kê**",
+                    `> \`🟫 Tổng ô đất : ${MAX_PLOTS} ô\``,
+                    `> \`🌱 Đang trồng : ${growingCount} ô\``,
+                    `> \`🌾 Thu hoạch : ${readyCount} ô\``,
+                    "",
+
+                    "- `💡` **Hướng dẫn**",
+                    "> Chọn ô đất bên dưới để trồng cây.",
+                    "> Mua thêm ô đất tại **Vshop**.",
+                    "",
+
+                    "☕ `🍃` **Trồng cây · Chờ lớn · Thu hoạch**"
+                ].join("\n")
+            );
+
+    if (author) {
+        embed.setThumbnail(
+            author.displayAvatarURL({
+                extension:
+                    "png",
+
+                size:
+                    256
+            })
+        );
+    }
+
+    embed
         .setFooter({
             text:
-                "Columbina Farm • Windrise"
+                "☁️ Venti Farm • Windrise 🍃"
         })
 
         .setTimestamp();
+
+    return embed;
 }
 
 // ==========================================
@@ -418,16 +716,21 @@ function plotMenu(userId) {
                 plot =>
                     plot.unlocked
             )
-            .slice(0, 25);
+            .slice(
+                0,
+                MAX_PLOTS
+            );
 
     const menu =
         new StringSelectMenuBuilder()
             .setCustomId(
                 `farm_plot_${userId}`
             )
+
             .setPlaceholder(
                 "🌱 Chọn ô đất..."
             )
+
             .addOptions(
                 plots.map(plot => {
                     const status =
@@ -440,7 +743,9 @@ function plotMenu(userId) {
                             `Ô đất #${plot.id}`,
 
                         description:
-                            status.text.slice(
+                            String(
+                                status.text
+                            ).slice(
                                 0,
                                 100
                             ),
@@ -466,7 +771,9 @@ function plotMenu(userId) {
 // 🔘 FARM BUTTONS
 // ==========================================
 
-function farmButtons(userId) {
+function farmButtons(
+    userId
+) {
     return new ActionRowBuilder()
         .addComponents(
 
@@ -474,12 +781,15 @@ function farmButtons(userId) {
                 .setCustomId(
                     `farm_quick_harvest_${userId}`
                 )
+
                 .setLabel(
                     "Thu hoạch nhanh"
                 )
+
                 .setEmoji(
                     "🌾"
                 )
+
                 .setStyle(
                     ButtonStyle.Success
                 ),
@@ -488,12 +798,15 @@ function farmButtons(userId) {
                 .setCustomId(
                     `farm_refresh_${userId}`
                 )
+
                 .setLabel(
                     "Làm mới"
                 )
+
                 .setEmoji(
                     "🔃"
                 )
+
                 .setStyle(
                     ButtonStyle.Secondary
                 ),
@@ -502,12 +815,15 @@ function farmButtons(userId) {
                 .setCustomId(
                     `farm_close_${userId}`
                 )
+
                 .setLabel(
                     "Đóng"
                 )
+
                 .setEmoji(
                     "✖️"
                 )
+
                 .setStyle(
                     ButtonStyle.Danger
                 )
@@ -518,19 +834,24 @@ function farmButtons(userId) {
 // ◀️ BACK BUTTON
 // ==========================================
 
-function backButton(userId) {
+function backButton(
+    userId
+) {
     return new ActionRowBuilder()
         .addComponents(
             new ButtonBuilder()
                 .setCustomId(
                     `farm_home_${userId}`
                 )
+
                 .setLabel(
                     "Về trang trại"
                 )
+
                 .setEmoji(
                     "🌱"
                 )
+
                 .setStyle(
                     ButtonStyle.Secondary
                 )
@@ -579,26 +900,33 @@ async function showPlot(
                 .setColor(
                     COLORS.primary
                 )
+
                 .setTitle(
-                    "`🌱` Ô đất #" +
-                    plot.id
+                    `🌱 Ô đất #${plot.id}`
                 )
+
                 .setDescription(
                     [
-                        "`🟫` **Đất trống**",
+                        "- `🟫` **Trạng thái**",
+                        "> `🟫 Đất trống`",
                         "",
+                        "- `🌱` **Trồng cây**",
                         "> Chọn hạt giống bạn muốn trồng."
                     ].join("\n")
                 );
 
-        if (!seeds.length) {
+        if (
+            !seeds.length
+        ) {
             embed.setDescription(
                 [
-                    "`🟫` **Đất trống**",
+                    "- `🟫` **Trạng thái**",
+                    "> `🟫 Đất trống`",
                     "",
-                    "`🌱` Bạn không có hạt giống.",
+                    "- `🌱` **Hạt giống**",
+                    "> `❌ Bạn không có hạt giống.`",
                     "",
-                    "> `🛍️` Vào Vshop để mua hạt giống."
+                    "> `🛍️` Vào **Vshop** để mua hạt giống."
                 ].join("\n")
             );
 
@@ -606,6 +934,7 @@ async function showPlot(
                 embeds: [
                     embed
                 ],
+
                 components: [
                     backButton(
                         userId
@@ -658,9 +987,11 @@ async function showPlot(
                 .setCustomId(
                     `farm_seed_${userId}_${plot.id}`
                 )
+
                 .setPlaceholder(
                     "🌱 Chọn hạt giống..."
                 )
+
                 .addOptions(
                     options
                 );
@@ -669,11 +1000,13 @@ async function showPlot(
             embeds: [
                 embed
             ],
+
             components: [
                 new ActionRowBuilder()
                     .addComponents(
                         menu
                     ),
+
                 backButton(
                     userId
                 )
@@ -708,13 +1041,16 @@ async function showPlot(
                     .setColor(
                         COLORS.error
                     )
+
                     .setTitle(
-                        "`❌` Lỗi cây trồng"
+                        "❌ Lỗi cây trồng"
                     )
+
                     .setDescription(
                         "> Không tìm thấy dữ liệu hạt giống."
                     )
             ],
+
             components: [
                 backButton(
                     userId
@@ -736,41 +1072,46 @@ async function showPlot(
             cropId
         );
 
+    const description = [
+        "- `🌱` **Trạng thái**",
+
+        ready
+            ? "> `🌾 Cây đã lớn, có thể thu hoạch.`"
+            : `> \`⏳ Còn ${formatTime(
+                readyAt -
+                now
+            )}\``,
+
+        "",
+
+        "- `🌾` **Thu hoạch**",
+
+        crop
+            ? `> \`${crop.emoji || "🌾"} ${crop.name}\``
+            : "> `❌ Không tìm thấy nông sản.`"
+    ];
+
     const embed =
         new EmbedBuilder()
             .setTitle(
-                `\`${seed.emoji || "🌱"}\` ${seed.name}`
+                `${seed.emoji || "🌱"} ${seed.name}`
             )
+
             .setColor(
                 ready
                     ? COLORS.success
                     : COLORS.primary
             )
+
             .setDescription(
-                [
-                    "`🌱` **Trạng thái**",
-
-                    ready
-                        ? "> `🌾` Cây đã lớn, có thể thu hoạch."
-                        : `> \`⏳\` Còn **${formatTime(
-                            readyAt -
-                            now
-                        )}**`,
-
-                    "",
-
-                    crop
-                        ? "`🌾` **Thu hoạch**\n" +
-                          `> \`${crop.name}\``
-                        : ""
-                ]
-                    .filter(Boolean)
-                    .join("\n")
+                description.join("\n")
             );
 
     const components = [];
 
-    if (ready) {
+    if (
+        ready
+    ) {
         components.push(
             new ActionRowBuilder()
                 .addComponents(
@@ -779,12 +1120,15 @@ async function showPlot(
                         .setCustomId(
                             `farm_harvest_${userId}_${plot.id}`
                         )
+
                         .setLabel(
                             "Thu hoạch"
                         )
+
                         .setEmoji(
                             "🌾"
                         )
+
                         .setStyle(
                             ButtonStyle.Success
                         ),
@@ -793,12 +1137,15 @@ async function showPlot(
                         .setCustomId(
                             `farm_quick_harvest_${userId}`
                         )
+
                         .setLabel(
                             "Thu hoạch nhanh"
                         )
+
                         .setEmoji(
                             "⚡"
                         )
+
                         .setStyle(
                             ButtonStyle.Success
                         )
@@ -812,12 +1159,15 @@ async function showPlot(
                         .setCustomId(
                             `farm_refresh_${userId}`
                         )
+
                         .setLabel(
                             "Kiểm tra"
                         )
+
                         .setEmoji(
                             "🔃"
                         )
+
                         .setStyle(
                             ButtonStyle.Secondary
                         )
@@ -835,6 +1185,7 @@ async function showPlot(
         embeds: [
             embed
         ],
+
         components
     });
 }
@@ -894,7 +1245,9 @@ async function plantSeed(
     }
 
     const inventory =
-        getInventory(userId);
+        getInventory(
+            userId
+        );
 
     const amount =
         getAmount(
@@ -903,7 +1256,9 @@ async function plantSeed(
             ]
         );
 
-    if (amount <= 0) {
+    if (
+        amount <= 0
+    ) {
         return interaction.reply({
             content:
                 "`❌` Bạn không còn hạt giống này.",
@@ -959,23 +1314,30 @@ async function plantSeed(
                 .setColor(
                     COLORS.success
                 )
+
                 .setTitle(
-                    "`🌱` Trồng cây thành công"
+                    "🌱 Trồng cây thành công"
                 )
+
                 .setDescription(
                     [
-                        "`🌱` **Hạt giống**",
+                        "- `🌱` **Hạt giống**",
                         `> \`${seed.name}\``,
+
                         "",
-                        "`⏳` **Thời gian lớn**",
+
+                        "- `⏳` **Thời gian lớn**",
                         `> \`${formatTime(
                             growTime
                         )}\``,
+
                         "",
-                        "`🍃` Hãy quay lại sau khi cây trưởng thành."
+
+                        "☕ `🍃` Hãy quay lại sau khi cây trưởng thành."
                     ].join("\n")
                 )
         ],
+
         components: [
             backButton(
                 userId
@@ -1068,9 +1430,14 @@ function harvestPlot(
         amount
     );
 
-    plot.seed = null;
-    plot.plantedAt = null;
-    plot.readyAt = null;
+    plot.seed =
+        null;
+
+    plot.plantedAt =
+        null;
+
+    plot.readyAt =
+        null;
 
     return {
         crop,
@@ -1124,13 +1491,16 @@ async function harvest(
             plot.readyAt || 0
         );
 
-    if (now < readyAt) {
+    if (
+        now < readyAt
+    ) {
         return interaction.reply({
             content:
                 `\`⏳\` Cây chưa lớn.\n> Còn **${formatTime(
                     readyAt -
                     now
                 )}**.`,
+
             ephemeral: true
         });
     }
@@ -1172,29 +1542,38 @@ async function harvest(
                 .setColor(
                     COLORS.success
                 )
+
                 .setTitle(
-                    "`🌾` Thu hoạch thành công"
+                    "🌾 Thu hoạch thành công"
                 )
+
                 .setDescription(
                     [
-                        "`🌾` **Nông sản nhận được**",
-                        `> \`${result.crop.name} ×${result.amount}\``,
+                        "- `🌾` **Nông sản nhận được**",
+                        `> \`${result.crop.emoji || "🌾"} ${result.crop.name} ×${result.amount}\``,
+
                         "",
-                        "`💰` **Giá bán mỗi cái**",
+
+                        "- `💰` **Giá bán mỗi cái**",
                         `> \`${Number(
                             result.crop.sellPrice ||
                             0
                         ).toLocaleString(
                             "vi-VN"
                         )} Mora\``,
+
                         "",
-                        "`🌱` **Hạt đã dùng**",
+
+                        "- `🌱` **Hạt đã dùng**",
                         `> \`${result.seed.id} ×1\``,
+
                         "",
-                        "`🎒` Nông sản đã được thêm vào inventory."
+
+                        "🎒 Nông sản đã được thêm vào inventory."
                     ].join("\n")
                 )
         ],
+
         components: [
             backButton(
                 userId
@@ -1224,7 +1603,9 @@ async function quickHarvest(
                 ) <= Date.now()
         );
 
-    if (!readyPlots.length) {
+    if (
+        !readyPlots.length
+    ) {
         return interaction.reply({
             content:
                 "`🌱` Hiện chưa có cây nào sẵn sàng thu hoạch.",
@@ -1245,11 +1626,15 @@ async function quickHarvest(
             );
 
         if (result) {
-            results.push(result);
+            results.push(
+                result
+            );
         }
     }
 
-    if (!results.length) {
+    if (
+        !results.length
+    ) {
         return interaction.reply({
             content:
                 "`❌` Không thể thu hoạch các cây hiện tại.",
@@ -1282,10 +1667,13 @@ async function quickHarvest(
             ] = {
                 name:
                     result.crop.name,
+
                 emoji:
                     result.crop.emoji ||
                     "🌾",
-                amount: 0
+
+                amount:
+                    0
             };
         }
 
@@ -1319,36 +1707,48 @@ async function quickHarvest(
             .setColor(
                 COLORS.success
             )
+
             .setTitle(
-                "`⚡` Thu hoạch nhanh"
+                "⚡ Thu hoạch nhanh"
             )
+
             .setDescription(
                 [
-                    "`🌾` **Đã thu hoạch**",
+                    "- `🌾` **Đã thu hoạch**",
                     `> \`${results.length}\` ô đất`,
+
                     "",
-                    "`🎒` **Nông sản nhận được**",
+
+                    "- `🎒` **Nông sản nhận được**",
                     rewardLines.join("\n"),
+
                     "",
-                    "`📊` **Tổng số lượng**",
+
+                    "- `📊` **Tổng số lượng**",
                     `> \`${totalHarvest}\` nông sản`,
+
                     "",
-                    "`🍃` Tất cả nông sản đã được thêm vào inventory.",
+
+                    "🍃 Tất cả nông sản đã được thêm vào inventory.",
+
                     "",
-                    "୨୧ ─────────────── ୨୧",
-                    "`🌱` Các ô đất đã sẵn sàng để trồng vụ mới."
+
+                    "☕ `🌱` Các ô đất đã sẵn sàng cho vụ mới."
                 ].join("\n")
             )
+
             .setFooter({
                 text:
                     "Venti Farm • Quick Harvest"
             })
+
             .setTimestamp();
 
     return interaction.update({
         embeds: [
             embed
         ],
+
         components: [
             backButton(
                 userId
@@ -1377,7 +1777,10 @@ function updateHarvestStats(
     stats.harvest =
         Number(
             stats.harvest || 0
-        ) + Number(amount || 0);
+        ) +
+        Number(
+            amount || 0
+        );
 
     User.update(
         userId,
@@ -1434,7 +1837,8 @@ async function farmCommand(
             await message.reply({
                 embeds: [
                     farmEmbed(
-                        userId
+                        userId,
+                        message.author
                     )
                 ],
 
@@ -1442,6 +1846,7 @@ async function farmCommand(
                     plotMenu(
                         userId
                     ),
+
                     farmButtons(
                         userId
                     )
@@ -1465,6 +1870,7 @@ async function farmCommand(
                     return interaction.reply({
                         content:
                             "`❌` Đây không phải trang trại của bạn.",
+
                         ephemeral: true
                     });
                 }
@@ -1555,7 +1961,8 @@ async function farmCommand(
                         return interaction.update({
                             embeds: [
                                 farmEmbed(
-                                    userId
+                                    userId,
+                                    interaction.user
                                 )
                             ],
 
@@ -1563,6 +1970,7 @@ async function farmCommand(
                                 plotMenu(
                                     userId
                                 ),
+
                                 farmButtons(
                                     userId
                                 )
@@ -1581,7 +1989,8 @@ async function farmCommand(
                         return interaction.update({
                             embeds: [
                                 farmEmbed(
-                                    userId
+                                    userId,
+                                    interaction.user
                                 )
                             ],
 
@@ -1589,6 +1998,7 @@ async function farmCommand(
                                 plotMenu(
                                     userId
                                 ),
+
                                 farmButtons(
                                     userId
                                 )
@@ -1610,8 +2020,10 @@ async function farmCommand(
 
                         return interaction.update({
                             content:
-                                "`🍃` Venti đã đóng trang trại.",
+                                "`🍃` Columbina đã đóng trang trại.",
+
                             embeds: [],
+
                             components: []
                         });
                     }
@@ -1631,6 +2043,7 @@ async function farmCommand(
                             .followUp({
                                 content:
                                     "`❌` Có lỗi xảy ra.",
+
                                 ephemeral: true
                             })
                             .catch(
@@ -1642,6 +2055,7 @@ async function farmCommand(
                         .reply({
                             content:
                                 "`❌` Có lỗi xảy ra.",
+
                             ephemeral: true
                         })
                         .catch(
@@ -1669,12 +2083,14 @@ async function farmCommand(
             error
         );
 
-        return message.reply({
-            content:
-                "`❌` Không thể mở trang trại."
-        }).catch(
-            () => {}
-        );
+        return message
+            .reply({
+                content:
+                    "`❌` Không thể mở trang trại."
+            })
+            .catch(
+                () => {}
+            );
     }
 }
 
@@ -1708,4 +2124,3 @@ module.exports = {
         );
     }
 };
-

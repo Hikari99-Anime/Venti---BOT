@@ -26,44 +26,83 @@ const PLOTS = [
         name: "Ô đất #2",
         emoji: "🟫",
         price: 1000,
-        description: "Mở khóa thêm một ô đất để trồng cây."
+        description:
+            "Mở khóa thêm một ô đất để trồng cây."
     },
+
     {
         id: 3,
         name: "Ô đất #3",
         emoji: "🟫",
         price: 3000,
-        description: "Mở khóa thêm một ô đất để mở rộng trang trại."
+        description:
+            "Mở khóa thêm một ô đất để mở rộng trang trại."
     },
+
     {
         id: 4,
         name: "Ô đất #4",
         emoji: "🟫",
         price: 7500,
-        description: "Một ô đất mới cho trang trại."
+        description:
+            "Một ô đất mới cho trang trại."
     },
+
     {
         id: 5,
         name: "Ô đất #5",
         emoji: "🟫",
         price: 15000,
-        description: "Mở rộng thêm không gian trang trại."
+        description:
+            "Mở rộng thêm không gian trang trại."
     },
+
     {
         id: 6,
         name: "Ô đất #6",
         emoji: "🟫",
         price: 30000,
-        description: "Một ô đất cao cấp."
+        description:
+            "Một ô đất cao cấp."
     },
+
     {
         id: 7,
         name: "Ô đất #7",
         emoji: "🟫",
         price: 60000,
-        description: "Ô đất cuối cùng của trang trại."
+        description:
+            "Mở rộng trang trại thêm một ô đất."
+    },
+
+    {
+        id: 8,
+        name: "Ô đất #8",
+        emoji: "🟫",
+        price: 120000,
+        description:
+            "Một ô đất lớn dành cho trang trại phát triển."
+    },
+
+    {
+        id: 9,
+        name: "Ô đất #9",
+        emoji: "🟫",
+        price: 250000,
+        description:
+            "Ô đất cao cấp cho những mùa vụ lớn."
+    },
+
+    {
+        id: 10,
+        name: "Ô đất #10",
+        emoji: "🟫",
+        price: 500000,
+        description:
+            "Ô đất cuối cùng của trang trại."
     }
 ];
+
 
 // ═══════════════════════════════════════
 // ⚙️ CONFIG

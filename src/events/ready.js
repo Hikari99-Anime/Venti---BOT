@@ -8,7 +8,7 @@ module.exports = {
         client.user.setPresence({
             activities: [
                 {
-                    name: "Columbina // Play vhelp",
+                    name: "Đang buồn vì không có ai chơi cùng... vui lòng chelp để xem danh sách lệnh.",
                     type: 0
                 }
             ],

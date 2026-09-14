@@ -499,7 +499,7 @@ function removeBank(
 const BANK_INTEREST_RATE =
     0.01;
 
-// 24 giờ
+// 6 giờ
 const BANK_INTEREST_COOLDOWN =
     6 * 60 * 60 * 1000;
 

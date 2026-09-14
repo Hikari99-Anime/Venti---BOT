@@ -36,7 +36,7 @@ const QUESTS = [
         description:
             "Bán 10 item.",
         target: 10,
-        reward: 900,
+        reward: 1000,
         xp: 100
     }
 ];
