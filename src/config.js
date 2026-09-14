@@ -2,8 +2,12 @@ require("dotenv").config();
 
 module.exports = {
     token: process.env.TOKEN,
-    prefix: process.env.PREFIX || "V",
-    ownerId: process.env.OWNER_ID,
+
+    prefix:
+        process.env.PREFIX || "c",
+
+    ownerId:
+        process.env.OWNER_ID,
 
     bot: {
         name: "Columbina",
