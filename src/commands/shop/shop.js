@@ -571,22 +571,22 @@ function homeEmbed(userId) {
 
         .setDescription(
             [
-                "+ `🌱` **Hạt giống**",
+                "- `🌱` **Hạt giống**",
                 "> 5 hạt giống ngẫu nhiên dành riêng cho bạn.",
 
                 "",
 
-                "+ `🎣` **Cần câu**",
+                "- `🎣` **Cần câu**",
                 "> Mua cần câu để câu cá.",
 
                 "",
 
-                "+ `🟫` **Đất trang trại**",
+                "- `🟫` **Đất trang trại**",
                 "> Mở khóa thêm ô đất.",
 
                 "",
 
-                "+ `💰` **Mora**",
+                "- `💰` **Mora**",
                 `> ${balance.toLocaleString()} Mora`
             ].join("\n")
         )
