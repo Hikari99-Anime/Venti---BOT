@@ -19,7 +19,7 @@ module.exports = {
     ],
 
     description:
-        "Owner bot cộng Mora cho người chơi.",
+        "Bot Owner cộng Mora cho người chơi.",
 
     usage:
         "Vaddmoney @user <amount>",
@@ -33,23 +33,37 @@ module.exports = {
         // 🔐 BOT OWNER CHECK
         // ======================================
 
-        const OWNER_ID =
-            String(
-                process.env.OWNER_ID || ""
-            ).trim();
+        try {
 
-        const AUTHOR_ID =
-            String(
-                message.author.id
-            ).trim();
+            const application =
+                await message.client.application.fetch();
 
-        if (
-            !OWNER_ID ||
-            AUTHOR_ID !== OWNER_ID
-        ) {
+            const ownerId =
+                application.owner?.id;
+
+            const authorId =
+                message.author.id;
+
+            if (
+                !ownerId ||
+                authorId !== ownerId
+            ) {
+                return message.reply({
+                    content:
+                        "`❌` Chỉ Owner của bot mới có thể sử dụng lệnh này."
+                });
+            }
+
+        } catch (error) {
+
+            console.error(
+                "❌ Không thể kiểm tra Bot Owner:",
+                error
+            );
+
             return message.reply({
                 content:
-                    "`❌` Chỉ Owner của bot mới có thể sử dụng lệnh này."
+                    "`❌` Không thể xác minh Owner của bot."
             });
         }
 
@@ -128,17 +142,6 @@ module.exports = {
             });
         }
 
-        if (
-            amount >
-            Number.MAX_SAFE_INTEGER
-        ) {
-
-            return message.reply({
-                content:
-                    "`❌` Số Mora quá lớn."
-            });
-        }
-
         // ======================================
         // 👤 GET USER
         // ======================================
@@ -194,7 +197,7 @@ module.exports = {
             message.author.username;
 
         // ======================================
-        // 🌙 EMBED
+        // 🍃 EMBED
         // ======================================
 
         const embed =
@@ -241,7 +244,7 @@ module.exports = {
 
                     `> \`👤 Owner      : ${ownerName}\`\n\n` +
 
-                    "☕ `🍃` **Mora đã được thêm vào ví**\n"
+                    "☕ `🍃` **Mora đã được thêm vào ví**"
                 )
 
                 .setThumbnail(
