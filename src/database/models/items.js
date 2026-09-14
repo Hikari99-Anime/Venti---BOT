@@ -1,10 +1,9 @@
 const items = {
 
-    // =====================================
-    // 🌱 NÔNG SẢN
-    // Hạt giống chính là item dùng để gieo.
-    // Khi thu hoạch sẽ nhận item nông sản tương ứng.
-    // =====================================
+    // ═══════════════════════════════════════
+    // 🌱 NÔNG SẢN / HẠT GIỐNG
+    // category: farming
+    // ═══════════════════════════════════════
 
     apple: {
         id: "apple",
@@ -174,18 +173,6 @@ const items = {
         maxHarvest: 4
     },
 
-    orange: {
-        id: "orange",
-        name: "Cam",
-        emoji: "🍊",
-        category: "farming",
-        buyPrice: 650,
-        sellPrice: 407,
-        growTime: 255000,
-        minHarvest: 2,
-        maxHarvest: 4
-    },
-
     lemon: {
         id: "lemon",
         name: "Chanh",
@@ -283,9 +270,10 @@ const items = {
     },
 
 
-    // =====================================
+    // ═══════════════════════════════════════
     // 🎣 CÁ
-    // =====================================
+    // category: seafood
+    // ═══════════════════════════════════════
 
     small_fish: {
         id: "small_fish",
@@ -513,9 +501,10 @@ const items = {
     },
 
 
-    // =====================================
+    // ═══════════════════════════════════════
     // 🎣 CẦN CÂU
-    // =====================================
+    // category: rod
+    // ═══════════════════════════════════════
 
     fishing_rod: {
         id: "fishing_rod",

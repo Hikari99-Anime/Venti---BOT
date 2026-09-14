@@ -3,16 +3,22 @@ module.exports = {
     once: true,
 
     execute(client) {
-        console.log(`🍃 ${client.user.tag} is online!`);
+        console.log(
+            `🍃 ${client.user.tag} đã thức giấc!`
+        );
 
         client.user.setPresence({
             activities: [
                 {
-                    name: "Đang buồn vì không có ai chơi cùng... vui lòng chelp để xem danh sách lệnh.",
-                    type: 0
+                    name:
+                        "☁️ chelp • Columbina đang ngân nga",
+                    type: 3
                 }
             ],
+
             status: "online"
         });
     }
 };
+
+

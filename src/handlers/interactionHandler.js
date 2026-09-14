@@ -29,51 +29,51 @@ const helpMenu =
     require("../interactions/menus/helpMenu");
 
 // ==========================================
-// 🏦 BANK
+// 🏦 COMMANDS
 // ==========================================
 
 const bank =
     require("../commands/economy/bank");
 
-// ==========================================
-// 🙏 BEG
-// ==========================================
-
 const beg =
     require("../commands/economy/beg");
 
 // ==========================================
-// 🎒 INVENTORY DATA
+// 🛡️ SAFE ERROR RESPONSE
 // ==========================================
 
-const INVENTORY_CATEGORIES = {
+async function safeError(interaction, error) {
 
-    farm: {
+    console.error(
+        "[InteractionHandler]",
+        error
+    );
 
-        name:
-            "🌾 Nông sản",
+    try {
 
-        items: [
-            "apple",
-            "sweet_flower",
-            "sunsettia"
-        ]
-    },
+        if (
+            interaction.replied ||
+            interaction.deferred
+        ) {
 
-    fish: {
+            return await interaction.followUp({
+                content:
+                    "🍃 Có lỗi xảy ra khi xử lý thao tác này.",
+                flags: 64
+            }).catch(() => {});
 
-        name:
-            "🐟 Hải sản",
+        }
 
-        items: [
-            "small_fish",
-            "blue_fish",
-            "golden_fish",
-            "crystal_fish",
-            "wind_fish"
-        ]
+        return await interaction.reply({
+            content:
+                "🍃 Có lỗi xảy ra khi xử lý thao tác này.",
+            flags: 64
+        }).catch(() => {});
+
+    } catch {
+        return;
     }
-};
+}
 
 // ==========================================
 // 🎯 MAIN INTERACTION HANDLER
@@ -85,6 +85,9 @@ async function handleInteraction(
 
     try {
 
+        const id =
+            interaction.customId || "";
+
         // ======================================
         // 🔘 BUTTON
         // ======================================
@@ -92,9 +95,6 @@ async function handleInteraction(
         if (
             interaction.isButton()
         ) {
-
-            const id =
-                interaction.customId || "";
 
             // ==================================
             // 🏦 BANK
@@ -104,7 +104,7 @@ async function handleInteraction(
                 id.startsWith("bank_")
             ) {
 
-                return bank.handleInteraction(
+                return await bank.handleInteraction(
                     interaction
                 );
             }
@@ -117,7 +117,7 @@ async function handleInteraction(
                 id.startsWith("beg_")
             ) {
 
-                return beg.handleInteraction(
+                return await beg.handleInteraction(
                     interaction
                 );
             }
@@ -130,7 +130,7 @@ async function handleInteraction(
                 id.startsWith("help_")
             ) {
 
-                return help.execute(
+                return await help.execute(
                     interaction
                 );
             }
@@ -144,19 +144,24 @@ async function handleInteraction(
             ) {
 
                 if (
-                    id ===
-                        "profile_inventory" ||
-
-                    id ===
-                        "profile_shop"
+                    id === "profile_inventory"
                 ) {
 
-                    return routeProfile(
+                    return await inventory.execute(
                         interaction
                     );
                 }
 
-                return profile.execute(
+                if (
+                    id === "profile_shop"
+                ) {
+
+                    return await shop.execute(
+                        interaction
+                    );
+                }
+
+                return await profile.execute(
                     interaction
                 );
             }
@@ -169,7 +174,7 @@ async function handleInteraction(
                 id.startsWith("inventory_")
             ) {
 
-                return routeInventory(
+                return await routeInventory(
                     interaction
                 );
             }
@@ -182,7 +187,7 @@ async function handleInteraction(
                 id.startsWith("shop_")
             ) {
 
-                return routeShop(
+                return await routeShop(
                     interaction
                 );
             }
@@ -195,7 +200,7 @@ async function handleInteraction(
                 id.startsWith("fish_")
             ) {
 
-                return fish.execute(
+                return await fish.execute(
                     interaction
                 );
             }
@@ -204,40 +209,51 @@ async function handleInteraction(
         }
 
         // ======================================
-        // 📂 STRING SELECT MENU
+        // 📂 SELECT MENU
         // ======================================
 
         if (
             interaction.isStringSelectMenu()
         ) {
 
-            const id =
-                interaction.customId || "";
-
             // ==================================
-            // ❓ HELP MENU
+            // ❓ HELP
             // ==================================
 
             if (
-                id ===
-                "help_menu"
+                id === "help_menu"
             ) {
 
-                return helpMenu.execute(
+                return await helpMenu.execute(
                     interaction
                 );
             }
 
             // ==================================
-            // 🎒 INVENTORY MENU
+            // 🎒 INVENTORY
             // ==================================
 
             if (
-                id ===
-                "inventory_category"
+                id === "inventory_category"
             ) {
 
-                return routeInventoryMenu(
+                /*
+                 * QUAN TRỌNG:
+                 *
+                 * Defer ngay lập tức.
+                 * Không để DB / xử lý item chạy
+                 * trước khi acknowledge Discord.
+                 */
+
+                if (
+                    !interaction.deferred &&
+                    !interaction.replied
+                ) {
+
+                    await interaction.deferUpdate();
+                }
+
+                return await routeInventoryMenu(
                     interaction
                 );
             }
@@ -246,97 +262,80 @@ async function handleInteraction(
         }
 
         // ======================================
-// 🪟 MODAL
-// ======================================
-
-if (
-    interaction.isModalSubmit()
-) {
-
-    const id =
-        interaction.customId || "";
-
-    // ==================================
-    // 🏦 BANK MODAL
-    // ==================================
-
-    if (
-        id.startsWith(
-            "bank_modal_"
-        )
-    ) {
-
-        return bank.handleInteraction(
-            interaction
-        );
-    }
-
-    // ==================================
-    // 🙏 BEG MODAL
-    // ==================================
-
-    if (
-        id.startsWith(
-            "beg_modal_"
-        )
-    ) {
-
-        return beg.handleInteraction(
-            interaction
-        );
-    }
-
-    // ==================================
-    // 🛒 SHOP QUANTITY MODAL
-    // ==================================
-
-    if (
-        id.startsWith(
-            "shop_quantity_"
-        )
-    ) {
-
-        return shop.handleInteraction(
-            interaction
-        );
-    }
-
-    return false;
-}
-
-        // ======================================
-        // ❌ ERROR RESPONSE
+        // 🪟 MODAL
         // ======================================
 
         if (
-            interaction.replied ||
-            interaction.deferred
+            interaction.isModalSubmit()
         ) {
 
-            return interaction
-                .followUp({
+            // ==================================
+            // 🏦 BANK
+            // ==================================
 
-                    content:
-                        "🍃 Có lỗi xảy ra khi xử lý thao tác này.",
+            if (
+                id.startsWith("bank_modal_")
+            ) {
 
-                    ephemeral:
-                        true
+                return await bank.handleInteraction(
+                    interaction
+                );
+            }
 
-                })
-                .catch(() => {});
+            // ==================================
+            // 🙏 BEG
+            // ==================================
+
+            if (
+                id.startsWith("beg_modal_")
+            ) {
+
+                return await beg.handleInteraction(
+                    interaction
+                );
+            }
+
+            // ==================================
+            // 🛒 SHOP BUY MODAL
+            // ==================================
+
+            if (
+                id.startsWith("shop_buy_modal_")
+            ) {
+
+                if (
+                    typeof shop.buyItemFromModal ===
+                    "function"
+                ) {
+
+                    return await shop.buyItemFromModal(
+                        interaction
+                    );
+                }
+
+                console.error(
+                    "shop.buyItemFromModal không tồn tại trong shop.js"
+                );
+
+                return safeError(
+                    interaction,
+                    new Error(
+                        "shop.buyItemFromModal is not a function"
+                    )
+                );
+            }
+
+            return false;
         }
 
-        return interaction
-            .reply({
+        return false;
 
-                content:
-                    "🍃 Có lỗi xảy ra khi xử lý thao tác này.",
+    } catch (error) {
 
-                ephemeral:
-                    true
-
-            })
-            .catch(() => {});
+        return safeError(
+            interaction,
+            error
+        );
     }
 }
 
@@ -351,35 +350,25 @@ async function routeProfile(
     const id =
         interaction.customId;
 
-    // ======================================
-    // 🎒 INVENTORY
-    // ======================================
-
     if (
-        id ===
-        "profile_inventory"
+        id === "profile_inventory"
     ) {
 
-        return inventory.execute(
+        return await inventory.execute(
             interaction
         );
     }
 
-    // ======================================
-    // 🛒 SHOP
-    // ======================================
-
     if (
-        id ===
-        "profile_shop"
+        id === "profile_shop"
     ) {
 
-        return shop.execute(
+        return await shop.execute(
             interaction
         );
     }
 
-    return profile.execute(
+    return await profile.execute(
         interaction
     );
 }
@@ -400,11 +389,10 @@ async function routeInventory(
     // ======================================
 
     if (
-        id ===
-        "inventory_shop"
+        id === "inventory_shop"
     ) {
 
-        return shop.execute(
+        return await shop.execute(
             interaction
         );
     }
@@ -414,11 +402,10 @@ async function routeInventory(
     // ======================================
 
     if (
-        id ===
-        "inventory_back"
+        id === "inventory_back"
     ) {
 
-        return profile.execute(
+        return await profile.execute(
             interaction
         );
     }
@@ -428,9 +415,25 @@ async function routeInventory(
     // ======================================
 
     if (
-        id ===
-        "inventory_close"
+        id === "inventory_close"
     ) {
+
+        if (
+            interaction.deferred ||
+            interaction.replied
+        ) {
+
+            return interaction.editReply({
+
+                content:
+                    "🍃 Chiếc túi đã được đóng lại.",
+
+                embeds: [],
+
+                components: []
+
+            });
+        }
 
         return interaction.update({
 
@@ -449,13 +452,20 @@ async function routeInventory(
     // ======================================
 
     if (
-        id ===
-        "inventory_refresh"
+        id === "inventory_refresh"
     ) {
 
-        return updateInventory(
+        if (
+            !interaction.deferred &&
+            !interaction.replied
+        ) {
+
+            await interaction.deferUpdate();
+        }
+
+        return await updateInventory(
             interaction,
-            "farm"
+            "farming"
         );
     }
 
@@ -471,26 +481,47 @@ async function routeInventoryMenu(
 ) {
 
     const category =
-        interaction.values[0];
+        interaction.values?.[0];
+
+    const validCategories = [
+        "farming",
+        "seafood"
+    ];
 
     if (
-        !INVENTORY_CATEGORIES[
+        !validCategories.includes(
             category
-        ]
+        )
     ) {
+
+        if (
+            interaction.deferred ||
+            interaction.replied
+        ) {
+
+            return interaction.editReply({
+
+                content:
+                    "🍃 Danh mục không hợp lệ.",
+
+                embeds: [],
+
+                components: []
+
+            });
+        }
 
         return interaction.reply({
 
             content:
                 "🍃 Danh mục không hợp lệ.",
 
-            ephemeral:
-                true
+            flags: 64
 
         });
     }
 
-    return updateInventory(
+    return await updateInventory(
         interaction,
         category
     );
@@ -505,264 +536,391 @@ async function updateInventory(
     category
 ) {
 
-    const User =
-        require(
-            "../database/models/User"
-        );
+    try {
 
-    const Item =
-        require(
-            "../database/models/Item"
-        );
+        // ======================================
+        // 📦 MODELS
+        // ======================================
 
-    const user =
-        User.getOrCreate(
-            interaction.user.id
-        );
+        const User =
+            require(
+                "../database/models/User"
+            );
 
-    const data =
-        INVENTORY_CATEGORIES[
-            category
-        ];
+        const Item =
+            require(
+                "../database/models/Item"
+            );
 
-    const inventory =
-        user.inventory || {};
+        // ======================================
+        // 👤 USER
+        // ======================================
 
-    const items =
-        data.items
-            .map(
-                itemId => {
+        const user =
+            User.getOrCreate(
+                interaction.user.id
+            );
 
-                    const item =
-                        Item.get(
-                            itemId
-                        );
+        // ======================================
+        // 🎒 INVENTORY
+        // ======================================
 
-                    if (!item) {
-                        return null;
-                    }
+        const inventory =
+            user.inventory || {};
 
-                    return {
+        // ======================================
+        // 📦 ITEMS
+        // ======================================
 
-                        ...item,
+        const allItems =
+            Object.values(
+                Item
+            );
 
-                        amount:
+        // ======================================
+        // 🔎 CATEGORY
+        // ======================================
+
+        const categoryItems =
+            allItems.filter(
+                item =>
+                    item &&
+                    item.category === category
+            );
+
+        // ======================================
+        // 🎒 OWNED
+        // ======================================
+
+        const ownedItems =
+            categoryItems
+                .map(
+                    item => {
+
+                        const amount =
                             Number(
                                 inventory[
-                                    itemId
+                                    item.id
                                 ] || 0
-                            )
-                    };
-                }
-            )
-            .filter(
-                Boolean
+                            );
+
+                        if (
+                            amount <= 0
+                        ) {
+
+                            return null;
+                        }
+
+                        return {
+                            ...item,
+                            amount
+                        };
+                    }
+                )
+                .filter(
+                    Boolean
+                );
+
+        // ======================================
+        // 📝 CONTENT
+        // ======================================
+
+        let content;
+
+        if (
+            ownedItems.length === 0
+        ) {
+
+            content =
+                category === "farming"
+                    ? "☁️ Bạn chưa có nông sản nào."
+                    : "☁️ Bạn chưa có cá nào.";
+
+        } else {
+
+            content =
+                ownedItems
+                    .map(
+                        item =>
+                            `${item.emoji || "📦"} **${item.name}** · ×${item.amount}`
+                    )
+                    .join("\n");
+        }
+
+        // ======================================
+        // 🔢 TOTAL
+        // ======================================
+
+        const total =
+            Object.values(
+                inventory
+            ).reduce(
+                (
+                    sum,
+                    amount
+                ) =>
+                    sum +
+                    Number(
+                        amount || 0
+                    ),
+                0
             );
 
-    let content;
+        // ======================================
+        // 🏷️ CATEGORY
+        // ======================================
 
-    if (
-        items.length === 0
-    ) {
+        const categoryName =
+            category === "farming"
+                ? "🌾 Nông sản"
+                : "🐟 Hải sản";
 
-        content =
-            "☁️ Chưa có vật phẩm nào.";
+        // ======================================
+        // 🎨 EMBED
+        // ======================================
 
-    } else {
+        const embed =
+            new EmbedBuilder()
 
-        content =
-            items
-                .map(
-                    item =>
-                        `${item.emoji || "📦"} **${item.name}** · ×${item.amount}`
+                .setColor(
+                    "#A8DCC0"
                 )
-                .join("\n");
-    }
 
-    const total =
-        Object.values(
-            inventory
-        ).reduce(
-            (
-                sum,
-                amount
-            ) =>
-                sum +
-                Number(
-                    amount || 0
-                ),
-            0
-        );
+                .setAuthor({
 
-    const embed =
-        new EmbedBuilder()
+                    name:
+                        `☁️ ${
+                            interaction.user.globalName ||
+                            interaction.user.username
+                        } · Venti`
 
-            .setColor(
-                "#A8DCC0"
-            )
+                })
 
-            .setAuthor({
+                .setTitle(
+                    "🍃 Túi Đồ"
+                )
 
-                name:
-                    `☁️ ${
-                        interaction.user.globalName ||
-                        interaction.user.username
-                    } · Venti`
+                .setDescription(
+                    [
 
-            })
+                        "୨୧ ───────── ୨୧",
 
-            .setTitle(
-                "🍃 Túi Đồ"
-            )
+                        `        ${categoryName}`,
 
-            .setDescription(
-                [
+                        "୨୧ ───────── ୨୧",
 
-                    "୨୧ ───────── ୨୧",
+                        "",
 
-                    `        ${data.name}`,
+                        content,
 
-                    "୨୧ ───────── ୨୧",
+                        "",
 
-                    "",
+                        "୨୧ ───────── ୨୧",
 
-                    content,
+                        `☁️ Tổng vật phẩm · **${total}**`,
 
-                    "",
+                        "🍃 Một chiếc túi nhỏ của bạn."
 
-                    "୨୧ ───────── ୨୧",
+                    ].join("\n")
+                )
 
-                    `☁️ Tổng vật phẩm · **${total}**`,
+                .setFooter({
 
-                    "🍃 Một chiếc túi nhỏ của bạn."
+                    text:
+                        "☕ Venti · Cozy Inventory"
 
-                ].join("\n")
-            )
+                })
 
-            .setFooter({
+                .setTimestamp();
 
-                text:
-                    "☕ Venti · Cozy Inventory"
+        // ======================================
+        // 📂 SELECT MENU
+        // ======================================
 
-            })
+        const menu =
+            new StringSelectMenuBuilder()
 
-            .setTimestamp();
+                .setCustomId(
+                    "inventory_category"
+                )
 
-    // ======================================
-    // 📂 SELECT MENU
-    // ======================================
+                .setPlaceholder(
+                    "☁️ Chọn danh mục..."
+                )
 
-    const menu =
-        new StringSelectMenuBuilder()
+                .addOptions(
 
-            .setCustomId(
-                "inventory_category"
-            )
+                    {
 
-            .setPlaceholder(
-                "☁️ Chọn danh mục..."
-            )
+                        label:
+                            "Nông sản",
 
-            .addOptions({
+                        description:
+                            "Hoa quả và vật phẩm nông nghiệp",
 
-                label:
-                    "Nông sản",
+                        value:
+                            "farming",
 
-                description:
-                    "Hoa quả và vật phẩm nông nghiệp",
+                        emoji:
+                            "🌾",
 
-                value:
-                    "farm",
+                        default:
+                            category === "farming"
 
-                emoji:
-                    "🌾",
+                    },
 
-                default:
-                    category === "farm"
+                    {
 
-            }, {
+                        label:
+                            "Hải sản",
 
-                label:
-                    "Hải sản",
+                        description:
+                            "Những thứ bạn câu được",
 
-                description:
-                    "Những thứ bạn câu được",
+                        value:
+                            "seafood",
 
-                value:
-                    "fish",
+                        emoji:
+                            "🐟",
 
-                emoji:
-                    "🐟",
+                        default:
+                            category === "seafood"
 
-                default:
-                    category === "fish"
+                    }
+
+                );
+
+        // ======================================
+        // 📂 SELECT ROW
+        // ======================================
+
+        const selectRow =
+            new ActionRowBuilder()
+                .addComponents(
+                    menu
+                );
+
+        // ======================================
+        // 🔘 BUTTONS
+        // ======================================
+
+        const buttons =
+            new ActionRowBuilder()
+                .addComponents(
+
+                    new ButtonBuilder()
+
+                        .setCustomId(
+                            "inventory_refresh"
+                        )
+
+                        .setLabel(
+                            "Làm mới"
+                        )
+
+                        .setEmoji(
+                            "🔃"
+                        )
+
+                        .setStyle(
+                            ButtonStyle.Secondary
+                        ),
+
+                    new ButtonBuilder()
+
+                        .setCustomId(
+                            "inventory_shop"
+                        )
+
+                        .setLabel(
+                            "Cửa hàng"
+                        )
+
+                        .setEmoji(
+                            "🛒"
+                        )
+
+                        .setStyle(
+                            ButtonStyle.Success
+                        ),
+
+                    new ButtonBuilder()
+
+                        .setCustomId(
+                            "inventory_close"
+                        )
+
+                        .setLabel(
+                            "Đóng"
+                        )
+
+                        .setEmoji(
+                            "✖️"
+                        )
+
+                        .setStyle(
+                            ButtonStyle.Danger
+                        )
+
+                );
+
+        // ======================================
+        // 📤 UPDATE
+        // ======================================
+
+        /*
+         * Nếu đã deferUpdate()
+         * thì PHẢI dùng editReply().
+         *
+         * Không được dùng interaction.update()
+         * nữa.
+         */
+
+        if (
+            interaction.deferred
+        ) {
+
+            return await interaction.editReply({
+
+                content: null,
+
+                embeds: [
+                    embed
+                ],
+
+                components: [
+                    selectRow,
+                    buttons
+                ]
 
             });
+        }
 
-    const selectRow =
-        new ActionRowBuilder()
-            .addComponents(
-                menu
-            );
+        // fallback
+        return await interaction.update({
 
-    // ======================================
-    // 🔘 BUTTONS
-    // ======================================
+            content: null,
 
-    const buttons =
-        new ActionRowBuilder()
-            .addComponents(
+            embeds: [
+                embed
+            ],
 
-                new ButtonBuilder()
+            components: [
+                selectRow,
+                buttons
+            ]
 
-                    .setCustomId(
-                        "inventory_refresh"
-                    )
+        });
 
-                    .setLabel(
-                        "Làm mới"
-                    )
+    } catch (error) {
 
-                    .setEmoji(
-                        "🔃"
-                    )
+        console.error(
+            "[updateInventory]",
+            error
+        );
 
-                    .setStyle(
-                        ButtonStyle.Secondary
-                    ),
-
-                new ButtonBuilder()
-
-                    .setCustomId(
-                        "inventory_close"
-                    )
-
-                    .setLabel(
-                        "Đóng"
-                    )
-
-                    .setEmoji(
-                        "✖️"
-                    )
-
-                    .setStyle(
-                        ButtonStyle.Danger
-                    )
-
-            );
-
-    return interaction.update({
-
-        embeds: [
-            embed
-        ],
-
-        components: [
-            selectRow,
-            buttons
-        ]
-
-    });
+        throw error;
+    }
 }
 
 // ==========================================
@@ -781,11 +939,10 @@ async function routeShop(
     // ======================================
 
     if (
-        id ===
-        "shop_profile"
+        id === "shop_profile"
     ) {
 
-        return profile.execute(
+        return await profile.execute(
             interaction
         );
     }
@@ -795,11 +952,10 @@ async function routeShop(
     // ======================================
 
     if (
-        id ===
-        "shop_inventory"
+        id === "shop_inventory"
     ) {
 
-        return inventory.execute(
+        return await inventory.execute(
             interaction
         );
     }
@@ -809,9 +965,25 @@ async function routeShop(
     // ======================================
 
     if (
-        id ===
-        "shop_close"
+        id === "shop_close"
     ) {
+
+        if (
+            interaction.deferred ||
+            interaction.replied
+        ) {
+
+            return interaction.editReply({
+
+                content:
+                    "🍃 Cửa hàng đã đóng.",
+
+                embeds: [],
+
+                components: []
+
+            });
+        }
 
         return interaction.update({
 
@@ -830,9 +1002,7 @@ async function routeShop(
     // ======================================
 
     if (
-        id.startsWith(
-            "shop_prev_"
-        )
+        id.startsWith("shop_prev_")
     ) {
 
         const page =
@@ -846,7 +1016,15 @@ async function routeShop(
                 page - 1
             );
 
-        return updateShop(
+        if (
+            !interaction.deferred &&
+            !interaction.replied
+        ) {
+
+            await interaction.deferUpdate();
+        }
+
+        return await updateShop(
             interaction,
             nextPage
         );
@@ -857,9 +1035,7 @@ async function routeShop(
     // ======================================
 
     if (
-        id.startsWith(
-            "shop_next_"
-        )
+        id.startsWith("shop_next_")
     ) {
 
         const page =
@@ -867,7 +1043,15 @@ async function routeShop(
                 id.split("_")[2]
             ) || 0;
 
-        return updateShop(
+        if (
+            !interaction.deferred &&
+            !interaction.replied
+        ) {
+
+            await interaction.deferUpdate();
+        }
+
+        return await updateShop(
             interaction,
             page + 1
         );
@@ -878,9 +1062,7 @@ async function routeShop(
     // ======================================
 
     if (
-        id.startsWith(
-            "shop_refresh_"
-        )
+        id.startsWith("shop_refresh_")
     ) {
 
         const page =
@@ -888,7 +1070,15 @@ async function routeShop(
                 id.split("_")[2]
             ) || 0;
 
-        return updateShop(
+        if (
+            !interaction.deferred &&
+            !interaction.replied
+        ) {
+
+            await interaction.deferUpdate();
+        }
+
+        return await updateShop(
             interaction,
             page
         );
@@ -906,16 +1096,47 @@ async function updateShop(
     page
 ) {
 
-    const {
-        embed,
-        page: currentPage,
-        maxPage
-    } =
+    const result =
         shop.createShopEmbed(
             page
         );
 
-    return interaction.update({
+    const embed =
+        result.embed;
+
+    const currentPage =
+        result.page;
+
+    const maxPage =
+        result.maxPage;
+
+    // ======================================
+    // 📤 UPDATE AFTER DEFER
+    // ======================================
+
+    if (
+        interaction.deferred
+    ) {
+
+        return await interaction.editReply({
+
+            embeds: [
+                embed
+            ],
+
+            components: [
+
+                shop.createButtons(
+                    currentPage,
+                    maxPage
+                )
+
+            ]
+
+        });
+    }
+
+    return await interaction.update({
 
         embeds: [
             embed
