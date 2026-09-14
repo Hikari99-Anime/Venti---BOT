@@ -34,11 +34,18 @@ module.exports = {
         // ======================================
 
         const OWNER_ID =
-            process.env.OWNER_ID;
+            String(
+                process.env.OWNER_ID || ""
+            ).trim();
+
+        const AUTHOR_ID =
+            String(
+                message.author.id
+            ).trim();
 
         if (
             !OWNER_ID ||
-            message.author.id !== OWNER_ID
+            AUTHOR_ID !== OWNER_ID
         ) {
             return message.reply({
                 content:
@@ -56,15 +63,22 @@ module.exports = {
         let userId;
 
         if (target) {
+
             userId =
                 target.id;
+
         } else if (
             args[0] &&
-            /^\d{17,20}$/.test(args[0])
+            /^\d{17,20}$/.test(
+                args[0]
+            )
         ) {
+
             userId =
                 args[0];
+
         } else {
+
             return message.reply({
                 content:
                     [
@@ -84,13 +98,18 @@ module.exports = {
             args[1];
 
         if (!amountArg) {
+
             return message.reply({
                 content:
                     "`❌` Vui lòng nhập số Mora cần cộng."
             });
         }
 
-        // Cho phép 1,000 / 1.000 / 1000
+        // Cho phép:
+        // 1000
+        // 1,000
+        // 1.000
+
         const cleanAmount =
             String(amountArg)
                 .replace(/[,.]/g, "");
@@ -102,6 +121,7 @@ module.exports = {
             !Number.isSafeInteger(amount) ||
             amount <= 0
         ) {
+
             return message.reply({
                 content:
                     "`❌` Số Mora không hợp lệ."
@@ -112,6 +132,7 @@ module.exports = {
             amount >
             Number.MAX_SAFE_INTEGER
         ) {
+
             return message.reply({
                 content:
                     "`❌` Số Mora quá lớn."
@@ -123,9 +144,12 @@ module.exports = {
         // ======================================
 
         const user =
-            User.getOrCreate(userId);
+            User.getOrCreate(
+                userId
+            );
 
         if (!user) {
+
             return message.reply({
                 content:
                     "`❌` Không thể tìm thấy hoặc tạo tài khoản."
@@ -175,11 +199,15 @@ module.exports = {
 
         const embed =
             new EmbedBuilder()
-                .setColor("#A8DCC0")
+
+                .setColor(
+                    "#A8DCC0"
+                )
 
                 .setAuthor({
                     name:
                         `☁️ ${ownerName} · Columbina`,
+
                     iconURL:
                         message.author.displayAvatarURL({
                             extension: "png",
@@ -192,24 +220,32 @@ module.exports = {
                 )
 
                 .setDescription(
+
                     "☁️ `🍃` **Một góc nhỏ của hành trình**\n\n" +
 
                     "- `👤` **Người nhận**\n" +
+
                     `> \`👤 Người chơi  : ${targetName}\`\n` +
+
                     `> \`🆔 ID         : ${userId}\`\n\n` +
 
                     "- `💰` **Giao dịch**\n" +
+
                     `> \`💵 Đã cộng     : +${amount.toLocaleString("vi-VN")} Mora\`\n` +
+
                     `> \`💳 Số dư cũ   : ${oldBalance.toLocaleString("vi-VN")} Mora\`\n` +
+
                     `> \`💎 Số dư mới  : ${newBalance.toLocaleString("vi-VN")} Mora\`\n\n` +
 
                     "- `👑` **Người thực hiện**\n" +
+
                     `> \`👤 Owner      : ${ownerName}\`\n\n` +
 
                     "☕ `🍃` **Mora đã được thêm vào ví**\n"
                 )
 
                 .setThumbnail(
+
                     target
                         ? target.displayAvatarURL({
                             extension: "png",
@@ -227,6 +263,10 @@ module.exports = {
                 })
 
                 .setTimestamp();
+
+        // ======================================
+        // 📤 SEND
+        // ======================================
 
         return message.reply({
             embeds: [
