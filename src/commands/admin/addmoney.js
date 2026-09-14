@@ -1,14 +1,12 @@
-
 const {
-    EmbedBuilder,
-    PermissionFlagsBits
+    EmbedBuilder
 } = require("discord.js");
 
 const User =
     require("../../database/models/User");
 
 // ==========================================
-// 💰 ADD MONEY — ADMIN ONLY
+// 💰 ADD MONEY — BOT OWNER ONLY
 // ==========================================
 
 module.exports = {
@@ -21,7 +19,7 @@ module.exports = {
     ],
 
     description:
-        "Admin cộng Mora cho người chơi.",
+        "Owner bot cộng Mora cho người chơi.",
 
     usage:
         "Vaddmoney @user <amount>",
@@ -32,18 +30,19 @@ module.exports = {
     async execute(message, args) {
 
         // ======================================
-        // 🔐 ADMIN CHECK
+        // 🔐 BOT OWNER CHECK
         // ======================================
 
+        const OWNER_ID =
+            process.env.OWNER_ID;
+
         if (
-            !message.member ||
-            !message.member.permissions.has(
-                PermissionFlagsBits.Administrator
-            )
+            !OWNER_ID ||
+            message.author.id !== OWNER_ID
         ) {
             return message.reply({
                 content:
-                    "`❌` Bạn không có quyền sử dụng lệnh này."
+                    "`❌` Chỉ Owner của bot mới có thể sử dụng lệnh này."
             });
         }
 
@@ -81,15 +80,8 @@ module.exports = {
         // 💰 AMOUNT
         // ======================================
 
-        let amountArg;
-
-        if (target) {
-            amountArg =
-                args[1];
-        } else {
-            amountArg =
-                args[1];
-        }
+        const amountArg =
+            args[1];
 
         if (!amountArg) {
             return message.reply({
@@ -131,9 +123,7 @@ module.exports = {
         // ======================================
 
         const user =
-            User.getOrCreate(
-                userId
-            );
+            User.getOrCreate(userId);
 
         if (!user) {
             return message.reply({
@@ -164,7 +154,7 @@ module.exports = {
         );
 
         // ======================================
-        // 🍃 RESULT
+        // 👤 NAME
         // ======================================
 
         const targetName =
@@ -175,40 +165,65 @@ module.exports = {
                 )
                 : userId;
 
+        const ownerName =
+            message.author.globalName ||
+            message.author.username;
+
+        // ======================================
+        // 🌙 EMBED
+        // ======================================
+
         const embed =
             new EmbedBuilder()
-                .setColor(
-                    "#A8DCC0"
-                )
+                .setColor("#A8DCC0")
+
+                .setAuthor({
+                    name:
+                        `☁️ ${ownerName} · Columbina`,
+                    iconURL:
+                        message.author.displayAvatarURL({
+                            extension: "png",
+                            size: 128
+                        })
+                })
 
                 .setTitle(
-                    "`💰` Mora đã được cộng"
+                    "🍃 Mora Đã Được Cộng"
                 )
 
                 .setDescription(
-                    [
-                        "`🍃` **Admin Economy**",
-                        "",
-                        "`👤` **Người nhận**",
-                        `> <@${userId}>`,
-                        "",
-                        "`💰` **Đã cộng**",
-                        `> \`+${amount.toLocaleString("vi-VN")} Mora\``,
-                        "",
-                        "`💳` **Số dư cũ**",
-                        `> \`${oldBalance.toLocaleString("vi-VN")} Mora\``,
-                        "",
-                        "`💰` **Số dư mới**",
-                        `> \`${newBalance.toLocaleString("vi-VN")} Mora\``,
-                        "",
-                        "୨୧ ─────────────── ୨୧",
-                        "`🍃` Mora đã được thêm vào ví."
-                    ].join("\n")
+                    "☁️ `🍃` **Một góc nhỏ của hành trình**\n\n" +
+
+                    "- `👤` **Người nhận**\n" +
+                    `> \`👤 Người chơi  : ${targetName}\`\n` +
+                    `> \`🆔 ID         : ${userId}\`\n\n` +
+
+                    "- `💰` **Giao dịch**\n" +
+                    `> \`💵 Đã cộng     : +${amount.toLocaleString("vi-VN")} Mora\`\n` +
+                    `> \`💳 Số dư cũ   : ${oldBalance.toLocaleString("vi-VN")} Mora\`\n` +
+                    `> \`💎 Số dư mới  : ${newBalance.toLocaleString("vi-VN")} Mora\`\n\n` +
+
+                    "- `👑` **Người thực hiện**\n" +
+                    `> \`👤 Owner      : ${ownerName}\`\n\n` +
+
+                    "☕ `🍃` **Mora đã được thêm vào ví**\n"
+                )
+
+                .setThumbnail(
+                    target
+                        ? target.displayAvatarURL({
+                            extension: "png",
+                            size: 256
+                        })
+                        : message.client.user.displayAvatarURL({
+                            extension: "png",
+                            size: 256
+                        })
                 )
 
                 .setFooter({
                     text:
-                        `Admin • ${message.author.username}`
+                        "☁️ Columbina • Cozy Corner 🍃"
                 })
 
                 .setTimestamp();
@@ -220,4 +235,3 @@ module.exports = {
         });
     }
 };
-
