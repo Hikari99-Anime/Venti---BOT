@@ -246,57 +246,63 @@ async function handleInteraction(
         }
 
         // ======================================
-        // 🪟 MODAL
-        // ======================================
+// 🪟 MODAL
+// ======================================
 
-        if (
-            interaction.isModalSubmit()
-        ) {
+if (
+    interaction.isModalSubmit()
+) {
 
-            const id =
-                interaction.customId || "";
+    const id =
+        interaction.customId || "";
 
-            // ==================================
-            // 🏦 BANK MODAL
-            // ==================================
+    // ==================================
+    // 🏦 BANK MODAL
+    // ==================================
 
-            if (
-                id.startsWith(
-                    "bank_modal_"
-                )
-            ) {
+    if (
+        id.startsWith(
+            "bank_modal_"
+        )
+    ) {
 
-                return bank.handleInteraction(
-                    interaction
-                );
-            }
-
-            // ==================================
-            // 🙏 BEG MODAL
-            // ==================================
-
-            if (
-                id.startsWith(
-                    "beg_modal_"
-                )
-            ) {
-
-                return beg.handleInteraction(
-                    interaction
-                );
-            }
-
-            return false;
-        }
-
-        return false;
-
-    } catch (error) {
-
-        console.error(
-            "[InteractionHandler]",
-            error
+        return bank.handleInteraction(
+            interaction
         );
+    }
+
+    // ==================================
+    // 🙏 BEG MODAL
+    // ==================================
+
+    if (
+        id.startsWith(
+            "beg_modal_"
+        )
+    ) {
+
+        return beg.handleInteraction(
+            interaction
+        );
+    }
+
+    // ==================================
+    // 🛒 SHOP QUANTITY MODAL
+    // ==================================
+
+    if (
+        id.startsWith(
+            "shop_quantity_"
+        )
+    ) {
+
+        return shop.handleInteraction(
+            interaction
+        );
+    }
+
+    return false;
+}
 
         // ======================================
         // ❌ ERROR RESPONSE

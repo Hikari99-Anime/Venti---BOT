@@ -1,97 +1,228 @@
-const {
-    EmbedBuilder,
-    ActionRowBuilder,
-    ButtonBuilder,
-    ButtonStyle
-} = require("discord.js");
+const SHOP =
+    require("../../commands/shop/shop");
 
-const config = require("../../config");
-
-const ITEMS = [
-    {
-        id: "apple",
-        name: "Sweet Apple",
-        emoji: "🍎",
-        price: 500,
-        description: "A fresh apple from Mondstadt."
-    },
-    {
-        id: "charm",
-        name: "Lucky Charm",
-        emoji: "🍀",
-        price: 2500,
-        description: "A tiny charm said to attract fortune."
-    },
-    {
-        id: "lyre",
-        name: "Anemo Lyre",
-        emoji: "🎵",
-        price: 10000,
-        description: "A lyre carrying the gentle breeze."
-    }
-];
+// ═══════════════════════════════════════
+// 🛒 SHOP BUTTON
+// ═══════════════════════════════════════
 
 async function execute(interaction) {
-    const embed = new EmbedBuilder()
-        .setColor(config.colors.primary)
-        .setAuthor({
-            name: "Venti • Shop",
-            iconURL: interaction.client.user.displayAvatarURL()
-        })
-        .setDescription(
-            "🛍️ **Welcome to Venti's Shop**\n" +
-            "Spend your Mora on items carried by the wind."
-        )
-        .addFields(
-            ...ITEMS.map(item => ({
-                name: `${item.emoji} ${item.name}`,
-                value:
-                    `${item.description}\n` +
-                    `💰 \`${item.price.toLocaleString()} Mora\``,
-                inline: false
-            }))
-        )
-        .setFooter({
-            text: "Venti • Wandering Bard of Mondstadt"
-        })
-        .setTimestamp();
 
-    const row = new ActionRowBuilder().addComponents(
-        ...ITEMS.map(item =>
-            new ButtonBuilder()
-                .setCustomId(`shop_buy_${item.id}`)
-                .setLabel(`Buy ${item.name}`)
-                .setEmoji(item.emoji)
-                .setStyle(ButtonStyle.Primary)
-        )
+    /*
+     * File này được gọi từ:
+     *
+     * profile_shop
+     * inventory_shop
+     *
+     * Nếu interaction là button,
+     * command shop sẽ xử lý.
+     */
+
+    return SHOP.execute(
+        interaction
     );
+}
 
-    const row2 = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-            .setCustomId("shop_profile")
-            .setLabel("Profile")
-            .setEmoji("👤")
-            .setStyle(ButtonStyle.Secondary),
+// ═══════════════════════════════════════
+// 🛒 SHOP INTERACTION
+// ═══════════════════════════════════════
 
-        new ButtonBuilder()
-            .setCustomId("shop_inventory")
-            .setLabel("Inventory")
-            .setEmoji("🎒")
-            .setStyle(ButtonStyle.Secondary),
+async function handleInteraction(
+    interaction
+) {
 
-        new ButtonBuilder()
-            .setCustomId("shop_close")
-            .setLabel("Close")
-            .setEmoji("❌")
-            .setStyle(ButtonStyle.Danger)
-    );
+    try {
 
-    return interaction.update({
-        embeds: [embed],
-        components: [row, row2]
-    });
+        const id =
+            interaction.customId || "";
+
+        // ═══════════════════════════════
+        // 🪟 SHOP QUANTITY MODAL
+        // ═══════════════════════════════
+
+        if (
+            interaction.isModalSubmit() &&
+            id.startsWith(
+                "shop_quantity_"
+            )
+        ) {
+
+            /*
+             * customId:
+             *
+             * shop_quantity_USERID_ITEMID
+             *
+             * Ví dụ:
+             *
+             * shop_quantity_123456789_apple
+             */
+
+            const parts =
+                id.split("_");
+
+            if (
+                parts.length < 4
+            ) {
+
+                return interaction.reply({
+
+                    content:
+                        "❌ Dữ liệu mua hàng không hợp lệ.",
+
+                    ephemeral:
+                        true
+                });
+            }
+
+            const userId =
+                parts[2];
+
+            /*
+             * Không dùng parts[3] trực tiếp
+             * vì item ID có thể có "_"
+             *
+             * Ví dụ:
+             *
+             * golden_apple
+             * crystal_berry
+             */
+
+            const itemId =
+                parts
+                    .slice(3)
+                    .join("_");
+
+            // ═══════════════════════════
+            // 🛡️ CHECK USER
+            // ═══════════════════════════
+
+            if (
+                interaction.user.id !==
+                userId
+            ) {
+
+                return interaction.reply({
+
+                    content:
+                        "🍃 Đây không phải shop của bạn.",
+
+                    ephemeral:
+                        true
+                });
+            }
+
+            // ═══════════════════════════
+            // 🔢 GET QUANTITY
+            // ═══════════════════════════
+
+            let quantityRaw;
+
+            try {
+
+                quantityRaw =
+                    interaction.fields
+                        .getTextInputValue(
+                            "quantity"
+                        );
+
+            } catch (error) {
+
+                console.error(
+                    "[shop quantity field]",
+                    error
+                );
+
+                return interaction.reply({
+
+                    content:
+                        "❌ Không đọc được số lượng.",
+
+                    ephemeral:
+                        true
+                });
+            }
+
+            const quantity =
+                Number(
+                    String(
+                        quantityRaw
+                    ).trim()
+                );
+
+            // ═══════════════════════════
+            // ❌ INVALID QUANTITY
+            // ═══════════════════════════
+
+            if (
+                !Number.isInteger(
+                    quantity
+                ) ||
+                quantity <= 0
+            ) {
+
+                return interaction.reply({
+
+                    content:
+                        "❌ Số lượng phải là một số nguyên lớn hơn 0.",
+
+                    ephemeral:
+                        true
+                });
+            }
+
+            // ═══════════════════════════
+            // 🛒 BUY
+            // ═══════════════════════════
+
+            return SHOP.buyItemFromModal(
+                interaction,
+                itemId,
+                userId,
+                quantity
+            );
+        }
+
+        return false;
+
+    } catch (error) {
+
+        console.error(
+            "[shop handleInteraction]",
+            error
+        );
+
+        if (
+            interaction.replied ||
+            interaction.deferred
+        ) {
+
+            return interaction
+                .followUp({
+
+                    content:
+                        "🍃 Có lỗi xảy ra khi mua hàng.",
+
+                    ephemeral:
+                        true
+
+                })
+                .catch(() => {});
+        }
+
+        return interaction
+            .reply({
+
+                content:
+                    "🍃 Có lỗi xảy ra khi mua hàng.",
+
+                ephemeral:
+                    true
+
+            })
+            .catch(() => {});
+    }
 }
 
 module.exports = {
-    execute
+    execute,
+    handleInteraction
 };
