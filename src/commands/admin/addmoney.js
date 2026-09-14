@@ -37,19 +37,25 @@ module.exports = {
         // ======================================
 
         const OWNER_ID =
-            String(
-                config.ownerId || ""
-            ).trim();
+    String(process.env.OWNER_ID || "").trim();
 
-        if (
-            !OWNER_ID ||
-            message.author.id !== OWNER_ID
-        ) {
-            return message.reply({
-                content:
-                    "`❌` Chỉ Owner của bot mới có thể sử dụng lệnh này."
-            });
-        }
+const AUTHOR_ID =
+    String(message.author.id || "").trim();
+
+if (!OWNER_ID) {
+    return message.reply({
+        content:
+            "`❌` OWNER_ID chưa được cấu hình trong `.env`."
+    });
+}
+
+if (AUTHOR_ID !== OWNER_ID) {
+    return message.reply({
+        content:
+            "`❌` Chỉ Owner của bot mới có thể sử dụng lệnh này."
+    });
+}
+
 
         // ======================================
         // 👤 TARGET
