@@ -1,4 +1,3 @@
-
 const {
     EmbedBuilder,
     ActionRowBuilder,
@@ -26,114 +25,88 @@ const PLOTS = [
         name: "Ô đất #2",
         emoji: "🟫",
         price: 1000,
-        description:
-            "Mở khóa thêm một ô đất để trồng cây."
+        description: "Mở khóa thêm một ô đất để trồng cây."
     },
-
     {
         id: 3,
         name: "Ô đất #3",
         emoji: "🟫",
         price: 3000,
-        description:
-            "Mở khóa thêm một ô đất để mở rộng trang trại."
+        description: "Mở khóa thêm một ô đất để mở rộng trang trại."
     },
-
     {
         id: 4,
         name: "Ô đất #4",
         emoji: "🟫",
         price: 7500,
-        description:
-            "Một ô đất mới cho trang trại."
+        description: "Một ô đất mới cho trang trại."
     },
-
     {
         id: 5,
         name: "Ô đất #5",
         emoji: "🟫",
         price: 15000,
-        description:
-            "Mở rộng thêm không gian trang trại."
+        description: "Mở rộng thêm không gian trang trại."
     },
-
     {
         id: 6,
         name: "Ô đất #6",
         emoji: "🟫",
         price: 30000,
-        description:
-            "Một ô đất cao cấp."
+        description: "Một ô đất cao cấp."
     },
-
     {
         id: 7,
         name: "Ô đất #7",
         emoji: "🟫",
         price: 60000,
-        description:
-            "Mở rộng trang trại thêm một ô đất."
+        description: "Mở rộng trang trại thêm một ô đất."
     },
-
     {
         id: 8,
         name: "Ô đất #8",
         emoji: "🟫",
         price: 120000,
-        description:
-            "Một ô đất lớn dành cho trang trại phát triển."
+        description: "Một ô đất lớn dành cho trang trại phát triển."
     },
-
     {
         id: 9,
         name: "Ô đất #9",
         emoji: "🟫",
         price: 250000,
-        description:
-            "Ô đất cao cấp cho những mùa vụ lớn."
+        description: "Ô đất cao cấp cho những mùa vụ lớn."
     },
-
     {
         id: 10,
         name: "Ô đất #10",
         emoji: "🟫",
         price: 500000,
-        description:
-            "Ô đất cuối cùng của trang trại."
+        description: "Ô đất cuối cùng của trang trại."
     }
 ];
-
 
 // ═══════════════════════════════════════
 // ⚙️ CONFIG
 // ═══════════════════════════════════════
 
 const SEED_SHOP_SIZE = 5;
-
-const SEED_SHOP_DURATION =
-    15 * 60 * 1000;
-
+const SEED_SHOP_DURATION = 15 * 60 * 1000;
 const REFRESH_PRICE = 100;
 
-// Tối đa 5 HẠT mỗi loại
+// Mỗi loại tối đa 5 hạt
 const SEED_PURCHASE_LIMIT = 5;
 
 // ═══════════════════════════════════════
 // 🛡️ SAFE EMOJI
 // ═══════════════════════════════════════
 
-function safeEmoji(
-    emoji,
-    fallback = "📦"
-) {
+function safeEmoji(emoji, fallback = "📦") {
     if (!emoji) {
         return fallback;
     }
 
-    const value =
-        String(emoji).trim();
+    const value = String(emoji).trim();
 
-    // Chỉ cho phép Unicode emoji
     if (
         value.includes("<") ||
         value.includes(">") ||
@@ -162,6 +135,19 @@ function shuffle(array) {
 // ═══════════════════════════════════════
 // 🌱 CREATE SEED SHOP
 // ═══════════════════════════════════════
+//
+// ⚠️ QUAN TRỌNG:
+// File Item hiện tại của bạn dùng:
+//
+// category: "farming"
+//
+// chứ chưa có:
+//
+// category: "seed"
+//
+// Vì vậy shop sẽ lấy các item farming
+// làm hạt giống.
+//
 
 function createSeedShop() {
     const allSeeds =
@@ -169,10 +155,14 @@ function createSeedShop() {
             .getAll()
             .filter(
                 item =>
-                    item.category === "seed"
+                    item.category === "farming"
             );
 
     if (!allSeeds.length) {
+        console.warn(
+            "[Venti Shop] Không tìm thấy item farming để tạo seed shop."
+        );
+
         return [];
     }
 
@@ -209,11 +199,8 @@ function getSeedShop(userId) {
     }
 
     const shop = {
-        items:
-            createSeedShop(),
-
-        createdAt:
-            now
+        items: createSeedShop(),
+        createdAt: now
     };
 
     saveUserField(
@@ -231,11 +218,8 @@ function getSeedShop(userId) {
 
 function refreshSeedShop(userId) {
     const shop = {
-        items:
-            createSeedShop(),
-
-        createdAt:
-            Date.now()
+        items: createSeedShop(),
+        createdAt: Date.now()
     };
 
     saveUserField(
@@ -329,6 +313,8 @@ const command = {
                 userId
             );
 
+            // Tạo shop hạt giống
+            // ngay khi mở shop.
             getSeedShop(
                 userId
             );
@@ -376,7 +362,10 @@ const command = {
                         const id =
                             interaction.customId;
 
+                        // ═══════════════════════
                         // CATEGORY
+                        // ═══════════════════════
+
                         if (
                             id ===
                             `shop_category_${userId}`
@@ -394,7 +383,10 @@ const command = {
                             );
                         }
 
+                        // ═══════════════════════
                         // ITEM
+                        // ═══════════════════════
+
                         if (
                             id ===
                             `shop_item_${userId}`
@@ -410,7 +402,10 @@ const command = {
                             );
                         }
 
+                        // ═══════════════════════
                         // BUY
+                        // ═══════════════════════
+
                         if (
                             id ===
                             `shop_buy_${userId}`
@@ -423,7 +418,10 @@ const command = {
                             );
                         }
 
+                        // ═══════════════════════
                         // REFRESH
+                        // ═══════════════════════
+
                         if (
                             id ===
                             `shop_refresh_${userId}`
@@ -434,7 +432,10 @@ const command = {
                             );
                         }
 
+                        // ═══════════════════════
                         // HOME
+                        // ═══════════════════════
+
                         if (
                             id ===
                             `shop_home_${userId}`
@@ -460,7 +461,10 @@ const command = {
                             });
                         }
 
+                        // ═══════════════════════
                         // BACK
+                        // ═══════════════════════
+
                         if (
                             id ===
                             `shop_back_${userId}`
@@ -472,7 +476,10 @@ const command = {
                             );
                         }
 
+                        // ═══════════════════════
                         // CLOSE
+                        // ═══════════════════════
+
                         if (
                             id ===
                             `shop_close_${userId}`
@@ -518,19 +525,6 @@ const command = {
                 }
             );
 
-            // ═════════════════════════════
-            // MODAL SUBMIT
-            // ═════════════════════════════
-
-            const modalCollector =
-                message.channel.createMessageComponentCollector({
-                    time: 120000
-                });
-
-            // Không dùng collector riêng cho modal.
-            // Modal được xử lý bằng interactionCreate
-            // ở file event nếu cần.
-
         } catch (error) {
             console.error(
                 "[shop]",
@@ -571,22 +565,16 @@ function homeEmbed(userId) {
 
         .setDescription(
             [
-                "- `🌱` **Hạt giống**",
+                "## 🌱 Hạt giống",
                 "> 5 hạt giống ngẫu nhiên dành riêng cho bạn.",
-
                 "",
-
-                "- `🎣` **Cần câu**",
+                "## 🎣 Cần câu",
                 "> Mua cần câu để câu cá.",
-
                 "",
-
-                "- `🟫` **Đất trang trại**",
+                "## 🟫 Đất trang trại",
                 "> Mở khóa thêm ô đất.",
-
                 "",
-
-                "- `💰` **Mora**",
+                "## 💰 Mora",
                 `> ${balance.toLocaleString()} Mora`
             ].join("\n")
         )
@@ -598,7 +586,7 @@ function homeEmbed(userId) {
 }
 
 // ═══════════════════════════════════════
-// 📂 CATEGORY
+// 📂 CATEGORY ROW
 // ═══════════════════════════════════════
 
 function categoryRow(userId) {
@@ -667,6 +655,10 @@ function getItems(
     category,
     userId
 ) {
+    // ═════════════════════════════
+    // 🌱 SEEDS
+    // ═════════════════════════════
+
     if (
         category === "seeds"
     ) {
@@ -674,6 +666,10 @@ function getItems(
             userId
         );
     }
+
+    // ═════════════════════════════
+    // 🎣 RODS
+    // ═════════════════════════════
 
     if (
         category === "rods"
@@ -685,6 +681,10 @@ function getItems(
                     item.category === "rod"
             );
     }
+
+    // ═════════════════════════════
+    // 🟫 PLOTS
+    // ═════════════════════════════
 
     if (
         category === "plots"
@@ -749,6 +749,10 @@ function createCategoryEmbed(
     let description =
         "";
 
+    // ═════════════════════════════
+    // 🌱 SEEDS
+    // ═════════════════════════════
+
     if (
         category === "seeds"
     ) {
@@ -774,6 +778,10 @@ function createCategoryEmbed(
             ].join("\n");
     }
 
+    // ═════════════════════════════
+    // 🎣 RODS
+    // ═════════════════════════════
+
     if (
         category === "rods"
     ) {
@@ -783,6 +791,10 @@ function createCategoryEmbed(
         description =
             "> Những chiếc cần câu giúp bạn khám phá Windrise Lake.";
     }
+
+    // ═════════════════════════════
+    // 🟫 PLOTS
+    // ═════════════════════════════
 
     if (
         category === "plots"
@@ -809,7 +821,10 @@ function createCategoryEmbed(
                 item
             );
 
+        // ═════════════════════════
         // 🌱 SEED
+        // ═════════════════════════
+
         if (
             category === "seeds"
         ) {
@@ -830,15 +845,19 @@ function createCategoryEmbed(
                 [
                     `${emoji} **${item.name}**`,
                     `> 💰 Giá: **${price.toLocaleString()} Mora / hạt**`,
-                    `> 🌱 Có: **${canBuy}/${SEED_PURCHASE_LIMIT} hạt**`
+                    `> 🌱 Có thể mua: **${canBuy}/${SEED_PURCHASE_LIMIT} hạt**`
                 ].join("\n")
             );
 
             lines.push("");
+
             continue;
         }
 
+        // ═════════════════════════
         // 🎣 ROD
+        // ═════════════════════════
+
         if (
             category === "rods"
         ) {
@@ -852,10 +871,14 @@ function createCategoryEmbed(
             );
 
             lines.push("");
+
             continue;
         }
 
+        // ═════════════════════════
         // 🟫 PLOT
+        // ═════════════════════════
+
         if (
             category === "plots"
         ) {
@@ -927,9 +950,11 @@ async function showCategory(
                     .setColor(
                         "#f2a7a7"
                     )
+
                     .setTitle(
                         "🍃 Hết hàng"
                     )
+
                     .setDescription(
                         "> Danh mục này hiện không có sản phẩm."
                     )
@@ -1015,7 +1040,11 @@ async function showCategory(
                     )
 
                     .setPlaceholder(
-                        "🌱 Chọn hạt giống..."
+                        category === "seeds"
+                            ? "🌱 Chọn hạt giống..."
+                            : category === "rods"
+                                ? "🎣 Chọn cần câu..."
+                                : "🟫 Chọn ô đất..."
                     )
 
                     .addOptions(
@@ -1023,6 +1052,10 @@ async function showCategory(
                     )
             )
     ];
+
+    // ═════════════════════════════
+    // BUTTONS
+    // ═════════════════════════════
 
     if (
         category === "seeds"
@@ -1034,12 +1067,15 @@ async function showCategory(
                         .setCustomId(
                             `shop_refresh_${userId}`
                         )
+
                         .setLabel(
                             `Đổi shop • ${REFRESH_PRICE}`
                         )
+
                         .setEmoji(
                             "🔄"
                         )
+
                         .setStyle(
                             ButtonStyle.Primary
                         ),
@@ -1048,9 +1084,11 @@ async function showCategory(
                         .setCustomId(
                             `shop_home_${userId}`
                         )
+
                         .setLabel(
                             "Trang chủ"
                         )
+
                         .setStyle(
                             ButtonStyle.Secondary
                         ),
@@ -1059,9 +1097,11 @@ async function showCategory(
                         .setCustomId(
                             `shop_close_${userId}`
                         )
+
                         .setLabel(
                             "Đóng"
                         )
+
                         .setStyle(
                             ButtonStyle.Danger
                         )
@@ -1075,9 +1115,11 @@ async function showCategory(
                         .setCustomId(
                             `shop_home_${userId}`
                         )
+
                         .setLabel(
                             "Trang chủ"
                         )
+
                         .setStyle(
                             ButtonStyle.Secondary
                         ),
@@ -1086,9 +1128,11 @@ async function showCategory(
                         .setCustomId(
                             `shop_close_${userId}`
                         )
+
                         .setLabel(
                             "Đóng"
                         )
+
                         .setStyle(
                             ButtonStyle.Danger
                         )
@@ -1185,7 +1229,10 @@ async function showItem(
             item.emoji
         );
 
+    // ═════════════════════════════
     // 🌱 SEED
+    // ═════════════════════════════
+
     if (
         category === "seeds"
     ) {
@@ -1272,7 +1319,9 @@ async function showItem(
         });
     }
 
+    // ═════════════════════════════
     // 🎣 ROD / 🟫 PLOT
+    // ═════════════════════════════
 
     const lines = [
         `${emoji} **${item.name}**`,
@@ -1327,19 +1376,23 @@ async function showItem(
                         .setCustomId(
                             `shop_buy_${userId}`
                         )
+
                         .setLabel(
                             canBuy
                                 ? "Mua"
                                 : "Không đủ Mora"
                         )
+
                         .setEmoji(
                             canBuy
                                 ? "🛒"
                                 : "💸"
                         )
+
                         .setStyle(
                             ButtonStyle.Success
                         )
+
                         .setDisabled(
                             !canBuy
                         ),
@@ -1348,12 +1401,15 @@ async function showItem(
                         .setCustomId(
                             `shop_back_${userId}`
                         )
+
                         .setLabel(
                             "Quay lại"
                         )
+
                         .setEmoji(
                             "↩️"
                         )
+
                         .setStyle(
                             ButtonStyle.Secondary
                         )
@@ -1372,10 +1428,10 @@ async function openBuyModal(
     itemId,
     userId
 ) {
+    // Rod / Plot mua 1
     if (
         category !== "seeds"
     ) {
-        // Rod / Plot mua 1 cái
         return buyItem(
             interaction,
             category,
@@ -1519,7 +1575,10 @@ async function buyItem(
         });
     }
 
-    // 🌱 LIMIT
+    // ═════════════════════════════
+    // 🌱 SEED LIMIT
+    // ═════════════════════════════
+
     if (
         category === "seeds"
     ) {
@@ -1585,7 +1644,10 @@ async function buyItem(
         });
     }
 
+    // ═════════════════════════════
     // 🟫 PLOT
+    // ═════════════════════════════
+
     if (
         category === "plots"
     ) {
@@ -1597,7 +1659,10 @@ async function buyItem(
         );
     }
 
+    // ═════════════════════════════
     // 💰 REMOVE MONEY
+    // ═════════════════════════════
+
     const removed =
         removeBalance(
             userId,
@@ -1659,7 +1724,6 @@ async function buyItem(
             )
             : 0;
 
-    // Modal phải reply, button phải update
     const response = {
         embeds: [
             new EmbedBuilder()
@@ -1833,14 +1897,6 @@ async function buyPlot(
             )
         ]
     };
-
-    if (
-        interaction.isModalSubmit()
-    ) {
-        return interaction.reply(
-            response
-        );
-    }
 
     return interaction.update(
         response
@@ -2091,9 +2147,7 @@ function homeButton(
 // 💰 PRICE
 // ═══════════════════════════════════════
 
-function getPrice(
-    item
-) {
+function getPrice(item) {
     return Number(
         item.price ??
         item.buyPrice ??
@@ -2259,4 +2313,3 @@ async function refreshShop(
 
 module.exports =
     command;
-
