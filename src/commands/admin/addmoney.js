@@ -6,7 +6,7 @@ const User =
     require("../../database/models/User");
 
 // ==========================================
-// 💰 ADD MONEY — BOT OWNER ONLY
+// 💰 ADD MONEY — OWNER ONLY
 // ==========================================
 
 module.exports = {
@@ -19,7 +19,7 @@ module.exports = {
     ],
 
     description:
-        "Bot Owner cộng Mora cho người chơi.",
+        "Owner bot cộng Mora cho người chơi.",
 
     usage:
         "Vaddmoney @user <amount>",
@@ -30,40 +30,26 @@ module.exports = {
     async execute(message, args) {
 
         // ======================================
-        // 🔐 BOT OWNER CHECK
+        // 🔐 OWNER CHECK
         // ======================================
 
-        try {
+        const OWNER_ID =
+            String(
+                process.env.OWNER_ID || ""
+            ).trim();
 
-            const application =
-                await message.client.application.fetch();
+        const USER_ID =
+            String(
+                message.author.id
+            ).trim();
 
-            const ownerId =
-                application.owner?.id;
-
-            const authorId =
-                message.author.id;
-
-            if (
-                !ownerId ||
-                authorId !== ownerId
-            ) {
-                return message.reply({
-                    content:
-                        "`❌` Chỉ Owner của bot mới có thể sử dụng lệnh này."
-                });
-            }
-
-        } catch (error) {
-
-            console.error(
-                "❌ Không thể kiểm tra Bot Owner:",
-                error
-            );
-
+        if (
+            !OWNER_ID ||
+            USER_ID !== OWNER_ID
+        ) {
             return message.reply({
                 content:
-                    "`❌` Không thể xác minh Owner của bot."
+                    "`❌` Chỉ Owner của bot mới có thể sử dụng lệnh này."
             });
         }
 
@@ -119,11 +105,6 @@ module.exports = {
             });
         }
 
-        // Cho phép:
-        // 1000
-        // 1,000
-        // 1.000
-
         const cleanAmount =
             String(amountArg)
                 .replace(/[,.]/g, "");
@@ -139,6 +120,17 @@ module.exports = {
             return message.reply({
                 content:
                     "`❌` Số Mora không hợp lệ."
+            });
+        }
+
+        if (
+            amount >
+            Number.MAX_SAFE_INTEGER
+        ) {
+
+            return message.reply({
+                content:
+                    "`❌` Số Mora quá lớn."
             });
         }
 
@@ -227,28 +219,21 @@ module.exports = {
                     "☁️ `🍃` **Một góc nhỏ của hành trình**\n\n" +
 
                     "- `👤` **Người nhận**\n" +
-
                     `> \`👤 Người chơi  : ${targetName}\`\n` +
-
                     `> \`🆔 ID         : ${userId}\`\n\n` +
 
                     "- `💰` **Giao dịch**\n" +
-
                     `> \`💵 Đã cộng     : +${amount.toLocaleString("vi-VN")} Mora\`\n` +
-
                     `> \`💳 Số dư cũ   : ${oldBalance.toLocaleString("vi-VN")} Mora\`\n` +
-
                     `> \`💎 Số dư mới  : ${newBalance.toLocaleString("vi-VN")} Mora\`\n\n` +
 
                     "- `👑` **Người thực hiện**\n" +
-
                     `> \`👤 Owner      : ${ownerName}\`\n\n` +
 
                     "☕ `🍃` **Mora đã được thêm vào ví**"
                 )
 
                 .setThumbnail(
-
                     target
                         ? target.displayAvatarURL({
                             extension: "png",
@@ -266,10 +251,6 @@ module.exports = {
                 })
 
                 .setTimestamp();
-
-        // ======================================
-        // 📤 SEND
-        // ======================================
 
         return message.reply({
             embeds: [
