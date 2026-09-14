@@ -555,7 +555,7 @@ function farmEmbed(
             !plot.unlocked
         ) {
             plotLines.push(
-                `> \`🔒 Ô #${i}       : Chưa mở\``
+                `> \`✖️ Ô #${i}       : Chưa mở\``
             );
 
             continue;
@@ -648,26 +648,14 @@ function farmEmbed(
                     "☁️ `🍃` **Một góc nhỏ của hành trình**",
                     "",
 
-                    "- `🟫` **Đất trang trại**",
-                    `> \`🌱 Đã mở      : ${unlocked}/${MAX_PLOTS} ô\``,
-                    `> \`🔒 Chưa mở    : ${locked} ô\``,
-                    `> \`${progress.bar} ${progress.percent}%\``,
+                    "- `🏡` **Các ô đất**",
+                    ...plotLines,
                     "",
 
                     "- `🌾` **Tình trạng mùa vụ**",
                     `> \`🌾 Sẵn sàng   : ${readyCount} ô\``,
                     `> \`🌱 Đang lớn   : ${growingCount} ô\``,
                     `> \`🟫 Đất trống  : ${emptyCount} ô\``,
-                    "",
-
-                    "- `🏡` **Các ô đất**",
-                    ...plotLines,
-                    "",
-
-                    "- `📊` **Thống kê**",
-                    `> \`🟫 Tổng ô đất : ${MAX_PLOTS} ô\``,
-                    `> \`🌱 Đang trồng : ${growingCount} ô\``,
-                    `> \`🌾 Thu hoạch : ${readyCount} ô\``,
                     "",
 
                     "- `💡` **Hướng dẫn**",
