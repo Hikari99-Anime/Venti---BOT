@@ -1,52 +1,92 @@
-const config = require("../config");
-const User = require("../database/models/User");
+const config =
+    require("../../config");
 
 module.exports = {
     name: "messageCreate",
 
     async execute(message) {
-        if (message.author.bot) return;
 
-        const prefix = config.prefix;
+        // ======================================
+        // 🚫 IGNORE BOT
+        // ======================================
 
-        if (!message.content.toLowerCase().startsWith(
-            prefix.toLowerCase()
-        )) {
+        if (message.author.bot) {
             return;
         }
 
-        const args = message.content
-            .slice(prefix.length)
-            .trim()
-            .split(/\s+/);
+        // ======================================
+        // 🔑 PREFIX
+        // ======================================
 
-        const commandName = args.shift()?.toLowerCase();
+        const prefix =
+            String(
+                config.prefix || "c"
+            ).trim();
 
-        if (!commandName) return;
+        // ======================================
+        // 🚫 KHÔNG CÓ PREFIX
+        // ======================================
 
-        const command = message.client.commands.get(
-            commandName
-        );
+        if (
+            !message.content.startsWith(
+                prefix
+            )
+        ) {
+            return;
+        }
 
-        if (!command) return;
+        // ======================================
+        // 🧹 PARSE COMMAND
+        // ======================================
 
-        User.getOrCreate(message.author.id);
+        const args =
+            message.content
+                .slice(prefix.length)
+                .trim()
+                .split(/\s+/);
+
+        const commandName =
+            args.shift()?.toLowerCase();
+
+        if (!commandName) {
+            return;
+        }
+
+        // ======================================
+        // 🔎 FIND COMMAND
+        // ======================================
+
+        const command =
+            message.client.commands.get(
+                commandName
+            );
+
+        if (!command) {
+            return;
+        }
+
+        // ======================================
+        // 🚀 EXECUTE
+        // ======================================
 
         try {
+
             await command.execute(
                 message,
                 args
             );
+
         } catch (error) {
+
             console.error(
-                `[${commandName}]`,
+                `❌ Error executing ${commandName}:`,
                 error
             );
 
-            await message.reply({
+            return message.reply({
                 content:
-                    "🍃 Có lỗi xảy ra khi Venti đang xử lý lệnh này."
-            }).catch(() => {});
+                    "`❌` Đã xảy ra lỗi khi thực hiện lệnh."
+            });
         }
     }
 };
