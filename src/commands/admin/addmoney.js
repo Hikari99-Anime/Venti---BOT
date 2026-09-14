@@ -36,35 +36,14 @@ module.exports = {
         // 🔐 OWNER CHECK
         // ======================================
 
-        const ownerId =
+        const OWNER_ID =
             String(
                 config.ownerId || ""
             ).trim();
 
-        const authorId =
-            String(
-                message.author.id || ""
-            ).trim();
-
-        // DEBUG
-        console.log(
-            "[ADD MONEY] Owner ID:",
-            ownerId
-        );
-
-        console.log(
-            "[ADD MONEY] Author ID:",
-            authorId
-        );
-
-        console.log(
-            "[ADD MONEY] Match:",
-            authorId === ownerId
-        );
-
         if (
-            !ownerId ||
-            authorId !== ownerId
+            !OWNER_ID ||
+            message.author.id !== OWNER_ID
         ) {
             return message.reply({
                 content:
