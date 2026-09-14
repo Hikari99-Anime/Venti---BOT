@@ -5,6 +5,9 @@ const {
 const User =
     require("../../database/models/User");
 
+const config =
+    require("../../config");
+
 // ==========================================
 // 💰 ADD MONEY — OWNER ONLY
 // ==========================================
@@ -22,7 +25,7 @@ module.exports = {
         "Owner bot cộng Mora cho người chơi.",
 
     usage:
-        "Vaddmoney @user <amount>",
+        "caddmoney @user <amount>",
 
     category:
         "admin",
@@ -33,19 +36,35 @@ module.exports = {
         // 🔐 OWNER CHECK
         // ======================================
 
-        const OWNER_ID =
+        const ownerId =
             String(
-                process.env.OWNER_ID || ""
+                config.ownerId || ""
             ).trim();
 
-        const USER_ID =
+        const authorId =
             String(
-                message.author.id
+                message.author.id || ""
             ).trim();
+
+        // DEBUG
+        console.log(
+            "[ADD MONEY] Owner ID:",
+            ownerId
+        );
+
+        console.log(
+            "[ADD MONEY] Author ID:",
+            authorId
+        );
+
+        console.log(
+            "[ADD MONEY] Match:",
+            authorId === ownerId
+        );
 
         if (
-            !OWNER_ID ||
-            USER_ID !== OWNER_ID
+            !ownerId ||
+            authorId !== ownerId
         ) {
             return message.reply({
                 content:
@@ -84,8 +103,8 @@ module.exports = {
                     [
                         "`❌` **Thiếu người nhận.**",
                         "",
-                        "> `Vaddmoney @user <amount>`",
-                        "> `Vaddmoney <userID> <amount>`"
+                        "> `caddmoney @user <amount>`",
+                        "> `caddmoney <userID> <amount>`"
                     ].join("\n")
             });
         }
@@ -196,7 +215,7 @@ module.exports = {
             new EmbedBuilder()
 
                 .setColor(
-                    "#A8DCC0"
+                    "#A8E6CF"
                 )
 
                 .setAuthor({
@@ -251,6 +270,10 @@ module.exports = {
                 })
 
                 .setTimestamp();
+
+        // ======================================
+        // 📤 SEND
+        // ======================================
 
         return message.reply({
             embeds: [
