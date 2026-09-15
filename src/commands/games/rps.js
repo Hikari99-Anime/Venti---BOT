@@ -1,9 +1,11 @@
-
 const {
-    EmbedBuilder,
+    ContainerBuilder,
+    TextDisplayBuilder,
+    SeparatorBuilder,
     ActionRowBuilder,
     ButtonBuilder,
-    ButtonStyle
+    ButtonStyle,
+    MessageFlags
 } = require("discord.js");
 
 const User =
@@ -15,7 +17,7 @@ const User =
 
 const choices = {
     rock: {
-        label: "Kéo",
+        label: "Búa",
         emoji: "✊"
     },
 
@@ -25,38 +27,32 @@ const choices = {
     },
 
     scissors: {
-        label: "Búa",
+        label: "Kéo",
         emoji: "✌️"
     }
 };
 
+
 // ==========================================
-// 🏆 RESULT
+// 🎨 COLORS
 // ==========================================
 
-function getResult(player, opponent) {
+const COLORS = {
+    primary: 0x9B59B6,
+    pvp: 0x5865F2,
+    success: 0x57F287,
+    error: 0xED4245,
+    warning: 0xFEE75C,
+    neutral: 0x95A5A6
+};
 
-    if (
-        player === opponent
-    ) {
-        return "draw";
-    }
+// ==========================================
+// ⏰ TIME
+// ==========================================
 
-    if (
-        (player === "rock" &&
-            opponent === "scissors") ||
-
-        (player === "paper" &&
-            opponent === "rock") ||
-
-        (player === "scissors" &&
-            opponent === "paper")
-    ) {
-        return "win";
-    }
-
-    return "lose";
-}
+const BOT_GAME_TIMEOUT = 30_000;
+const PVP_INVITE_TIMEOUT = 30_000;
+const PVP_GAME_TIMEOUT = 60_000;
 
 // ==========================================
 // 💰 MONEY
@@ -69,18 +65,60 @@ function money(amount) {
 }
 
 // ==========================================
-// 📊 STATS
+// 🏆 RESULT
+// ==========================================
+
+function getResult(
+    player,
+    opponent
+) {
+    if (player === opponent) {
+        return "draw";
+    }
+
+    if (
+        (
+            player === "rock" &&
+            opponent === "scissors"
+        ) ||
+        (
+            player === "paper" &&
+            opponent === "rock"
+        ) ||
+        (
+            player === "scissors" &&
+            opponent === "paper"
+        )
+    ) {
+        return "win";
+    }
+
+    return "lose";
+}
+
+// ==========================================
+// 🎲 GAME ID
+// ==========================================
+
+function createGameId() {
+    return (
+        Date.now().toString(36) +
+        Math.random()
+            .toString(36)
+            .slice(2, 8)
+    );
+}
+
+// ==========================================
+// 📊 UPDATE STATS
 // ==========================================
 
 function updateStats(
     userId,
     result
 ) {
-
     const user =
-        User.getOrCreate(
-            userId
-        );
+        User.getOrCreate(userId);
 
     const stats = {
         ...(user.stats || {})
@@ -91,18 +129,14 @@ function updateStats(
             stats.games || 0
         ) + 1;
 
-    if (
-        result === "win"
-    ) {
+    if (result === "win") {
         stats.wins =
             Number(
                 stats.wins || 0
             ) + 1;
     }
 
-    if (
-        result === "lose"
-    ) {
+    if (result === "lose") {
         stats.losses =
             Number(
                 stats.losses || 0
@@ -126,11 +160,8 @@ function updateStats(
 function getStats(
     userId
 ) {
-
     const user =
-        User.getOrCreate(
-            userId
-        );
+        User.getOrCreate(userId);
 
     const stats =
         user.stats || {};
@@ -154,232 +185,593 @@ function getStats(
 }
 
 // ==========================================
-// 🎮 CHOICE BUTTONS
+// 🧱 COMPONENT V2
 // ==========================================
 
-function createChoiceRow(
-    gameId,
-    userId
-) {
+function createContainer(color, components) {
+    const container = new ContainerBuilder()
+        .setAccentColor(color);
 
+    for (const component of components) {
+        if (component instanceof TextDisplayBuilder) {
+            container.addTextDisplayComponents(component);
+            continue;
+        }
+
+        if (component instanceof SeparatorBuilder) {
+            container.addSeparatorComponents(component);
+            continue;
+        }
+
+        if (component instanceof ActionRowBuilder) {
+            container.addActionRowComponents(component);
+            continue;
+        }
+
+        throw new TypeError(
+            `Unsupported container component: ${component?.constructor?.name || "Unknown"}`
+        );
+    }
+
+    return container;
+}
+
+function text(content) {
+    return new TextDisplayBuilder()
+        .setContent(content);
+}
+
+function separator() {
+    return new SeparatorBuilder();
+}
+
+
+// ==========================================
+// 🎮 NÚT CHỌN KÉO BÚA BAO
+// ==========================================
+
+function createChoiceRow(gameId) {
     return new ActionRowBuilder()
         .addComponents(
 
             new ButtonBuilder()
-                .setCustomId(
-                    `rps_choose_${gameId}_${userId}_rock`
-                )
-                .setLabel(
-                    "Kéo"
-                )
-                .setEmoji(
-                    "✊"
-                )
-                .setStyle(
-                    ButtonStyle.Primary
-                ),
+                .setCustomId(`rps_choose_${gameId}_rock`)
+                .setLabel("Kéo")
+                .setEmoji("✊")
+                .setStyle(ButtonStyle.Primary),
 
             new ButtonBuilder()
-                .setCustomId(
-                    `rps_choose_${gameId}_${userId}_paper`
-                )
-                .setLabel(
-                    "Bao"
-                )
-                .setEmoji(
-                    "✋"
-                )
-                .setStyle(
-                    ButtonStyle.Primary
-                ),
+                .setCustomId(`rps_choose_${gameId}_paper`)
+                .setLabel("Bao")
+                .setEmoji("✋")
+                .setStyle(ButtonStyle.Primary),
 
             new ButtonBuilder()
-                .setCustomId(
-                    `rps_choose_${gameId}_${userId}_scissors`
-                )
-                .setLabel(
-                    "Búa"
-                )
-                .setEmoji(
-                    "✌️"
-                )
-                .setStyle(
-                    ButtonStyle.Primary
-                )
+                .setCustomId(`rps_choose_${gameId}_scissors`)
+                .setLabel("Búa")
+                .setEmoji("✌️")
+                .setStyle(ButtonStyle.Primary)
+        );
+}
+
+
+// ==========================================
+// 📩 NÚT LỜI MỜI PVP
+// ==========================================
+
+function createInviteRow(gameId) {
+    return new ActionRowBuilder()
+        .addComponents(
+
+            new ButtonBuilder()
+                .setCustomId(`rps_accept_${gameId}`)
+                .setLabel("Chấp nhận")
+                .setEmoji("✅")
+                .setStyle(ButtonStyle.Success),
+
+            new ButtonBuilder()
+                .setCustomId(`rps_decline_${gameId}`)
+                .setLabel("Từ chối")
+                .setEmoji("❌")
+                .setStyle(ButtonStyle.Danger),
+
+            new ButtonBuilder()
+                .setCustomId(`rps_cancel_${gameId}`)
+                .setLabel("Hủy")
+                .setEmoji("🛑")
+                .setStyle(ButtonStyle.Secondary)
         );
 }
 
 // ==========================================
-// 📩 INVITE BUTTONS
+// 🤖 BOT GAME
 // ==========================================
 
-function createInviteRow(
+function createBotGameComponents(user, bet, gameId) {
+
+    const name =
+        user.globalName ||
+        user.username;
+
+    return [
+
+        createContainer(
+            COLORS.primary,
+            [
+
+                text(
+                    `☁️ \`🍃\` **Một góc nhỏ của hành trình**\n\n` +
+
+                    `- \`🎮\` **Kéo • Búa • Bao**\n` +
+                    `> \`👤 Người chơi : ${name}\`\n` +
+                    `> \`💰 Tiền cược  : ${money(bet)} Mora\`\n\n` +
+
+                    `- \`🎯\` **Lựa chọn**\n` +
+                    `> \`✊ Kéo\`\n` +
+                    `> \`✋ Bao\`\n` +
+                    `> \`✌️ Búa\`\n\n` +
+
+                    `> ☁️ *Hãy chọn nước đi của bạn.*`
+                ),
+
+                separator(),
+
+                text(
+                    `> \`🍃\` **Venti • Kéo Búa Bao**`
+                )
+
+            ]
+        ),
+
+        createChoiceRow(gameId)
+
+    ];
+}
+
+// ==========================================
+// ⚔️ PVP INVITE
+// ==========================================
+
+function createInviteComponents(
+    challengerId,
+    opponentId,
+    bet,
     gameId
 ) {
 
-    return new ActionRowBuilder()
-        .addComponents(
+    return [
 
-            new ButtonBuilder()
-                .setCustomId(
-                    `rps_accept_${gameId}`
-                )
-                .setLabel(
-                    "Chấp nhận"
-                )
-                .setEmoji(
-                    "✅"
-                )
-                .setStyle(
-                    ButtonStyle.Success
+        createContainer(
+            COLORS.pvp,
+            [
+
+                text(
+                    `☁️ \`⚔️\` **Một góc nhỏ của trận đấu**\n\n` +
+
+                    `- \`🎮\` **Lời mời Kéo • Búa • Bao**\n` +
+                    `> \`👤 Thách đấu : <@${challengerId}>\`\n` +
+                    `> \`👤 Đối thủ   : <@${opponentId}>\`\n` +
+                    `> \`💰 Tiền cược : ${money(bet)} Mora/người\`\n\n` +
+
+                    `- \`📩\` **Lời mời**\n` +
+                    `> <@${opponentId}> hãy chọn **Chấp nhận** để bắt đầu.\n` +
+                    `> \`❌\` Từ chối lời mời.\n` +
+                    `> \`🛑\` Hủy lời mời.\n\n` +
+
+                    `> 🍃 *Một trận đấu công bằng giữa hai nhà lữ hành.*`
                 ),
 
-            new ButtonBuilder()
-                .setCustomId(
-                    `rps_decline_${gameId}`
-                )
-                .setLabel(
-                    "Từ chối"
-                )
-                .setEmoji(
-                    "❌"
-                )
-                .setStyle(
-                    ButtonStyle.Danger
-                ),
+                separator(),
 
-            new ButtonBuilder()
-                .setCustomId(
-                    `rps_cancel_${gameId}`
+                text(
+                    `> \`🍃\` **Venti • PvP**`
                 )
-                .setLabel(
-                    "Hủy"
-                )
-                .setEmoji(
-                    "🛑"
-                )
-                .setStyle(
-                    ButtonStyle.Secondary
-                )
-        );
+
+            ]
+        ),
+
+        createInviteRow(gameId)
+
+    ];
 }
 
 // ==========================================
-// 🎮 CREATE GAME
+// ⚔️ PVP GAME
 // ==========================================
 
-function createGameId() {
+function createPvpGameComponents(game, bet) {
 
-    return (
-        Date.now()
-            .toString(36) +
-        Math.random()
-            .toString(36)
-            .slice(2, 8)
+    const p1 =
+        game.choices[game.player1];
+
+    const p2 =
+        game.choices[game.player2];
+
+    const p1Status =
+        p1
+            ? "✅ Đã chọn"
+            : "⏳ Đang chọn";
+
+    const p2Status =
+        p2
+            ? "✅ Đã chọn"
+            : "⏳ Đang chọn";
+
+    return [
+
+        createContainer(
+            COLORS.pvp,
+            [
+
+                text(
+                    `☁️ \`⚔️\` **Một góc nhỏ của trận đấu**\n\n` +
+
+                    `- \`🎮\` **Kéo • Búa • Bao**\n` +
+                    `> \`👤 Người 1 : <@${game.player1}>\`\n` +
+                    `> \`👤 Người 2 : <@${game.player2}>\`\n` +
+                    `> \`💰 Tiền cược : ${money(bet)} Mora/người\`\n\n` +
+
+                    `- \`📊\` **Trạng thái**\n` +
+                    `> \`👤 Người 1 : ${p1Status}\`\n` +
+                    `> \`👤 Người 2 : ${p2Status}\`\n\n` +
+
+                    `> ☁️ *Mỗi người chỉ được chọn một lần.*`
+                ),
+
+                separator(),
+
+                text(
+                    `> \`🍃\` **Venti • PvP Kéo Búa Bao**`
+                )
+
+            ]
+        ),
+
+        createChoiceRow(game.id)
+
+    ];
+}
+// ==========================================
+// 🏆 BOT RESULT
+// ==========================================
+
+function createBotResultComponents(
+    userId,
+    playerChoice,
+    botChoice,
+    result,
+    bet,
+    reward
+) {
+
+    let color = COLORS.error;
+    let title = "💀 **Bạn đã thua!**";
+    let moneyText =
+        `\`💸\` Mất        : ${money(bet)} Mora`;
+
+    if (result === "win") {
+
+        color = COLORS.success;
+
+        title = "🎉 **Bạn đã thắng!**";
+
+        moneyText =
+            `\`💰\` Nhận       : +${money(reward)} Mora`;
+    }
+
+    if (result === "draw") {
+
+        color = COLORS.warning;
+
+        title = "🤝 **Trận đấu hòa!**";
+
+        moneyText =
+            `\`💰\` Hoàn lại   : ${money(reward)} Mora`;
+    }
+
+    const stats =
+        getStats(userId);
+
+    return [
+
+        createContainer(
+            color,
+            [
+
+                text(
+                    `☁️ \`🍃\` **Một góc nhỏ của hành trình**\n\n` +
+
+                    `- \`🏆\` **Kết quả**\n` +
+                    `> \`👤 Bạn   : ${choices[playerChoice].emoji} ${choices[playerChoice].label}\`\n` +
+                    `> \`🤖 Venti : ${choices[botChoice].emoji} ${choices[botChoice].label}\`\n\n` +
+
+                    `> ${title}\n` +
+                    `> ${moneyText}\n\n` +
+
+                    `- \`📊\` **Thống kê**\n` +
+                    `> \`🎮 Games   : ${stats.games}\`\n` +
+                    `> \`🏆 Wins    : ${stats.wins}\`\n` +
+                    `> \`💀 Losses  : ${stats.losses}\`\n\n` +
+
+                    `> \`🍃\` **Venti • Kéo Búa Bao**`
+                )
+
+            ]
+        )
+
+    ];
+}
+
+// ==========================================
+// 🏆 PVP RESULT
+// ==========================================
+
+function createPvpResultComponents(
+    game,
+    result,
+    bet,
+    reward,
+    winnerId
+) {
+
+    const p1Choice =
+        game.choices[game.player1];
+
+    const p2Choice =
+        game.choices[game.player2];
+
+    const p1Stats =
+        getStats(game.player1);
+
+    const p2Stats =
+        getStats(game.player2);
+
+    let color =
+        COLORS.success;
+
+    let resultText;
+
+    if (result === "draw") {
+
+        color =
+            COLORS.warning;
+
+        resultText =
+            `🤝 **Trận đấu hòa!**\n` +
+            `> \`💰\` Mỗi người nhận lại : ${money(bet)} Mora`;
+
+    } else {
+
+        resultText =
+            `🏆 <@${winnerId}> **đã chiến thắng!**\n` +
+            `> \`💰\` Phần thưởng       : +${money(reward)} Mora`;
+    }
+
+    return [
+
+        createContainer(
+            color,
+            [
+
+                text(
+                    `☁️ \`🍃\` **Một góc nhỏ của trận đấu**\n\n` +
+
+                    `- \`⚔️\` **Kết quả PvP**\n` +
+                    `> \`👤 Người 1 : <@${game.player1}>\`\n` +
+                    `> \`👤 Người 2 : <@${game.player2}>\`\n\n` +
+
+                    `- \`🎮\` **Nước đi**\n` +
+                    `> \`👤 Người 1 : ${choices[p1Choice].emoji} ${choices[p1Choice].label}\`\n` +
+                    `> \`👤 Người 2 : ${choices[p2Choice].emoji} ${choices[p2Choice].label}\`\n\n` +
+
+                    `${resultText}\n\n` +
+
+                    `- \`📊\` **Thống kê**\n` +
+                    `> \`👤 Người 1 : 🎮 ${p1Stats.games} • 🏆 ${p1Stats.wins} • 💀 ${p1Stats.losses}\`\n` +
+                    `> \`👤 Người 2 : 🎮 ${p2Stats.games} • 🏆 ${p2Stats.wins} • 💀 ${p2Stats.losses}\`\n\n` +
+
+                    `> \`🍃\` **Venti • PvP Kéo Búa Bao**`
+                )
+
+            ]
+        )
+
+    ];
+}   
+// ==========================================
+// ⏰ TIMEOUT
+// ==========================================
+
+function createTimeoutComponents(
+    textContent,
+    refunded = false
+) {
+
+    return [
+
+        createContainer(
+            COLORS.neutral,
+            [
+
+                text(
+                    `☁️ \`🍃\` **Một góc nhỏ của hành trình**\n\n` +
+
+                    `- \`⏰\` **Hết thời gian**\n` +
+                    `> ${textContent}\n\n` +
+
+                    `- \`💰\` **Tài chính**\n` +
+                    `> \`💵 Tiền cược : ${refunded ? "Đã hoàn lại" : "Đã mất"}\`\n\n` +
+
+                    `> \`🍃\` **Venti • Kéo Búa Bao**`
+                )
+
+            ]
+        )
+
+    ];
+}
+
+// ==========================================
+// ❌ DECLINED
+// ==========================================
+
+function createDeclinedComponents(
+    opponentId,
+    bet
+) {
+
+    return [
+
+        createContainer(
+            COLORS.error,
+            [
+
+                text(
+                    `☁️ \`🍃\` **Một góc nhỏ của hành trình**\n\n` +
+
+                    `- \`❌\` **Lời mời bị từ chối**\n` +
+                    `> <@${opponentId}> đã từ chối lời thách đấu.\n\n` +
+
+                    `- \`💰\` **Tài chính**\n` +
+                    `> \`💵 Tiền cược : ${money(bet)} Mora/người\`\n\n` +
+
+                    `> \`🍃\` **Venti • PvP**`
+                )
+
+            ]
+        )
+
+    ];
+}
+
+// ==========================================
+// 🛑 CANCEL
+// ==========================================
+
+function createCancelComponents(userId) {
+
+    return [
+
+        createContainer(
+            COLORS.neutral,
+            [
+
+                text(
+                    `☁️ \`🍃\` **Một góc nhỏ của hành trình**\n\n` +
+
+                    `- \`🛑\` **Đã hủy lời mời**\n` +
+                    `> <@${userId}> đã hủy lời thách đấu.\n\n` +
+
+                    `> \`🍃\` **Venti • PvP**`
+                )
+
+            ]
+        )
+
+    ];
+}
+
+
+// ==========================================
+// ❌ MONEY ERROR
+// ==========================================
+
+function createMoneyErrorComponents() {
+
+    return [
+
+        createContainer(
+            COLORS.error,
+            [
+
+                text(
+                    `☁️ \`🍃\` **Một góc nhỏ của hành trình**\n\n` +
+
+                    `- \`❌\` **Không đủ Mora**\n` +
+                    `> Một trong hai người chơi không còn đủ Mora để tham gia.\n\n` +
+
+                    `- \`💰\` **Yêu cầu**\n` +
+                    `> \`💵\` Cả hai người chơi phải có đủ tiền cược.\n\n` +
+
+                    `> \`🍃\` **Venti • PvP**`
+                )
+
+            ]
+        )
+
+    ];
+}
+
+// ==========================================
+// 💸 SAFE REMOVE BET
+// ==========================================
+
+function removePvpBets(
+    player1,
+    player2,
+    bet
+) {
+    const removed1 =
+        User.removeBalance(
+            player1,
+            bet
+        );
+
+    if (removed1 === false) {
+        return false;
+    }
+
+    const removed2 =
+        User.removeBalance(
+            player2,
+            bet
+        );
+
+    if (removed2 === false) {
+
+        // Refund player 1 if player 2 failed.
+        User.addBalance(
+            player1,
+            bet
+        );
+
+        return false;
+    }
+
+    return true;
+}
+
+// ==========================================
+// 💰 REFUND PVP
+// ==========================================
+
+function refundPvpBets(
+    game
+) {
+    if (!game || game.refunded) {
+        return;
+    }
+
+    game.refunded = true;
+
+    User.addBalance(
+        game.player1,
+        game.bet
+    );
+
+    User.addBalance(
+        game.player2,
+        game.bet
     );
 }
 
 // ==========================================
-// 📊 RESULT EMBED
-// ==========================================
-
-function createResultEmbed(
-    winner,
-    loser,
-    draw,
-    bet,
-    reward,
-    playerChoice,
-    opponentChoice
-) {
-
-    let color =
-        "#ED4245";
-
-    let title =
-        "💀 Kéo • Búa • Bao";
-
-    let resultText =
-        `> 💸 Bạn mất **${money(bet)} Mora**`;
-
-    if (
-        draw
-    ) {
-
-        color =
-            "#FEE75C";
-
-        title =
-            "🤝 Kéo • Búa • Bao • Hòa";
-
-        resultText =
-            `> 💰 Hoàn lại **${money(reward)} Mora**`;
-    }
-
-    if (
-        winner
-    ) {
-
-        color =
-            "#57F287";
-
-        title =
-            "🎉 Kéo • Búa • Bao • Thắng";
-
-        resultText =
-            `> 💰 Nhận **+${money(reward)} Mora**`;
-    }
-
-    const stats =
-        getStats(
-            winner || loser
-        );
-
-    return new EmbedBuilder()
-
-        .setColor(
-            color
-        )
-
-        .setTitle(
-            title
-        )
-
-        .setDescription(
-
-            `> ${choices[playerChoice].emoji} Bạn: **${choices[playerChoice].label}**\n` +
-
-            `> ${choices[opponentChoice].emoji} Đối thủ: **${choices[opponentChoice].label}**\n\n` +
-
-            "────────────────────\n" +
-
-            `${resultText}\n\n` +
-
-            `### 📊 Stats\n` +
-
-            `> 🎮 Games: **${stats.games}**\n` +
-
-            `> 🏆 Wins: **${stats.wins}**\n` +
-
-            `> 💀 Losses: **${stats.losses}**`
-        )
-
-        .setFooter({
-            text:
-                "🍃 Venti • Kéo Búa Bao"
-        })
-
-        .setTimestamp();
-}
-
-// ==========================================
-// 🎮 COMMAND
+// 🚀 COMMAND
 // ==========================================
 
 module.exports = {
 
-    name:
-        "rps",
+    name: "rps",
 
     aliases: [
         "rockpaperscissors",
@@ -406,16 +798,13 @@ module.exports = {
             message.mentions.users.first();
 
         // ======================================
-        // 💰 PARSE BET
+        // 💰 BET
         // ======================================
 
         let bet;
 
-        if (
-            opponent
-        ) {
+        if (opponent) {
 
-            // Vrps @user 1000
             bet =
                 parseInt(
                     args[
@@ -426,7 +815,6 @@ module.exports = {
 
         } else {
 
-            // Vrps 1000
             bet =
                 parseInt(
                     args[0],
@@ -448,7 +836,6 @@ module.exports = {
             opponent &&
             opponent.id === userId
         ) {
-
             return message.reply(
                 "❌ Bạn không thể thách đấu chính mình."
             );
@@ -462,14 +849,13 @@ module.exports = {
             opponent &&
             opponent.bot
         ) {
-
             return message.reply(
                 "❌ Bạn không thể thách đấu bot."
             );
         }
 
         // ======================================
-        // 💰 PLAYER
+        // 💰 CHALLENGER
         // ======================================
 
         const user =
@@ -482,13 +868,13 @@ module.exports = {
                 user.balance || 0
             ) < bet
         ) {
-
             return message.reply(
-                `❌ Bạn không đủ Mora.\n\n` +
-
-                `> 💰 Cần: **${money(bet)}**\n` +
-
-                `> 🪙 Có: **${money(user.balance)}**`
+                [
+                    "❌ Bạn không đủ Mora.",
+                    "",
+                    `> 💰 Cần: **${money(bet)} Mora**`,
+                    `> 🪙 Có: **${money(user.balance)} Mora**`
+                ].join("\n")
             );
         }
 
@@ -496,78 +882,56 @@ module.exports = {
         // 🤖 BOT GAME
         // ======================================
 
-        if (
-            !opponent
-        ) {
+        if (!opponent) {
 
-            User.removeBalance(
-                userId,
-                bet
-            );
-
-            const row =
-                createChoiceRow(
-                    createGameId(),
-                    userId
+            const removed =
+                User.removeBalance(
+                    userId,
+                    bet
                 );
 
+            if (removed === false) {
+                return message.reply(
+                    "❌ Không thể trừ tiền cược. Vui lòng thử lại."
+                );
+            }
+
             const gameId =
-                row.components[0]
-                    .data.custom_id
-                    .split("_")[2];
+                createGameId();
 
-            const embed =
-                new EmbedBuilder()
-
-                    .setColor(
-                        "#9B59B6"
-                    )
-
-                    .setTitle(
-                        "🎮 Kéo • Búa • Bao"
-                    )
-
-                    .setDescription(
-
-                        `> 💰 Cược: **${money(bet)} Mora**\n\n` +
-
-                        "Chọn nước đi của bạn:\n\n" +
-
-                        "✊ **Kéo**\n" +
-                        "✋ **Bao**\n" +
-                        "✌️ **Búa**"
-                    )
-
-                    .setFooter({
-                        text:
-                            "🍃 Venti • Kéo Búa Bao"
-                    });
+            const components =
+                createBotGameComponents(
+                    message.author,
+                    bet,
+                    gameId
+                );
 
             const msg =
                 await message.reply({
-                    embeds: [
-                        embed
-                    ],
-                    components: [
-                        row
-                    ]
+                    components,
+
+                    flags:
+                        MessageFlags.IsComponentsV2
                 });
 
             const collector =
                 msg.createMessageComponentCollector({
                     time:
-                        30000
+                        BOT_GAME_TIMEOUT
                 });
 
             collector.on(
                 "collect",
                 async interaction => {
 
+                    // ==================================
+                    // 👤 OWNER CHECK
+                    // ==================================
+
                     if (
                         interaction.user.id !==
                         userId
                     ) {
-
                         return interaction.reply({
                             content:
                                 "❌ Đây không phải game của bạn.",
@@ -576,13 +940,44 @@ module.exports = {
                         });
                     }
 
-                    const parts =
-                        interaction.customId.split(
-                            "_"
-                        );
+                    // ==================================
+                    // 🔎 CUSTOM ID
+                    // ==================================
+
+                    const prefix =
+                        `rps_choose_${gameId}_`;
+
+                    if (
+                        !interaction.customId.startsWith(
+                            prefix
+                        )
+                    ) {
+                        return;
+                    }
 
                     const player =
-                        parts[4];
+                        interaction.customId.slice(
+                            prefix.length
+                        );
+
+                    // ==================================
+                    // ❌ INVALID CHOICE
+                    // ==================================
+
+                    if (
+                        !choices[player]
+                    ) {
+                        return interaction.reply({
+                            content:
+                                "❌ Nước đi không hợp lệ.",
+                            ephemeral:
+                                true
+                        });
+                    }
+
+                    // ==================================
+                    // 🤖 BOT CHOICE
+                    // ==================================
 
                     const botChoices =
                         Object.keys(
@@ -596,6 +991,10 @@ module.exports = {
                                 botChoices.length
                             )
                         ];
+
+                    // ==================================
+                    // 🏆 RESULT
+                    // ==================================
 
                     const result =
                         getResult(
@@ -611,10 +1010,13 @@ module.exports = {
                     let reward =
                         0;
 
+                    // ==================================
+                    // 🎉 WIN
+                    // ==================================
+
                     if (
                         result === "win"
                     ) {
-
                         reward =
                             bet * 2;
 
@@ -624,10 +1026,13 @@ module.exports = {
                         );
                     }
 
+                    // ==================================
+                    // 🤝 DRAW
+                    // ==================================
+
                     if (
                         result === "draw"
                     ) {
-
                         reward =
                             bet;
 
@@ -641,104 +1046,50 @@ module.exports = {
                         "finished"
                     );
 
-                    const stats =
-                        getStats(
-                            userId
-                        );
+                    try {
+                        return await interaction.update({
+                            components:
+                                createBotResultComponents(
+                                    userId,
+                                    player,
+                                    bot,
+                                    result,
+                                    bet,
+                                    reward
+                                ),
 
-                    let color =
-                        "#ED4245";
-
-                    let title =
-                        "💀 Bạn thua!";
-
-                    let moneyText =
-                        `> 💸 Mất **${money(bet)} Mora**`;
-
-                    if (
-                        result === "win"
-                    ) {
-
-                        color =
-                            "#57F287";
-
-                        title =
-                            "🎉 Bạn thắng!";
-
-                        moneyText =
-                            `> 💰 Nhận **+${money(reward)} Mora**`;
-                    }
-
-                    if (
-                        result === "draw"
-                    ) {
-
-                        color =
-                            "#FEE75C";
-
-                        title =
-                            "🤝 Hòa!";
-
-                        moneyText =
-                            `> 💰 Hoàn lại **${money(reward)} Mora**`;
-                    }
-
-                    return interaction.update({
-
-                        embeds: [
-
-                            new EmbedBuilder()
-
-                                .setColor(
-                                    color
-                                )
-
-                                .setTitle(
-                                    title
-                                )
-
-                                .setDescription(
-
-                                    `> ${choices[player].emoji} Bạn: **${choices[player].label}**\n` +
-
-                                    `> ${choices[bot].emoji} Venti: **${choices[bot].label}**\n\n` +
-
-                                    "────────────────────\n" +
-
-                                    `${moneyText}\n\n` +
-
-                                    "### 📊 Stats\n" +
-
-                                    `> 🎮 Games: **${stats.games}**\n` +
-
-                                    `> 🏆 Wins: **${stats.wins}**\n` +
-
-                                    `> 💀 Losses: **${stats.losses}**`
-                                )
-
-                                .setFooter({
-                                    text:
-                                        "🍃 Venti • Kéo Búa Bao"
-                                })
-
-                                .setTimestamp()
-                        ],
-
-                        components: []
-                    });
+                            flags:
+                                MessageFlags.IsComponentsV2
+                        });
+                    } catch {}
                 }
             );
 
+            // ======================================
+            // ⏰ BOT TIMEOUT
+            // ======================================
+
             collector.on(
                 "end",
-                async () => {
+                async (_, reason) => {
+
+                    if (
+                        reason ===
+                        "finished"
+                    ) {
+                        return;
+                    }
 
                     try {
-
                         await msg.edit({
-                            components: []
-                        });
+                            components:
+                                createTimeoutComponents(
+                                    "Ván chơi đã hết thời gian."
+                                ),
 
+                            flags:
+                                MessageFlags.IsComponentsV2
+                        });
                     } catch {}
                 }
             );
@@ -747,7 +1098,7 @@ module.exports = {
         }
 
         // ======================================
-        // ⚔️ PVP INVITE
+        // ⚔️ PVP
         // ======================================
 
         const opponentUser =
@@ -755,74 +1106,58 @@ module.exports = {
                 opponent.id
             );
 
+        // ======================================
+        // 💰 OPPONENT MONEY
+        // ======================================
+
         if (
             Number(
                 opponentUser.balance || 0
             ) < bet
         ) {
-
             return message.reply(
-                `❌ <@${opponent.id}> không đủ Mora để tham gia.\n\n` +
-
-                `> 💰 Cần: **${money(bet)} Mora**`
+                [
+                    `❌ <@${opponent.id}> không đủ Mora.`,
+                    "",
+                    `> 💰 Cần: **${money(bet)} Mora**`
+                ].join("\n")
             );
         }
+
+        // ======================================
+        // 🎮 GAME ID
+        // ======================================
 
         const gameId =
             createGameId();
 
-        const inviteEmbed =
-            new EmbedBuilder()
-
-                .setColor(
-                    "#9B59B6"
-                )
-
-                .setTitle(
-                    "⚔️ Lời mời Kéo • Búa • Bao"
-                )
-
-                .setDescription(
-
-                    `### <@${userId}> thách đấu <@${opponent.id}>\n\n` +
-
-                    `> 💰 Cược mỗi người: **${money(bet)} Mora**\n\n` +
-
-                    "Người được mời hãy chọn:\n" +
-
-                    "✅ **Chấp nhận** để bắt đầu\n" +
-
-                    "❌ **Từ chối** để hủy\n" +
-
-                    "🛑 **Hủy** dành cho người thách đấu"
-                )
-
-                .setFooter({
-                    text:
-                        "🍃 Venti • PvP Kéo Búa Bao"
-                })
-
-                .setTimestamp();
+        // ======================================
+        // 📩 INVITE
+        // ======================================
 
         const inviteMsg =
             await message.reply({
-
-                embeds: [
-                    inviteEmbed
-                ],
-
-                components: [
-                    createInviteRow(
+                components:
+                    createInviteComponents(
+                        userId,
+                        opponent.id,
+                        bet,
                         gameId
-                    )
-                ]
+                    ),
+
+                flags:
+                    MessageFlags.IsComponentsV2
             });
 
         const inviteCollector =
             inviteMsg.createMessageComponentCollector({
                 time:
-                    30000
+                    PVP_INVITE_TIMEOUT
             });
+
+        // ======================================
+        // 🔘 INVITE COLLECT
+        // ======================================
 
         inviteCollector.on(
             "collect",
@@ -841,7 +1176,6 @@ module.exports = {
                         interaction.user.id !==
                         opponent.id
                     ) {
-
                         return interaction.reply({
                             content:
                                 "❌ Chỉ người được mời mới có thể từ chối.",
@@ -855,31 +1189,14 @@ module.exports = {
                     );
 
                     return interaction.update({
+                        components:
+                            createDeclinedComponents(
+                                opponent.id,
+                                bet
+                            ),
 
-                        embeds: [
-
-                            new EmbedBuilder()
-
-                                .setColor(
-                                    "#ED4245"
-                                )
-
-                                .setTitle(
-                                    "❌ Lời mời bị từ chối"
-                                )
-
-                                .setDescription(
-                                    `> <@${opponent.id}> đã từ chối lời thách đấu.\n\n` +
-                                    `> 💰 Cược: **${money(bet)} Mora**`
-                                )
-
-                                .setFooter({
-                                    text:
-                                        "🍃 Venti • PvP"
-                                })
-                        ],
-
-                        components: []
+                        flags:
+                            MessageFlags.IsComponentsV2
                     });
                 }
 
@@ -896,7 +1213,6 @@ module.exports = {
                         interaction.user.id !==
                         userId
                     ) {
-
                         return interaction.reply({
                             content:
                                 "❌ Chỉ người thách đấu mới có thể hủy.",
@@ -910,30 +1226,13 @@ module.exports = {
                     );
 
                     return interaction.update({
+                        components:
+                            createCancelComponents(
+                                userId
+                            ),
 
-                        embeds: [
-
-                            new EmbedBuilder()
-
-                                .setColor(
-                                    "#95A5A6"
-                                )
-
-                                .setTitle(
-                                    "🛑 Đã hủy lời mời"
-                                )
-
-                                .setDescription(
-                                    `> <@${userId}> đã hủy lời thách đấu.`
-                                )
-
-                                .setFooter({
-                                    text:
-                                        "🍃 Venti • PvP"
-                                })
-                        ],
-
-                        components: []
+                        flags:
+                            MessageFlags.IsComponentsV2
                     });
                 }
 
@@ -950,7 +1249,6 @@ module.exports = {
                         interaction.user.id !==
                         opponent.id
                     ) {
-
                         return interaction.reply({
                             content:
                                 "❌ Chỉ người được mời mới có thể chấp nhận.",
@@ -959,7 +1257,10 @@ module.exports = {
                         });
                     }
 
-                    // Kiểm tra lại tiền
+                    // ==================================
+                    // 💰 CHECK MONEY AGAIN
+                    // ==================================
+
                     const challenger =
                         User.getOrCreate(
                             userId
@@ -984,50 +1285,45 @@ module.exports = {
                         );
 
                         return interaction.update({
+                            components:
+                                createMoneyErrorComponents(),
 
-                            embeds: [
-
-                                new EmbedBuilder()
-
-                                    .setColor(
-                                        "#ED4245"
-                                    )
-
-                                    .setTitle(
-                                        "❌ Không đủ Mora"
-                                    )
-
-                                    .setDescription(
-                                        "> Một trong hai người chơi không còn đủ Mora để tham gia."
-                                    )
-
-                                    .setFooter({
-                                        text:
-                                            "🍃 Venti • PvP"
-                                    })
-                            ],
-
-                            components: []
+                            flags:
+                                MessageFlags.IsComponentsV2
                         });
                     }
 
-                    // Trừ cược
-                    User.removeBalance(
-                        userId,
-                        bet
-                    );
+                    // ==================================
+                    // 💸 REMOVE BOTH BETS
+                    // ==================================
 
-                    User.removeBalance(
-                        opponent.id,
-                        bet
-                    );
+                    const removed =
+                        removePvpBets(
+                            userId,
+                            opponent.id,
+                            bet
+                        );
 
-                    inviteCollector.stop(
-                        "accepted"
-                    );
+                    if (!removed) {
+
+                        inviteCollector.stop(
+                            "money"
+                        );
+
+                        return interaction.update({
+                            components:
+                                createMoneyErrorComponents(),
+
+                            flags:
+                                MessageFlags.IsComponentsV2
+                        });
+                    }
+
+                    // ==================================
+                    // 🎮 CREATE GAME
+                    // ==================================
 
                     const game = {
-
                         id:
                             gameId,
 
@@ -1042,60 +1338,45 @@ module.exports = {
                         choices: {},
 
                         finished:
+                            false,
+
+                        refunded:
                             false
                     };
 
-                    const pvpEmbed =
-                        new EmbedBuilder()
+                    // ==================================
+                    // 🛑 STOP INVITE
+                    // ==================================
 
-                            .setColor(
-                                "#5865F2"
-                            )
+                    inviteCollector.stop(
+                        "accepted"
+                    );
 
-                            .setTitle(
-                                "⚔️ PvP • Kéo • Búa • Bao"
-                            )
+                    // ==================================
+                    // ⚔️ SHOW GAME
+                    // ==================================
 
-                            .setDescription(
+                    try {
 
-                                `### <@${userId}> ⚔️ <@${opponent.id}>\n\n` +
-
-                                `> 💰 Cược mỗi người: **${money(bet)} Mora**\n\n` +
-
-                                "Cả hai người hãy chọn nước đi:\n\n" +
-
-                                "✊ **Kéo**\n" +
-                                "✋ **Bao**\n" +
-                                "✌️ **Búa**"
-                            )
-
-                            .setFooter({
-                                text:
-                                    "🍃 Venti • PvP"
-                            })
-
-                            .setTimestamp();
-
-                    const gameMsg =
                         await interaction.update({
-
-                            embeds: [
-                                pvpEmbed
-                            ],
-
-                            components: [
-
-                                createChoiceRow(
-                                    gameId,
-                                    userId
+                            components:
+                                createPvpGameComponents(
+                                    game,
+                                    bet
                                 ),
 
-                                createChoiceRow(
-                                    gameId,
-                                    opponent.id
-                                )
-                            ]
+                            flags:
+                                MessageFlags.IsComponentsV2
                         });
+
+                    } catch {
+
+                        // If Discord update failed after
+                        // bets were removed, refund both.
+                        refundPvpBets(game);
+
+                        return;
+                    }
 
                     // ==================================
                     // 🎮 GAME COLLECTOR
@@ -1104,12 +1385,30 @@ module.exports = {
                     const gameCollector =
                         inviteMsg.createMessageComponentCollector({
                             time:
-                                60000
+                                PVP_GAME_TIMEOUT
                         });
+
+                    // ==================================
+                    // 🔘 GAME COLLECT
+                    // ==================================
 
                     gameCollector.on(
                         "collect",
                         async gameInteraction => {
+
+                            // ==================================
+                            // 🔒 FINISHED
+                            // ==================================
+
+                            if (
+                                game.finished
+                            ) {
+                                return;
+                            }
+
+                            // ==================================
+                            // 🔎 CUSTOM ID
+                            // ==================================
 
                             const prefix =
                                 `rps_choose_${gameId}_`;
@@ -1122,36 +1421,56 @@ module.exports = {
                                 return;
                             }
 
-                            const parts =
-                                gameInteraction.customId.split(
-                                    "_"
-                                );
-
-                            const targetUser =
-                                parts[3];
+                            // ==================================
+                            // 🎮 CHOICE
+                            // ==================================
 
                             const playerChoice =
-                                parts[4];
+                                gameInteraction.customId.slice(
+                                    prefix.length
+                                );
 
                             if (
-                                gameInteraction.user.id !==
-                                targetUser
+                                !choices[playerChoice]
                             ) {
-
                                 return gameInteraction.reply({
                                     content:
-                                        "❌ Bạn không thể chọn nước đi của người khác.",
+                                        "❌ Nước đi không hợp lệ.",
                                     ephemeral:
                                         true
                                 });
                             }
 
+                            // ==================================
+                            // 👤 CLICKER
+                            // ==================================
+
+                            const clickerId =
+                                gameInteraction.user.id;
+
+                            if (
+                                clickerId !==
+                                game.player1 &&
+                                clickerId !==
+                                game.player2
+                            ) {
+                                return gameInteraction.reply({
+                                    content:
+                                        "❌ Bạn không tham gia ván PvP này.",
+                                    ephemeral:
+                                        true
+                                });
+                            }
+
+                            // ==================================
+                            // 🔒 ALREADY CHOSEN
+                            // ==================================
+
                             if (
                                 game.choices[
-                                    targetUser
+                                    clickerId
                                 ]
                             ) {
-
                                 return gameInteraction.reply({
                                     content:
                                         "❌ Bạn đã chọn rồi.",
@@ -1160,12 +1479,19 @@ module.exports = {
                                 });
                             }
 
+                            // ==================================
+                            // 💾 SAVE CHOICE
+                            // ==================================
+
                             game.choices[
-                                targetUser
+                                clickerId
                             ] =
                                 playerChoice;
 
-                            // Chưa đủ 2 người
+                            // ==================================
+                            // ⏳ WAIT FOR OTHER PLAYER
+                            // ==================================
+
                             if (
                                 !game.choices[
                                     game.player1
@@ -1176,55 +1502,19 @@ module.exports = {
                             ) {
 
                                 return gameInteraction.update({
-
-                                    embeds: [
-
-                                        new EmbedBuilder()
-
-                                            .setColor(
-                                                "#5865F2"
-                                            )
-
-                                            .setTitle(
-                                                "⚔️ PvP • Đang chờ lựa chọn"
-                                            )
-
-                                            .setDescription(
-
-                                                `### <@${game.player1}> ⚔️ <@${game.player2}>\n\n` +
-
-                                                `> 💰 Cược mỗi người: **${money(bet)} Mora**\n\n` +
-
-                                                `${game.choices[game.player1] ? "✅" : "⏳"} <@${game.player1}>\n` +
-
-                                                `${game.choices[game.player2] ? "✅" : "⏳"} <@${game.player2}>\n\n` +
-
-                                                "Chọn nước đi của bạn."
-                                            )
-
-                                            .setFooter({
-                                                text:
-                                                    "🍃 Venti • PvP"
-                                            })
-                                    ],
-
-                                    components: [
-
-                                        createChoiceRow(
-                                            gameId,
-                                            game.player1
+                                    components:
+                                        createPvpGameComponents(
+                                            game,
+                                            bet
                                         ),
 
-                                        createChoiceRow(
-                                            gameId,
-                                            game.player2
-                                        )
-                                    ]
+                                    flags:
+                                        MessageFlags.IsComponentsV2
                                 });
                             }
 
                             // ==================================
-                            // 🏆 RESULT
+                            // 🏆 CALCULATE RESULT
                             // ==================================
 
                             const player1Choice =
@@ -1249,8 +1539,16 @@ module.exports = {
                             let winnerId =
                                 null;
 
-                            let loserId =
-                                null;
+                            // ==================================
+                            // 🔒 LOCK GAME
+                            // ==================================
+
+                            game.finished =
+                                true;
+
+                            // ==================================
+                            // 🏆 PLAYER 1
+                            // ==================================
 
                             if (
                                 result === "win"
@@ -1259,9 +1557,6 @@ module.exports = {
                                 winnerId =
                                     game.player1;
 
-                                loserId =
-                                    game.player2;
-
                                 reward =
                                     bet * 2;
 
@@ -1271,25 +1566,27 @@ module.exports = {
                                 );
 
                                 updateStats(
-                                    winnerId,
+                                    game.player1,
                                     "win"
                                 );
 
                                 updateStats(
-                                    loserId,
+                                    game.player2,
                                     "lose"
                                 );
+                            }
 
-                            } else if (
+                            // ==================================
+                            // 🏆 PLAYER 2
+                            // ==================================
+
+                            else if (
                                 result === "lose"
                             ) {
 
                                 winnerId =
                                     game.player2;
 
-                                loserId =
-                                    game.player1;
-
                                 reward =
                                     bet * 2;
 
@@ -1299,16 +1596,21 @@ module.exports = {
                                 );
 
                                 updateStats(
-                                    winnerId,
-                                    "win"
-                                );
-
-                                updateStats(
-                                    loserId,
+                                    game.player1,
                                     "lose"
                                 );
 
-                            } else {
+                                updateStats(
+                                    game.player2,
+                                    "win"
+                                );
+                            }
+
+                            // ==================================
+                            // 🤝 DRAW
+                            // ==================================
+
+                            else {
 
                                 reward =
                                     bet;
@@ -1334,83 +1636,92 @@ module.exports = {
                                 );
                             }
 
-                            game.finished =
-                                true;
+                            // ==================================
+                            // 🛑 STOP COLLECTOR
+                            // ==================================
 
                             gameCollector.stop(
                                 "finished"
                             );
 
-                            const resultColor =
-                                result === "draw"
-                                    ? "#FEE75C"
-                                    : "#57F287";
+                            // ==================================
+                            // 🏆 SHOW RESULT
+                            // ==================================
 
-                            const resultTitle =
-                                result === "draw"
-                                    ? "🤝 PvP • Hòa"
-                                    : "🏆 PvP • Kết quả";
+                            try {
 
-                            const p1Stats =
-                                getStats(
-                                    game.player1
-                                );
+                                return await gameInteraction.update({
+                                    components:
+                                        createPvpResultComponents(
+                                            game,
+                                            result,
+                                            bet,
+                                            reward,
+                                            winnerId
+                                        ),
 
-                            const p2Stats =
-                                getStats(
-                                    game.player2
-                                );
+                                    flags:
+                                        MessageFlags.IsComponentsV2
+                                });
 
-                            const resultDescription =
+                            } catch {}
+                        }
+                    );
 
-                                `### <@${game.player1}>\n` +
+                    // ==================================
+                    // ⏰ PVP GAME TIMEOUT
+                    // ==================================
 
-                                `> ${choices[player1Choice].emoji} **${choices[player1Choice].label}**\n` +
+                    gameCollector.on(
+                        "end",
+                        async (_, reason) => {
 
-                                `> 🎮 Games: **${p1Stats.games}** • 🏆 **${p1Stats.wins}** • 💀 **${p1Stats.losses}**\n\n` +
+                            if (
+                                reason ===
+                                "finished"
+                            ) {
+                                return;
+                            }
 
-                                `### <@${game.player2}>\n` +
+                            if (
+                                game.finished
+                            ) {
+                                return;
+                            }
 
-                                `> ${choices[player2Choice].emoji} **${choices[player2Choice].label}**\n` +
+                            // ==================================
+                            // 🔒 LOCK
+                            // ==================================
 
-                                `> 🎮 Games: **${p2Stats.games}** • 🏆 **${p2Stats.wins}** • 💀 **${p2Stats.losses}**\n\n` +
+                            game.finished =
+                                true;
 
-                                "────────────────────\n" +
+                            // ==================================
+                            // 💰 REFUND
+                            // ==================================
 
-                                (
-                                    result === "draw"
-                                        ? `> 🤝 Hòa! Mỗi người được hoàn **${money(bet)} Mora**.`
-                                        : `> 🏆 <@${winnerId}> thắng!\n> 💰 Nhận **+${money(reward)} Mora**`
-                                );
+                            refundPvpBets(
+                                game
+                            );
 
-                            return gameInteraction.update({
+                            // ==================================
+                            // 📝 UPDATE MESSAGE
+                            // ==================================
 
-                                embeds: [
+                            try {
 
-                                    new EmbedBuilder()
+                                await inviteMsg.edit({
+                                    components:
+                                        createTimeoutComponents(
+                                            "Một hoặc cả hai người chơi không chọn kịp thời.",
+                                            true
+                                        ),
 
-                                        .setColor(
-                                            resultColor
-                                        )
+                                    flags:
+                                        MessageFlags.IsComponentsV2
+                                });
 
-                                        .setTitle(
-                                            resultTitle
-                                        )
-
-                                        .setDescription(
-                                            resultDescription
-                                        )
-
-                                        .setFooter({
-                                            text:
-                                                "🍃 Venti • PvP Kéo Búa Bao"
-                                        })
-
-                                        .setTimestamp()
-                                ],
-
-                                components: []
-                            });
+                            } catch {}
                         }
                     );
                 }
@@ -1426,10 +1737,14 @@ module.exports = {
             async (_, reason) => {
 
                 if (
-                    reason === "accepted" ||
-                    reason === "declined" ||
-                    reason === "cancelled" ||
-                    reason === "money"
+                    reason ===
+                    "accepted" ||
+                    reason ===
+                    "declined" ||
+                    reason ===
+                    "cancelled" ||
+                    reason ===
+                    "money"
                 ) {
                     return;
                 }
@@ -1437,31 +1752,13 @@ module.exports = {
                 try {
 
                     await inviteMsg.edit({
+                        components:
+                            createTimeoutComponents(
+                                `<@${opponent.id}> không phản hồi lời thách đấu.`
+                            ),
 
-                        embeds: [
-
-                            new EmbedBuilder()
-
-                                .setColor(
-                                    "#95A5A6"
-                                )
-
-                                .setTitle(
-                                    "⏰ Lời mời hết hạn"
-                                )
-
-                                .setDescription(
-                                    `> <@${opponent.id}> không phản hồi lời thách đấu.\n\n` +
-                                    `> 💰 Cược: **${money(bet)} Mora**`
-                                )
-
-                                .setFooter({
-                                    text:
-                                        "🍃 Venti • PvP"
-                                })
-                        ],
-
-                        components: []
+                        flags:
+                            MessageFlags.IsComponentsV2
                     });
 
                 } catch {}
@@ -1469,4 +1766,3 @@ module.exports = {
         );
     }
 };
-

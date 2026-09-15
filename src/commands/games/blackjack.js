@@ -1,8 +1,11 @@
 const {
-    EmbedBuilder,
+    ContainerBuilder,
+    TextDisplayBuilder,
+    SeparatorBuilder,
     ActionRowBuilder,
     ButtonBuilder,
-    ButtonStyle
+    ButtonStyle,
+    MessageFlags
 } = require("discord.js");
 
 const User =
@@ -40,11 +43,23 @@ const VALUES = [
 // ==========================================
 
 const COLORS = {
-    primary: "#A8DCC0",
-    success: "#A8D8A8",
-    error: "#F2A7A7",
-    warning: "#FFD166"
+    primary: 0xA8DCC0,
+    success: 0xA8D8A8,
+    error: 0xF2A7A7,
+    warning: 0xFFD166,
+    neutral: 0x95A5A6,
+    blackjack: 0xE8C36A
 };
+
+// ==========================================
+// 💰 MONEY
+// ==========================================
+
+function money(amount) {
+    return Number(
+        amount || 0
+    ).toLocaleString("vi-VN");
+}
 
 // ==========================================
 // 🃏 DECK
@@ -118,12 +133,20 @@ function getHandValue(hand) {
     return total;
 }
 
+// ==========================================
+// 👑 BLACKJACK
+// ==========================================
+
 function isBlackjack(hand) {
     return (
         hand.length === 2 &&
         getHandValue(hand) === 21
     );
 }
+
+// ==========================================
+// 🃏 FORMAT HAND
+// ==========================================
 
 function formatHand(hand) {
     return hand
@@ -183,422 +206,38 @@ function recordGame(
 }
 
 // ==========================================
-// 🎮 COMMAND
+// 🧱 COMPONENT HEADER
 // ==========================================
 
-module.exports = {
-    name: "blackjack",
-
-    aliases: [
-        "bj",
-        "21",
-        "vblackjack"
-    ],
-
-    description:
-        "Chơi Blackjack với Columbina.",
-
-    async execute(
-        message,
-        args
-    ) {
-        const userId =
-            message.author.id;
-
-        const user =
-            User.getOrCreate(
-                userId
+function createHeader(
+    title,
+    color
+) {
+    const container =
+        new ContainerBuilder()
+            .setAccentColor(
+                color
             );
 
-        const bet =
-            Math.max(
-                1,
-                parseInt(
-                    args[0],
-                    10
-                ) || 100
-            );
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder()
+            .setContent(
+                `# ${title}`
+            )
+    );
 
-        if (
-            user.balance < bet
-        ) {
-            return message.reply({
-                embeds: [
-                    new EmbedBuilder()
-                        .setColor(
-                            COLORS.error
-                        )
-                        .setDescription(
-                            [
-                                "- `❌` **Không đủ Mora**",
-                                "",
-                                `> \`💰\` Cần: **${bet.toLocaleString("vi-VN")} Mora**`,
-                                `> \`💳\` Có: **${Number(user.balance || 0).toLocaleString("vi-VN")} Mora**`
-                            ].join("\n")
-                        )
-                ]
-            });
-        }
+    container.addSeparatorComponents(
+        new SeparatorBuilder()
+    );
 
-        User.removeBalance(
-            userId,
-            bet
-        );
-
-        const deck =
-            createDeck();
-
-        const player = [
-            deck.pop(),
-            deck.pop()
-        ];
-
-        const dealer = [
-            deck.pop(),
-            deck.pop()
-        ];
-
-        let finished = false;
-
-        // ======================================
-        // 🃏 BLACKJACK NGAY TỪ ĐẦU
-        // ======================================
-
-        if (
-            isBlackjack(player)
-        ) {
-            const dealerBlackjack =
-                isBlackjack(
-                    dealer
-                );
-
-            if (
-                dealerBlackjack
-            ) {
-                User.addBalance(
-                    userId,
-                    bet
-                );
-
-                recordGame(
-                    userId,
-                    "draw"
-                );
-
-                return message.reply({
-                    embeds: [
-                        createResultEmbed(
-                            player,
-                            dealer,
-                            "draw",
-                            bet,
-                            bet
-                        )
-                    ]
-                });
-            }
-
-            const reward =
-                Math.floor(
-                    bet * 2.5
-                );
-
-            User.addBalance(
-                userId,
-                reward
-            );
-
-            recordGame(
-                userId,
-                "win"
-            );
-
-            return message.reply({
-                embeds: [
-                    createResultEmbed(
-                        player,
-                        dealer,
-                        "blackjack",
-                        bet,
-                        reward
-                    )
-                ]
-            });
-        }
-
-        // ======================================
-        // 🎮 GAME
-        // ======================================
-
-        const msg =
-            await message.reply({
-                embeds: [
-                    createGameEmbed(
-                        message,
-                        player,
-                        dealer,
-                        bet
-                    )
-                ],
-                components: [
-                    createButtons(
-                        userId
-                    )
-                ]
-            });
-
-        const collector =
-            msg.createMessageComponentCollector({
-                time: 120000
-            });
-
-        // ======================================
-        // 🔘 BUTTON
-        // ======================================
-
-        collector.on(
-            "collect",
-            async interaction => {
-                if (
-                    interaction.user.id !==
-                    userId
-                ) {
-                    return interaction.reply({
-                        content:
-                            "🍃 Đây không phải ván Blackjack của bạn.",
-                        ephemeral: true
-                    });
-                }
-
-                if (
-                    finished
-                ) {
-                    return;
-                }
-
-                // ==================================
-                // 🎴 HIT
-                // ==================================
-
-                if (
-                    interaction.customId ===
-                    `bj_hit_${userId}`
-                ) {
-                    player.push(
-                        deck.pop()
-                    );
-
-                    const value =
-                        getHandValue(
-                            player
-                        );
-
-                    if (
-                        value > 21
-                    ) {
-                        finished =
-                            true;
-
-                        recordGame(
-                            userId,
-                            "lose"
-                        );
-
-                        collector.stop(
-                            "finished"
-                        );
-
-                        return interaction.update({
-                            embeds: [
-                                createResultEmbed(
-                                    player,
-                                    dealer,
-                                    "lose",
-                                    bet,
-                                    0
-                                )
-                            ],
-                            components: []
-                        });
-                    }
-
-                    if (
-                        value === 21
-                    ) {
-                        return dealerTurn(
-                            interaction
-                        );
-                    }
-
-                    return interaction.update({
-                        embeds: [
-                            createGameEmbed(
-                                message,
-                                player,
-                                dealer,
-                                bet
-                            )
-                        ],
-                        components: [
-                            createButtons(
-                                userId
-                            )
-                        ]
-                    });
-                }
-
-                // ==================================
-                // 🛑 STAND
-                // ==================================
-
-                if (
-                    interaction.customId ===
-                    `bj_stand_${userId}`
-                ) {
-                    return dealerTurn(
-                        interaction
-                    );
-                }
-            }
-        );
-
-        // ======================================
-        // 🏁 DEALER
-        // ======================================
-
-        async function dealerTurn(
-            interaction
-        ) {
-            while (
-                getHandValue(
-                    dealer
-                ) < 17
-            ) {
-                dealer.push(
-                    deck.pop()
-                );
-            }
-
-            const playerValue =
-                getHandValue(
-                    player
-                );
-
-            const dealerValue =
-                getHandValue(
-                    dealer
-                );
-
-            let result;
-            let reward = 0;
-
-            if (
-                dealerValue > 21
-            ) {
-                result = "win";
-                reward = bet * 2;
-            } else if (
-                playerValue >
-                dealerValue
-            ) {
-                result = "win";
-                reward = bet * 2;
-            } else if (
-                playerValue ===
-                dealerValue
-            ) {
-                result = "draw";
-                reward = bet;
-            } else {
-                result = "lose";
-                reward = 0;
-            }
-
-            if (
-                reward > 0
-            ) {
-                User.addBalance(
-                    userId,
-                    reward
-                );
-            }
-
-            recordGame(
-                userId,
-                result
-            );
-
-            finished = true;
-
-            collector.stop(
-                "finished"
-            );
-
-            return interaction.update({
-                embeds: [
-                    createResultEmbed(
-                        player,
-                        dealer,
-                        result,
-                        bet,
-                        reward
-                    )
-                ],
-                components: []
-            });
-        }
-
-        // ======================================
-        // ⏰ TIMEOUT
-        // ======================================
-
-        collector.on(
-            "end",
-            async () => {
-                if (
-                    finished
-                ) {
-                    return;
-                }
-
-                finished = true;
-
-                try {
-                    await msg.edit({
-                        embeds: [
-                            new EmbedBuilder()
-                                .setColor(
-                                    "#95A5A6"
-                                )
-                                .setTitle(
-                                    "🃏 Blackjack • Hết giờ"
-                                )
-                                .setDescription(
-                                    [
-                                        "- `⏰` **Ván Blackjack đã hết thời gian**",
-                                        "",
-                                        "> `💸` Tiền cược đã bị mất."
-                                    ].join("\n")
-                                )
-                                .setFooter({
-                                    text:
-                                        "☁️ Columbina • Cozy Corner"
-                                })
-                                .setTimestamp()
-                        ],
-                        components: []
-                    });
-                } catch {}
-            }
-        );
-    }
-};
+    return container;
+}
 
 // ==========================================
-// 🎮 GAME EMBED
+// 🎮 GAME COMPONENT
 // ==========================================
 
-function createGameEmbed(
+function createGameComponents(
     message,
     player,
     dealer,
@@ -608,62 +247,78 @@ function createGameEmbed(
         message.author.globalName ||
         message.author.username;
 
-    return new EmbedBuilder()
-        .setColor(
+    const container =
+        createHeader(
+            "🃏 BLACKJACK",
             COLORS.primary
-        )
+        );
 
-        .setAuthor({
-            name:
-                `☁️ ${name} · Columbina`,
-            iconURL:
-                message.author.displayAvatarURL({
-                    extension: "png",
-                    size: 128
-                })
-        })
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder()
+            .setContent(
+                [
+                    `### ☁️ ${name}`,
+                    "",
+                    "☁️ `🍃` **Một ván bài nhỏ trong hành trình**"
+                ].join("\n")
+            )
+    );
 
-        .setTitle(
-            "🃏 Blackjack"
-        )
+    container.addSeparatorComponents(
+        new SeparatorBuilder()
+    );
 
-        .setDescription(
-            [
-                "☁️ `🍃` **Một ván bài nhỏ trong hành trình**",
-                "",
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder()
+            .setContent(
+                [
+                    "### 💰 Cược",
+                    `> \`${money(bet)} Mora\``,
+                    "",
+                    "### 🤵 Dealer",
+                    `> \`${dealer[0].name}${dealer[0].suit}\`  \`??\``,
+                    "",
+                    "### 👤 Bạn",
+                    `> ${formatHand(player)}`,
+                    `> \`⭐\` Điểm: **${getHandValue(player)}**`
+                ].join("\n")
+            )
+    );
 
-                "- `💰` **Cược**",
-                `> \`${bet.toLocaleString("vi-VN")} Mora\``,
-                "",
+    container.addSeparatorComponents(
+        new SeparatorBuilder()
+    );
 
-                "- `🤵` **Dealer**",
-                `> \`${dealer[0].name}${dealer[0].suit}\`  \`??\``,
-                "",
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder()
+            .setContent(
+                [
+                    "### 🎴 Lựa chọn",
+                    "> 🎴 **Hit** để rút thêm",
+                    "> 🛑 **Stand** để dừng"
+                ].join("\n")
+            )
+    );
 
-                "- `👤` **Bạn**",
-                `> ${formatHand(player)}`,
-                `> \`⭐\` Điểm: **${getHandValue(player)}**`,
-                "",
+    container.addSeparatorComponents(
+        new SeparatorBuilder()
+    );
 
-                "- `🎴` **Lựa chọn**",
-                "> Nhấn **Hit** để rút thêm",
-                "> Nhấn **Stand** để dừng"
-            ].join("\n")
-        )
-
-        .setFooter({
-            text:
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder()
+            .setContent(
                 "☁️ Columbina • Cozy Corner"
-        })
+            )
+    );
 
-        .setTimestamp();
+    return container;
 }
 
 // ==========================================
-// 🏆 RESULT EMBED
+// 🏆 RESULT COMPONENT
 // ==========================================
 
-function createResultEmbed(
+function createResultComponents(
     player,
     dealer,
     result,
@@ -674,10 +329,14 @@ function createResultEmbed(
         COLORS.error;
 
     let title =
-        "🃏 Blackjack • Thua";
+        "🃏 BLACKJACK • THUA";
 
     let resultText =
-        `> \`💸\` -${bet.toLocaleString("vi-VN")} Mora`;
+        `> \`💸\` **-${money(bet)} Mora**`;
+
+    // ======================================
+    // 🏆 WIN
+    // ======================================
 
     if (
         result === "win"
@@ -686,11 +345,15 @@ function createResultEmbed(
             COLORS.success;
 
         title =
-            "🃏 Blackjack • Thắng";
+            "🃏 BLACKJACK • THẮNG";
 
         resultText =
-            `> \`💰\` +${reward.toLocaleString("vi-VN")} Mora`;
+            `> \`💰\` **+${money(reward)} Mora**`;
     }
+
+    // ======================================
+    // 🤝 DRAW
+    // ======================================
 
     if (
         result === "draw"
@@ -699,64 +362,128 @@ function createResultEmbed(
             COLORS.warning;
 
         title =
-            "🃏 Blackjack • Hòa";
+            "🃏 BLACKJACK • HÒA";
 
         resultText =
-            `> \`💰\` Hoàn lại **${reward.toLocaleString("vi-VN")} Mora**`;
+            `> \`💰\` Hoàn lại **${money(reward)} Mora**`;
     }
+
+    // ======================================
+    // 👑 BLACKJACK
+    // ======================================
 
     if (
         result === "blackjack"
     ) {
         color =
-            "#E8C36A";
+            COLORS.blackjack;
 
         title =
-            "👑 Blackjack!";
+            "👑 BLACKJACK!";
 
         resultText =
-            `> \`💎\` +${reward.toLocaleString("vi-VN")} Mora`;
+            `> \`💎\` **+${money(reward)} Mora**`;
     }
 
-    return new EmbedBuilder()
-        .setColor(
+    const container =
+        createHeader(
+            title,
             color
-        )
+        );
 
-        .setTitle(
-            title
-        )
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder()
+            .setContent(
+                "☁️ `🍃` **Kết quả ván bài**"
+            )
+    );
 
-        .setDescription(
-            [
-                "☁️ `🍃` **Kết quả ván bài**",
-                "",
+    container.addSeparatorComponents(
+        new SeparatorBuilder()
+    );
 
-                "- `🤵` **Dealer**",
-                `> ${formatHand(dealer)}`,
-                `> \`⭐\` Điểm: **${getHandValue(dealer)}**`,
-                "",
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder()
+            .setContent(
+                [
+                    "### 🤵 Dealer",
+                    `> ${formatHand(dealer)}`,
+                    `> \`⭐\` Điểm: **${getHandValue(dealer)}**`,
+                    "",
+                    "### 👤 Bạn",
+                    `> ${formatHand(player)}`,
+                    `> \`⭐\` Điểm: **${getHandValue(player)}**`
+                ].join("\n")
+            )
+    );
 
-                "- `👤` **Bạn**",
-                `> ${formatHand(player)}`,
-                `> \`⭐\` Điểm: **${getHandValue(player)}**`,
-                "",
+    container.addSeparatorComponents(
+        new SeparatorBuilder()
+    );
 
-                "- `💰` **Cược**",
-                `> \`${bet.toLocaleString("vi-VN")} Mora\``,
-                "",
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder()
+            .setContent(
+                [
+                    "### 💰 Cược",
+                    `> \`${money(bet)} Mora\``,
+                    "",
+                    "### 🎁 Kết quả",
+                    resultText
+                ].join("\n")
+            )
+    );
 
-                "- `🎁` **Kết quả**",
-                resultText
-            ].join("\n")
-        )
+    container.addSeparatorComponents(
+        new SeparatorBuilder()
+    );
 
-        .setFooter({
-            text:
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder()
+            .setContent(
                 "☁️ Columbina • Cozy Corner"
-        })
+            )
+    );
 
-        .setTimestamp();
+    return container;
+}
+
+// ==========================================
+// ⏰ TIMEOUT COMPONENT
+// ==========================================
+
+function createTimeoutComponents() {
+    const container =
+        createHeader(
+            "🃏 BLACKJACK • HẾT GIỜ",
+            COLORS.neutral
+        );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder()
+            .setContent(
+                [
+                    "### ⏰ Trạng thái",
+                    "> Ván Blackjack đã hết thời gian.",
+                    "",
+                    "### 💸 Cược",
+                    "> Tiền cược đã bị mất."
+                ].join("\n")
+            )
+    );
+
+    container.addSeparatorComponents(
+        new SeparatorBuilder()
+    );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder()
+            .setContent(
+                "☁️ Columbina • Cozy Corner"
+            )
+    );
+
+    return container;
 }
 
 // ==========================================
@@ -798,3 +525,613 @@ function createButtons(
                 )
         );
 }
+
+// ==========================================
+// 🚀 COMMAND
+// ==========================================
+
+module.exports = {
+
+    name: "blackjack",
+
+    aliases: [
+        "bj",
+        "21",
+        "vblackjack"
+    ],
+
+    description:
+        "Chơi Blackjack với Columbina.",
+
+    async execute(
+        message,
+        args
+    ) {
+
+        // ======================================
+        // 👤 USER
+        // ======================================
+
+        const userId =
+            message.author.id;
+
+        const user =
+            User.getOrCreate(
+                userId
+            );
+
+        // ======================================
+        // 💰 BET
+        // ======================================
+
+        const bet =
+            Math.max(
+                1,
+                parseInt(
+                    args[0],
+                    10
+                ) || 100
+            );
+
+        // ======================================
+        // 💸 BALANCE
+        // ======================================
+
+        if (
+            Number(user.balance || 0) <
+            bet
+        ) {
+
+            const container =
+                createHeader(
+                    "❌ KHÔNG ĐỦ MORA",
+                    COLORS.error
+                );
+
+            container.addTextDisplayComponents(
+                new TextDisplayBuilder()
+                    .setContent(
+                        [
+                            "### 💰 Tiền cược",
+                            `> Cần: **${money(bet)} Mora**`,
+                            `> Có: **${money(user.balance)} Mora**`
+                        ].join("\n")
+                    )
+            );
+
+            container.addSeparatorComponents(
+                new SeparatorBuilder()
+            );
+
+            container.addTextDisplayComponents(
+                new TextDisplayBuilder()
+                    .setContent(
+                        "☁️ Columbina • Cozy Corner"
+                    )
+            );
+
+            return message.reply({
+
+                flags:
+                    MessageFlags.IsComponentsV2,
+
+                components: [
+                    container
+                ]
+            });
+        }
+
+        // ======================================
+        // 💸 REMOVE BET
+        // ======================================
+
+        const removed =
+            User.removeBalance(
+                userId,
+                bet
+            );
+
+        if (
+            removed === false
+        ) {
+
+            return message.reply(
+                "❌ Không thể trừ tiền cược."
+            );
+        }
+
+        // ======================================
+        // 🃏 CREATE DECK
+        // ======================================
+
+        const deck =
+            createDeck();
+
+        const player = [
+            deck.pop(),
+            deck.pop()
+        ];
+
+        const dealer = [
+            deck.pop(),
+            deck.pop()
+        ];
+
+        let finished =
+            false;
+
+        // ======================================
+        // 👑 NATURAL BLACKJACK
+        // ======================================
+
+        if (
+            isBlackjack(player)
+        ) {
+
+            const dealerBlackjack =
+                isBlackjack(
+                    dealer
+                );
+
+            // ==================================
+            // 🤝 BOTH BLACKJACK
+            // ==================================
+
+            if (
+                dealerBlackjack
+            ) {
+
+                User.addBalance(
+                    userId,
+                    bet
+                );
+
+                recordGame(
+                    userId,
+                    "draw"
+                );
+
+                return message.reply({
+
+                    flags:
+                        MessageFlags.IsComponentsV2,
+
+                    components: [
+                        createResultComponents(
+                            player,
+                            dealer,
+                            "draw",
+                            bet,
+                            bet
+                        )
+                    ]
+                });
+            }
+
+            // ==================================
+            // 👑 PLAYER BLACKJACK
+            // ==================================
+
+            const reward =
+                Math.floor(
+                    bet * 2.5
+                );
+
+            User.addBalance(
+                userId,
+                reward
+            );
+
+            recordGame(
+                userId,
+                "win"
+            );
+
+            return message.reply({
+
+                flags:
+                    MessageFlags.IsComponentsV2,
+
+                components: [
+                    createResultComponents(
+                        player,
+                        dealer,
+                        "blackjack",
+                        bet,
+                        reward
+                    )
+                ]
+            });
+        }
+
+        // ======================================
+        // 🎮 GAME MESSAGE
+        // ======================================
+
+        const msg =
+            await message.reply({
+
+                flags:
+                    MessageFlags.IsComponentsV2,
+
+                components: [
+                    createGameComponents(
+                        message,
+                        player,
+                        dealer,
+                        bet
+                    ),
+                    createButtons(
+                        userId
+                    )
+                ]
+            });
+
+        // ======================================
+        // 🎮 COLLECTOR
+        // ======================================
+
+        const collector =
+            msg.createMessageComponentCollector({
+                time: 120000
+            });
+
+        // ======================================
+        // 🔘 BUTTON COLLECT
+        // ======================================
+
+        collector.on(
+            "collect",
+            async interaction => {
+
+                try {
+
+                    // ==============================
+                    // 🔐 USER CHECK
+                    // ==============================
+
+                    if (
+                        interaction.user.id !==
+                        userId
+                    ) {
+
+                        return interaction.reply({
+                            content:
+                                "🍃 Đây không phải ván Blackjack của bạn.",
+                            ephemeral:
+                                true
+                        });
+                    }
+
+                    // ==============================
+                    // 🛑 FINISHED
+                    // ==============================
+
+                    if (
+                        finished
+                    ) {
+
+                        return interaction.reply({
+                            content:
+                                "❌ Ván Blackjack đã kết thúc.",
+                            ephemeral:
+                                true
+                        });
+                    }
+
+                    // ==============================
+                    // 🎴 HIT
+                    // ==============================
+
+                    if (
+                        interaction.customId ===
+                        `bj_hit_${userId}`
+                    ) {
+
+                        player.push(
+                            deck.pop()
+                        );
+
+                        const value =
+                            getHandValue(
+                                player
+                            );
+
+                        // ==========================
+                        // 💥 BUST
+                        // ==========================
+
+                        if (
+                            value > 21
+                        ) {
+
+                            finished =
+                                true;
+
+                            recordGame(
+                                userId,
+                                "lose"
+                            );
+
+                            collector.stop(
+                                "finished"
+                            );
+
+                            return interaction.update({
+
+                                flags:
+                                    MessageFlags.IsComponentsV2,
+
+                                components: [
+                                    createResultComponents(
+                                        player,
+                                        dealer,
+                                        "lose",
+                                        bet,
+                                        0
+                                    )
+                                ]
+                            });
+                        }
+
+                        // ==========================
+                        // 🎯 EXACT 21
+                        // ==========================
+
+                        if (
+                            value === 21
+                        ) {
+
+                            return dealerTurn(
+                                interaction
+                            );
+                        }
+
+                        // ==========================
+                        // 🔄 CONTINUE
+                        // ==========================
+
+                        return interaction.update({
+
+                            flags:
+                                MessageFlags.IsComponentsV2,
+
+                            components: [
+                                createGameComponents(
+                                    message,
+                                    player,
+                                    dealer,
+                                    bet
+                                ),
+                                createButtons(
+                                    userId
+                                )
+                            ]
+                        });
+                    }
+
+                    // ==============================
+                    // 🛑 STAND
+                    // ==============================
+
+                    if (
+                        interaction.customId ===
+                        `bj_stand_${userId}`
+                    ) {
+
+                        return dealerTurn(
+                            interaction
+                        );
+                    }
+
+                } catch (
+                    error
+                ) {
+
+                    console.error(
+                        "[blackjack] Interaction Error:",
+                        error
+                    );
+
+                    if (
+                        !interaction.replied &&
+                        !interaction.deferred
+                    ) {
+
+                        await interaction
+                            .reply({
+                                content:
+                                    "❌ Có lỗi xảy ra khi xử lý ván Blackjack.",
+                                ephemeral:
+                                    true
+                            })
+                            .catch(
+                                () => {}
+                            );
+                    }
+                }
+            }
+        );
+
+        // ======================================
+        // 🏁 DEALER TURN
+        // ======================================
+
+        async function dealerTurn(
+            interaction
+        ) {
+
+            // ==============================
+            // 🤵 DEALER DRAW
+            // ==============================
+
+            while (
+                getHandValue(
+                    dealer
+                ) < 17
+            ) {
+
+                dealer.push(
+                    deck.pop()
+                );
+            }
+
+            // ==============================
+            // 🔢 VALUES
+            // ==============================
+
+            const playerValue =
+                getHandValue(
+                    player
+                );
+
+            const dealerValue =
+                getHandValue(
+                    dealer
+                );
+
+            let result;
+            let reward = 0;
+
+            // ==============================
+            // 💥 DEALER BUST
+            // ==============================
+
+            if (
+                dealerValue > 21
+            ) {
+
+                result =
+                    "win";
+
+                reward =
+                    bet * 2;
+
+            // ==============================
+            // 🏆 PLAYER HIGHER
+            // ==============================
+
+            } else if (
+                playerValue >
+                dealerValue
+            ) {
+
+                result =
+                    "win";
+
+                reward =
+                    bet * 2;
+
+            // ==============================
+            // 🤝 DRAW
+            // ==============================
+
+            } else if (
+                playerValue ===
+                dealerValue
+            ) {
+
+                result =
+                    "draw";
+
+                reward =
+                    bet;
+
+            // ==============================
+            // 💸 LOSE
+            // ==============================
+
+            } else {
+
+                result =
+                    "lose";
+
+                reward =
+                    0;
+            }
+
+            // ==============================
+            // 💰 PAYOUT
+            // ==============================
+
+            if (
+                reward > 0
+            ) {
+
+                User.addBalance(
+                    userId,
+                    reward
+                );
+            }
+
+            // ==============================
+            // 📊 RECORD
+            // ==============================
+
+            recordGame(
+                userId,
+                result
+            );
+
+            finished =
+                true;
+
+            collector.stop(
+                "finished"
+            );
+
+            // ==============================
+            // 📤 RESULT
+            // ==============================
+
+            return interaction.update({
+
+                flags:
+                    MessageFlags.IsComponentsV2,
+
+                components: [
+                    createResultComponents(
+                        player,
+                        dealer,
+                        result,
+                        bet,
+                        reward
+                    )
+                ]
+            });
+        }
+
+        // ======================================
+        // ⏰ TIMEOUT
+        // ======================================
+
+        collector.on(
+            "end",
+            async () => {
+
+                if (
+                    finished
+                ) {
+                    return;
+                }
+
+                finished =
+                    true;
+
+                try {
+
+                    await msg.edit({
+
+                        flags:
+                            MessageFlags.IsComponentsV2,
+
+                        components: [
+                            createTimeoutComponents()
+                        ]
+                    });
+
+                } catch {}
+            }
+        );
+    }
+};

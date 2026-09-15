@@ -1,9 +1,11 @@
-
 const {
-    EmbedBuilder,
+    ContainerBuilder,
+    TextDisplayBuilder,
+    SeparatorBuilder,
     ActionRowBuilder,
     ButtonBuilder,
-    ButtonStyle
+    ButtonStyle,
+    MessageFlags
 } = require("discord.js");
 
 const User =
@@ -22,11 +24,11 @@ const MAX_BET = 100000;
 // ==========================================
 
 const COLORS = {
-    primary: "#9ccfd8",
-    success: "#a8d8a8",
-    warning: "#ffd166",
-    error: "#f2a7a7",
-    neutral: "#95A5A6"
+    primary: 0x9ccfd8,
+    success: 0xa8d8a8,
+    warning: 0xffd166,
+    error: 0xf2a7a7,
+    neutral: 0x95a5a6
 };
 
 // ==========================================
@@ -98,6 +100,314 @@ function getMultiplier(
             multipliers.length - 1
         ]
     );
+}
+
+// ==========================================
+// 🧱 COMPONENTS V2 HEADER
+// ==========================================
+
+function createHeader(
+    title,
+    color
+) {
+    const container =
+        new ContainerBuilder()
+            .setAccentColor(color);
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+            `# ${title}`
+        )
+    );
+
+    container.addSeparatorComponents(
+        new SeparatorBuilder()
+    );
+
+    return container;
+}
+
+// ==========================================
+// 📋 GAME COMPONENT
+// ==========================================
+
+function createGameComponents(
+    game
+) {
+    const multiplier =
+        getMultiplier(
+            game.revealed.length
+        );
+
+    const reward =
+        Math.floor(
+            game.bet *
+            multiplier
+        );
+
+    const container =
+        createHeader(
+            "💣 BOMB GAME",
+            COLORS.primary
+        );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+            [
+                "### 💰 Tiền cược",
+                `> **${money(game.bet)} Mora**`,
+                "",
+                "### 💎 Ô an toàn",
+                `> **${game.revealed.length}**`,
+                "",
+                "### 📈 Multiplier",
+                `> **x${multiplier}**`,
+                "",
+                "### 💵 Có thể nhận",
+                `> **${money(reward)} Mora**`
+            ].join("\n")
+        )
+    );
+
+    container.addSeparatorComponents(
+        new SeparatorBuilder()
+    );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+            [
+                "💠 **Chọn ô** để tìm đá quý",
+                "💣 **Trúng bom** sẽ mất cược",
+                "💎 **Mở càng nhiều ô** → thưởng càng cao"
+            ].join("\n")
+        )
+    );
+
+    container.addSeparatorComponents(
+        new SeparatorBuilder()
+    );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+            "Columbina • Dò Bom"
+        )
+    );
+
+    return container;
+}
+
+// ==========================================
+// 💰 CASHOUT COMPONENT
+// ==========================================
+
+function createCashoutComponents(
+    game,
+    multiplier,
+    reward,
+    profit
+) {
+    const container =
+        createHeader(
+            "💰 BOMB GAME • CASH OUT",
+            COLORS.success
+        );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+            [
+                "### 💎 Ô an toàn",
+                `> **${game.revealed.length}**`,
+                "",
+                "### 📈 Multiplier",
+                `> **x${multiplier}**`,
+                "",
+                "### 💰 Nhận được",
+                `> **+${money(reward)} Mora**`,
+                "",
+                "### 📊 Lợi nhuận",
+                `> **${profit >= 0 ? "+" : ""}${money(profit)} Mora**`
+            ].join("\n")
+        )
+    );
+
+    container.addSeparatorComponents(
+        new SeparatorBuilder()
+    );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+            "Columbina • Dò Bom"
+        )
+    );
+
+    return container;
+}
+
+// ==========================================
+// 💣 BOOM COMPONENT
+// ==========================================
+
+function createBoomComponents(
+    game
+) {
+    const container =
+        createHeader(
+            "💣 BOMB GAME • KẾT THÚC",
+            COLORS.error
+        );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+            [
+                "### 💣 Kết quả",
+                "> Bạn đã chọn trúng bom.",
+                "",
+                "### 💎 Ô an toàn",
+                `> **${game.revealed.length}**`,
+                "",
+                "### 💸 Mất cược",
+                `> **-${money(game.bet)} Mora**`,
+                "",
+                "> 🌙 Cẩn thận hơn ở ván sau nhé."
+            ].join("\n")
+        )
+    );
+
+    container.addSeparatorComponents(
+        new SeparatorBuilder()
+    );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+            "Columbina • Dò Bom"
+        )
+    );
+
+    return container;
+}
+
+// ==========================================
+// 🏆 WIN COMPONENT
+// ==========================================
+
+function createWinComponents(
+    game,
+    multiplier,
+    reward
+) {
+    const safeTiles =
+        SIZE * SIZE - BOMBS;
+
+    const container =
+        createHeader(
+            "🏆 BOMB GAME • HOÀN THÀNH",
+            COLORS.warning
+        );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+            [
+                "### 💎 Ô an toàn",
+                `> **${game.revealed.length}/${safeTiles}**`,
+                "",
+                "### 📈 Multiplier",
+                `> **x${multiplier}**`,
+                "",
+                "### 💰 Nhận được",
+                `> **+${money(reward)} Mora**`,
+                "",
+                "> 🏆 Bạn đã tìm thấy toàn bộ ô an toàn!"
+            ].join("\n")
+        )
+    );
+
+    container.addSeparatorComponents(
+        new SeparatorBuilder()
+    );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+            "Columbina • Dò Bom"
+        )
+    );
+
+    return container;
+}
+
+// ==========================================
+// 🛑 STOP COMPONENT
+// ==========================================
+
+function createStopComponents(
+    game
+) {
+    const container =
+        createHeader(
+            "🛑 BOMB GAME • ĐÃ DỪNG",
+            COLORS.neutral
+        );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+            [
+                "### 💎 Ô an toàn",
+                `> **${game.revealed.length}**`,
+                "",
+                "### 💸 Mất cược",
+                `> **-${money(game.bet)} Mora**`
+            ].join("\n")
+        )
+    );
+
+    container.addSeparatorComponents(
+        new SeparatorBuilder()
+    );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+            "Columbina • Dò Bom"
+        )
+    );
+
+    return container;
+}
+
+// ==========================================
+// ⏰ TIMEOUT COMPONENT
+// ==========================================
+
+function createTimeoutComponents(
+    game
+) {
+    const container =
+        createHeader(
+            "⏰ BOMB GAME • HẾT THỜI GIAN",
+            COLORS.neutral
+        );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+            [
+                "### ⏰ Trạng thái",
+                "> Ván chơi đã hết thời gian.",
+                "",
+                "### 💸 Mất cược",
+                `> **-${money(game.bet)} Mora**`
+            ].join("\n")
+        )
+    );
+
+    container.addSeparatorComponents(
+        new SeparatorBuilder()
+    );
+
+    container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+            "Columbina • Dò Bom"
+        )
+    );
+
+    return container;
 }
 
 // ==========================================
@@ -246,279 +556,6 @@ function createBoard(
 }
 
 // ==========================================
-// 📋 GAME EMBED
-// ==========================================
-
-function createEmbed(
-    game
-) {
-    const multiplier =
-        getMultiplier(
-            game.revealed.length
-        );
-
-    const reward =
-        Math.floor(
-            game.bet *
-            multiplier
-        );
-
-    return new EmbedBuilder()
-
-        .setColor(
-            COLORS.primary
-        )
-
-        .setAuthor({
-            name:
-                "Columbina • Bomb"
-        })
-
-        .setDescription(
-            [
-                "**BOMB GAME**",
-                "",
-                "- `💰` **Tiền cược**",
-                `> **${money(game.bet)} Mora**`,
-                "",
-                "- `💎` **Ô an toàn**",
-                `> **${game.revealed.length}**`,
-                "",
-                "- `📈` **Multiplier**",
-                `> **x${multiplier}**`,
-                "",
-                "- `💵` **Có thể nhận**",
-                `> **${money(reward)} Mora**`,
-                "",
-                "- `💠` **Chọn ô** để tìm đá quý",
-                "- `💣` **Trúng bom** sẽ mất cược",
-                "- `💎` **Mở càng nhiều ô** → thưởng càng cao"
-            ].join("\n")
-        )
-
-        .setFooter({
-            text:
-                "Columbina • Dò Bom"
-        })
-
-        .setTimestamp();
-}
-
-// ==========================================
-// 💰 CASHOUT EMBED
-// ==========================================
-
-function createCashoutEmbed(
-    game,
-    multiplier,
-    reward,
-    profit
-) {
-    return new EmbedBuilder()
-
-        .setColor(
-            COLORS.success
-        )
-
-        .setAuthor({
-            name:
-                "Columbina • Bomb"
-        })
-
-        .setDescription(
-            [
-                "**BOMB GAME • CASH OUT**",
-                "",
-                "- `💎` **Ô an toàn**",
-                `> **${game.revealed.length}**`,
-                "",
-                "- `📈` **Multiplier**",
-                `> **x${multiplier}**`,
-                "",
-                "- `💰` **Nhận được**",
-                `> **+${money(reward)} Mora**`,
-                "",
-                "- `📊` **Lợi nhuận**",
-                `> **${profit >= 0 ? "+" : ""}${money(profit)} Mora**`
-            ].join("\n")
-        )
-
-        .setFooter({
-            text:
-                "Columbina • Dò Bom"
-        })
-
-        .setTimestamp();
-}
-
-// ==========================================
-// 💣 BOOM EMBED
-// ==========================================
-
-function createBoomEmbed(
-    game
-) {
-    return new EmbedBuilder()
-
-        .setColor(
-            COLORS.error
-        )
-
-        .setAuthor({
-            name:
-                "Columbina • Bomb"
-        })
-
-        .setDescription(
-            [
-                "**BOMB GAME • KẾT THÚC**",
-                "",
-                "- `💣` **Kết quả**",
-                "> Bạn đã chọn trúng bom.",
-                "",
-                "- `💎` **Ô an toàn**",
-                `> **${game.revealed.length}**`,
-                "",
-                "- `💸` **Mất cược**",
-                `> **-${money(game.bet)} Mora**`,
-                "",
-                "> `🌙` Cẩn thận hơn ở ván sau nhé."
-            ].join("\n")
-        )
-
-        .setFooter({
-            text:
-                "Columbina • Dò Bom"
-        })
-
-        .setTimestamp();
-}
-
-// ==========================================
-// 🏆 WIN EMBED
-// ==========================================
-
-function createWinEmbed(
-    game,
-    multiplier,
-    reward
-) {
-    const safeTiles =
-        SIZE * SIZE - BOMBS;
-
-    return new EmbedBuilder()
-
-        .setColor(
-            COLORS.warning
-        )
-
-        .setAuthor({
-            name:
-                "Columbina • Bomb"
-        })
-
-        .setDescription(
-            [
-                "**BOMB GAME • HOÀN THÀNH**",
-                "",
-                "- `💎` **Ô an toàn**",
-                `> **${game.revealed.length}/${safeTiles}**`,
-                "",
-                "- `📈` **Multiplier**",
-                `> **x${multiplier}**`,
-                "",
-                "- `💰` **Nhận được**",
-                `> **+${money(reward)} Mora**`,
-                "",
-                "> `🏆` Bạn đã tìm thấy toàn bộ ô an toàn!"
-            ].join("\n")
-        )
-
-        .setFooter({
-            text:
-                "Columbina • Dò Bom"
-        })
-
-        .setTimestamp();
-}
-
-// ==========================================
-// 🛑 STOP EMBED
-// ==========================================
-
-function createStopEmbed(
-    game
-) {
-    return new EmbedBuilder()
-
-        .setColor(
-            COLORS.neutral
-        )
-
-        .setAuthor({
-            name:
-                "Columbina • Bomb"
-        })
-
-        .setDescription(
-            [
-                "**BOMB GAME • ĐÃ DỪNG**",
-                "",
-                "- `💎` **Ô an toàn**",
-                `> **${game.revealed.length}**`,
-                "",
-                "- `💸` **Mất cược**",
-                `> **-${money(game.bet)} Mora**`
-            ].join("\n")
-        )
-
-        .setFooter({
-            text:
-                "Columbina • Dò Bom"
-        })
-
-        .setTimestamp();
-}
-
-// ==========================================
-// ⏰ TIMEOUT EMBED
-// ==========================================
-
-function createTimeoutEmbed(
-    game
-) {
-    return new EmbedBuilder()
-
-        .setColor(
-            COLORS.neutral
-        )
-
-        .setAuthor({
-            name:
-                "Columbina • Bomb"
-        })
-
-        .setDescription(
-            [
-                "**BOMB GAME • HẾT THỜI GIAN**",
-                "",
-                "- `⏰` **Trạng thái**",
-                "> Ván chơi đã hết thời gian.",
-                "",
-                "- `💸` **Mất cược**",
-                `> **-${money(game.bet)} Mora**`
-            ].join("\n")
-        )
-
-        .setFooter({
-            text:
-                "Columbina • Dò Bom"
-        })
-
-        .setTimestamp();
-}
-
-// ==========================================
 // 🚀 COMMAND
 // ==========================================
 
@@ -643,19 +680,24 @@ module.exports = {
                 false
         };
 
+        // ==================================
+        // 📦 INITIAL MESSAGE
+        // ==================================
+
         const msg =
             await message.reply({
 
-                embeds: [
-                    createEmbed(
-                        game
-                    )
-                ],
+                flags:
+                    MessageFlags.IsComponentsV2,
 
-                components:
-                    createBoard(
+                components: [
+                    createGameComponents(
+                        game
+                    ),
+                    ...createBoard(
                         game
                     )
+                ]
             });
 
         // ==================================
@@ -754,20 +796,21 @@ module.exports = {
 
                         await interaction.update({
 
-                            embeds: [
-                                createCashoutEmbed(
+                            flags:
+                                MessageFlags.IsComponentsV2,
+
+                            components: [
+                                createCashoutComponents(
                                     game,
                                     multiplier,
                                     reward,
                                     profit
-                                )
-                            ],
-
-                            components:
-                                createBoard(
+                                ),
+                                ...createBoard(
                                     game,
                                     true
                                 )
+                            ]
                         });
 
                         collector.stop(
@@ -791,17 +834,18 @@ module.exports = {
 
                         await interaction.update({
 
-                            embeds: [
-                                createStopEmbed(
-                                    game
-                                )
-                            ],
+                            flags:
+                                MessageFlags.IsComponentsV2,
 
-                            components:
-                                createBoard(
+                            components: [
+                                createStopComponents(
+                                    game
+                                ),
+                                ...createBoard(
                                     game,
                                     true
                                 )
+                            ]
                         });
 
                         collector.stop(
@@ -885,17 +929,18 @@ module.exports = {
 
                         await interaction.update({
 
-                            embeds: [
-                                createBoomEmbed(
-                                    game
-                                )
-                            ],
+                            flags:
+                                MessageFlags.IsComponentsV2,
 
-                            components:
-                                createBoard(
+                            components: [
+                                createBoomComponents(
+                                    game
+                                ),
+                                ...createBoard(
                                     game,
                                     true
                                 )
+                            ]
                         });
 
                         collector.stop(
@@ -947,19 +992,20 @@ module.exports = {
 
                         await interaction.update({
 
-                            embeds: [
-                                createWinEmbed(
+                            flags:
+                                MessageFlags.IsComponentsV2,
+
+                            components: [
+                                createWinComponents(
                                     game,
                                     multiplier,
                                     reward
-                                )
-                            ],
-
-                            components:
-                                createBoard(
+                                ),
+                                ...createBoard(
                                     game,
                                     true
                                 )
+                            ]
                         });
 
                         collector.stop(
@@ -975,16 +1021,17 @@ module.exports = {
 
                     await interaction.update({
 
-                        embeds: [
-                            createEmbed(
-                                game
-                            )
-                        ],
+                        flags:
+                            MessageFlags.IsComponentsV2,
 
-                        components:
-                            createBoard(
+                        components: [
+                            createGameComponents(
+                                game
+                            ),
+                            ...createBoard(
                                 game
                             )
+                        ]
                     });
 
                 } catch (
@@ -1015,9 +1062,9 @@ module.exports = {
             }
         );
 
-        // ==================================
+        // ==========================================
         // ⏰ TIMEOUT
-        // ==================================
+        // ==========================================
 
         collector.on(
             "end",
@@ -1036,17 +1083,18 @@ module.exports = {
 
                     await msg.edit({
 
-                        embeds: [
-                            createTimeoutEmbed(
-                                game
-                            )
-                        ],
+                        flags:
+                            MessageFlags.IsComponentsV2,
 
-                        components:
-                            createBoard(
+                        components: [
+                            createTimeoutComponents(
+                                game
+                            ),
+                            ...createBoard(
                                 game,
                                 true
                             )
+                        ]
                     });
 
                 } catch {}
@@ -1054,4 +1102,3 @@ module.exports = {
         );
     }
 };
-
