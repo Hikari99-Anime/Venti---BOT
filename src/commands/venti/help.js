@@ -7,207 +7,163 @@ const {
     MessageFlags
 } = require("discord.js");
 
-// ==========================================
+// ============================================================
 // 📚 HELP DATA
-// ==========================================
+// ============================================================
 
 const CATEGORIES = {
 
-    // ==========================================
+    // ========================================================
     // 🏠 HOME
-    // ==========================================
+    // ========================================================
 
     home: {
         title: "❄️ Trung Tâm Hướng Dẫn",
 
         description:
-            "☁️ `❄️` **Một góc nhỏ của hành trình**\n" +
-            "・ Columbina • Economy • Minigames • Adventure\n\n" +
+            "☁️ `🍃` **Một góc nhỏ của hành trình**\n" +
+            "・ Chọn một danh mục bên dưới để bắt đầu.\n\n" +
 
             "- `🚀` **Bắt đầu**\n" +
-            "> `💰 Vdaily`        ・ Nhận Daily Reward\n" +
-            "> `💼 Vwork`         ・ Làm việc kiếm Mora\n" +
-            "> `👤 Vprofile`      ・ Xem hồ sơ\n" +
-            "> `📈 Vstats`        ・ Xem thống kê\n\n" +
+            "> `💰 Vdaily       : Nhận Daily Reward`\n" +
+            "> `💼 Vwork        : Làm việc kiếm Mora`\n" +
+            "> `👤 Vprofile     : Xem hồ sơ`\n" +
+            "> `📈 Vstats       : Xem thống kê`\n\n" +
 
             "- `💰` **Tài chính**\n" +
-            "> `💰 Vbalance`             ・ Xem số dư\n" +
-            "> `💸 Vpay @user <amount>`  ・ Chuyển Mora\n" +
-            "> `🏦 Vdeposit <amount>`    ・ Gửi ngân hàng\n" +
-            "> `🏦 Vwithdraw <amount>`   ・ Rút ngân hàng\n" +
-            "> `🛒 Vshop`                ・ Xem cửa hàng\n" +
-            "> `💰 Vbuy <item> [amount]` ・ Mua vật phẩm\n" +
-            "> `💸 Vsell`                ・ Bán vật phẩm\n\n" +
+            "> `💵 Vbalance     : Xem số dư`\n" +
+            "> `💸 Vpay         : Chuyển Mora`\n" +
+            "> `🏦 Vdeposit     : Gửi ngân hàng`\n" +
+            "> `🏦 Vwithdraw    : Rút ngân hàng`\n\n" +
 
             "- `🎮` **Mini Game**\n" +
-            "> `🎰 Vslots <amount>`           ・ Slot Machine\n" +
-            "> `🪙 Vcoinflip <amount>`        ・ Coin Flip\n" +
-            "> `🎲 Vdice <amount>`            ・ Dice\n" +
-            "> `🃏 Vblackjack <amount>`       ・ Blackjack\n" +
-            "> `🎯 Vtaixiu <amount>`          ・ Tài Xỉu\n" +
-            "> `💣 Vbomb <amount>`            ・ Bomb Game\n" +
-            "> `🔢 Vguess <amount> [attempts]` ・ Đoán số\n" +
-            "> `✊ Vrps <amount>`             ・ Kéo Búa Bao\n\n" +
+            "> `🎰 Vslots       : Slot Machine`\n" +
+            "> `🃏 Vblackjack   : Blackjack`\n" +
+            "> `🎲 Vdice        : Dice`\n" +
+            "> `🎯 Vtaixiu      : Tài Xỉu`\n\n" +
 
             "- `🌿` **Phiêu lưu**\n" +
-            "> `🎣 Vfish`         ・ Câu cá\n" +
-            "> `🌾 Vfarm`         ・ Trồng & thu hoạch\n" +
-            "> `📜 Vquest`        ・ Làm nhiệm vụ\n" +
-            "> `🎒 Vinventory`    ・ Xem vật phẩm\n" +
-            "> `🏆 Vachievement`  ・ Thành tựu\n" +
-            "> `🏆 Vleaderboard`  ・ Bảng xếp hạng\n\n" +
+            "> `🎣 Vfish        : Câu cá`\n" +
+            "> `🌾 Vfarm        : Trồng & thu hoạch`\n" +
+            "> `📜 Vquest       : Nhiệm vụ`\n" +
+            "> `🎒 Vinventory   : Túi đồ`\n\n" +
 
-            "☕ `❄️` **Chúc bạn có một hành trình thật chill.**",
+            "☕ `❄️` **Chọn danh mục bên dưới để xem thêm.**",
 
         footer:
             "☁️ Columbina • Help Center"
     },
 
-    // ==========================================
+    // ========================================================
     // 💰 ECONOMY
-    // ==========================================
+    // ========================================================
 
     economy: {
         title: "💰 Kinh Tế",
 
         description:
-            "☁️ `💰` **Economy System**\n" +
-            "・ Quản lý Mora và xây dựng tài sản.\n\n" +
+            "☁️ `🍃` **Quản lý Mora của bạn**\n\n" +
 
-            "- `💵` **Tài chính**\n" +
-            "> `💰 Vbalance`             ・ Xem số dư\n" +
-            "> `💸 Vpay @user <amount>`  ・ Chuyển Mora\n" +
-            "> `🏦 Vdeposit <amount>`    ・ Gửi ngân hàng\n" +
-            "> `🏦 Vwithdraw <amount>`   ・ Rút ngân hàng\n\n" +
+            "- `💰` **Tài chính**\n" +
+            "> `💵 Vbalance     : Xem số dư`\n" +
+            "> `💸 Vpay         : Chuyển Mora`\n" +
+            "> `🏦 Vdeposit     : Gửi ngân hàng`\n" +
+            "> `🏦 Vwithdraw    : Rút ngân hàng`\n\n" +
 
-            "- `🎁` **Phần thưởng**\n" +
-            "> `📅 Vdaily`               ・ Daily Reward\n" +
-            "> `💼 Vwork`                ・ Làm việc kiếm Mora\n\n" +
+            "- `🎁` **Kiếm Mora**\n" +
+            "> `📅 Vdaily       : Daily Reward`\n" +
+            "> `💼 Vwork        : Làm việc`\n\n" +
 
             "- `🛒` **Cửa hàng**\n" +
-            "> `🛍️ Vshop`                ・ Xem cửa hàng\n" +
-            "> `🛒 Vbuy <item> [amount]` ・ Mua vật phẩm\n" +
-            "> `💸 Vsell`                ・ Bán vật phẩm\n\n" +
+            "> `🛍️ Vshop        : Xem cửa hàng`\n" +
+            "> `🛒 Vbuy         : Mua vật phẩm`\n" +
+            "> `💸 Vsell        : Bán vật phẩm`\n\n" +
 
-            "- `📊` **Tiến trình**\n" +
-            "> `👤 Vprofile`             ・ Hồ sơ cá nhân\n" +
-            "> `📈 Vstats`               ・ Thống kê hành trình\n" +
-            "> `🏆 Vleaderboard`         ・ Bảng xếp hạng\n\n" +
-
-            "☕ `💰` **Earn • Save • Spend • Grow**",
+            "☕ `💰` **Earn • Save • Spend**",
 
         footer:
             "☁️ Columbina • Economy"
     },
 
-    // ==========================================
+    // ========================================================
     // 🎮 GAMES
-    // ==========================================
+    // ========================================================
 
     games: {
         title: "🎮 Mini Game",
 
         description:
-            "☁️ `🎮` **Mini Game Center**\n" +
-            "・ Dùng Mora để thử vận may.\n\n" +
+            "☁️ `🍃` **Thử vận may với Mora**\n\n" +
 
             "- `🎰` **Casino**\n" +
-            "> `🎰 Vslots <amount>`       ・ Slot Machine\n" +
-            "> `🪙 Vcoinflip <amount>`    ・ Coin Flip\n" +
-            "> `🎲 Vdice <amount>`        ・ Dice\n" +
-            "> `🃏 Vblackjack <amount>`   ・ Blackjack\n\n" +
+            "> `🎰 Vslots       : Slot Machine`\n" +
+            "> `🃏 Vblackjack   : Blackjack`\n" +
+            "> `🎲 Vdice        : Dice`\n" +
+            "> `🪙 Vcoinflip    : Coin Flip`\n\n" +
 
             "- `🎯` **Luck Games**\n" +
-            "> `🎯 Vtaixiu <amount>`      ・ Tài Xỉu\n" +
-            "> `💣 Vbomb <amount>`        ・ Bomb Game\n" +
-            "> `🔢 Vguess <amount> [attempts]` ・ Đoán số\n" +
-            "> `✊ Vrps <amount>`         ・ Kéo Búa Bao\n\n" +
+            "> `🎯 Vtaixiu      : Tài Xỉu`\n" +
+            "> `💣 Vbomb        : Bomb Game`\n" +
+            "> `🔢 Vguess       : Đoán số`\n" +
+            "> `✊ Vrps         : Kéo Búa Bao`\n\n" +
 
-            "- `📊` **Thống kê**\n" +
-            "> `📈 Vstats`               ・ Games / Wins / Losses\n" +
-            "> `🏆 Vleaderboard`         ・ Top người chơi\n\n" +
-
-            "- `🍀` **Lưu ý**\n" +
-            "> `💰` Mỗi game có cơ chế thưởng riêng.\n" +
-            "> `🎲` Kết quả game phụ thuộc vào may mắn.\n" +
-            "> `⚠️` Hãy quản lý Mora hợp lý.\n\n" +
-
-            "☘️ `🎮` **Good luck, Traveler!**",
+            "🍀 `🎮` **Chơi vui • Quản lý Mora hợp lý**",
 
         footer:
             "☁️ Columbina • Mini Game"
     },
 
-    // ==========================================
+    // ========================================================
     // 🌿 ADVENTURE
-    // ==========================================
+    // ========================================================
 
     adventure: {
         title: "🌿 Phiêu Lưu",
 
         description:
-            "☁️ `🌿` **Adventure System**\n" +
-            "・ Thu thập, khám phá và phát triển hành trình.\n\n" +
+            "☁️ `🍃` **Explore • Collect • Grow**\n\n" +
 
             "- `🎣` **Fishing**\n" +
-            "> `🎣 Vfish`         ・ Câu cá\n" +
-            "> `🐟` Thu thập nhiều loại cá\n" +
-            "> `🎒 Vinventory`    ・ Xem vật phẩm\n" +
-            "> `💸 Vsell`         ・ Bán cá lấy Mora\n\n" +
+            "> `🎣 Vfish        : Câu cá`\n" +
+            "> `🐟` Thu thập cá và bán lấy Mora\n\n" +
 
             "- `🌾` **Farming**\n" +
-            "> `🌱 Vfarm`         ・ Trồng & thu hoạch\n" +
-            "> `🎒 Vinventory`    ・ Xem nông sản\n" +
-            "> `💸 Vsell`         ・ Bán nông sản\n\n" +
+            "> `🌱 Vfarm        : Trồng & thu hoạch`\n" +
+            "> `🌾` Thu thập nông sản\n\n" +
 
             "- `📜` **Quest**\n" +
-            "> `📜 Vquest`        ・ Xem nhiệm vụ\n" +
-            "> `🎯` Hoàn thành quest nhận thưởng\n" +
-            "> `✨` Nhận Mora & XP\n\n" +
+            "> `📜 Vquest       : Xem nhiệm vụ`\n" +
+            "> `✨` Hoàn thành để nhận Mora & XP\n\n" +
 
-            "- `🏆` **Tiến trình**\n" +
-            "> `👤 Vprofile`      ・ Level & XP\n" +
-            "> `🏆 Vachievement`  ・ Thành tựu\n" +
-            "> `📈 Vstats`        ・ Thống kê\n\n" +
-
-            "☕ `🌿` **Explore • Collect • Grow**",
+            "- `🎒` **Inventory**\n" +
+            "> `🎒 Vinventory   : Xem vật phẩm`\n" +
+            "> `💸 Vsell        : Bán vật phẩm`",
 
         footer:
             "☁️ Columbina • Adventure"
     },
 
-    // ==========================================
+    // ========================================================
     // 👤 PROFILE
-    // ==========================================
+    // ========================================================
 
     profile: {
-        title: "👤 Hồ Sơ & Hành Trình",
+        title: "👤 Hành Trình",
 
         description:
-            "☁️ `👤` **Your Journey**\n" +
-            "・ Theo dõi toàn bộ hành trình của bạn.\n\n" +
+            "☁️ `🍃` **Theo dõi hành trình của bạn**\n\n" +
 
             "- `👤` **Hồ sơ**\n" +
-            "> `👤 Vprofile`      ・ Hồ sơ cá nhân\n" +
-            "> `📈 Vstats`        ・ Thống kê hành trình\n\n" +
+            "> `👤 Vprofile     : Hồ sơ cá nhân`\n" +
+            "> `📈 Vstats       : Thống kê`\n\n" +
 
-            "- `🎒` **Inventory**\n" +
-            "> `🎒 Vinventory`    ・ Túi vật phẩm\n" +
-            "> `💸 Vsell`         ・ Bán vật phẩm\n" +
-            "> `🛒 Vshop`         ・ Cửa hàng\n" +
-            "> `💰 Vbuy <item> [amount]` ・ Mua vật phẩm\n\n" +
+            "- `⭐` **Tiến trình**\n" +
+            "> `🏆 Vachievement : Thành tựu`\n" +
+            "> `🏆 Vleaderboard : Bảng xếp hạng`\n\n" +
 
-            "- `🏆` **Thành tựu**\n" +
-            "> `🏆 Vachievement`  ・ Thành tích\n\n" +
-
-            "- `🏅` **Bảng xếp hạng**\n" +
-            "> `🏆 Vleaderboard`  ・ Bảng xếp hạng\n" +
-            "> `💰` Top Mora\n" +
-            "> `⭐` Top Level\n" +
-            "> `🎣` Top Fishing\n" +
-            "> `🌾` Top Farming\n" +
-            "> `🔥` Top Daily\n" +
-            "> `📜` Top Quest\n\n" +
+            "- `🎒` **Tài sản**\n" +
+            "> `🎒 Vinventory   : Túi vật phẩm`\n" +
+            "> `🛒 Vshop        : Cửa hàng`\n\n" +
 
             "☕ `❄️` **Your journey • Your story**",
 
@@ -215,17 +171,15 @@ const CATEGORIES = {
             "☁️ Columbina • Your Journey"
     },
 
-    // ==========================================
+    // ========================================================
     // 📖 INFO
-    // ==========================================
+    // ========================================================
 
     info: {
-        title: "📖 Thông Tin Columbina",
+        title: "📖 Thông Tin",
 
         description:
-            "☁️ `❄️` **About Columbina**\n" +
-            "・ Bot Discord kết hợp Economy, Minigames và Adventure.\n" +
-            "・ Xây dựng hành trình của riêng bạn qua Mora, XP và thành tựu.\n\n" +
+            "☁️ `🍃` **Một góc nhỏ của Columbina**\n\n" +
 
             "- `⚙️` **Hệ thống**\n" +
             "> `💰` Economy\n" +
@@ -234,23 +188,14 @@ const CATEGORIES = {
             "> `🌾` Farming\n" +
             "> `📜` Quest\n" +
             "> `🎒` Inventory\n" +
-            "> `🏆` Achievement\n" +
-            "> `⭐` Level & XP\n" +
-            "> `📊` Leaderboard\n\n" +
+            "> `🏆` Achievement\n\n" +
 
             "- `⌨️` **Prefix**\n" +
             "> `V`\n\n" +
 
             "- `✨` **Ví dụ**\n" +
-            "> `Vdaily`\n" +
-            "> `Vfish`\n" +
-            "> `Vfarm`\n" +
-            "> `Vquest`\n" +
-            "> `Vprofile`\n" +
-            "> `Vstats`\n" +
-            "> `Vslots 100`\n" +
-            "> `Vblackjack 100`\n" +
-            "> `Vtaixiu 100`\n\n" +
+            "> `Vdaily` ・ `Vfish` ・ `Vfarm`\n" +
+            "> `Vquest` ・ `Vprofile` ・ `Vstats`\n\n" +
 
             "☕ `❄️` **Chúc bạn có một hành trình thật đáng nhớ.**",
 
@@ -259,31 +204,29 @@ const CATEGORIES = {
     }
 };
 
-// ==========================================
+// ============================================================
 // 🧩 TEXT HELPER
-// ==========================================
+// ============================================================
 
 function text(content) {
     return new TextDisplayBuilder()
         .setContent(content);
 }
 
-// ==========================================
+// ============================================================
 // ─ SEPARATOR
-// ==========================================
+// ============================================================
 
 function separator() {
     return new SeparatorBuilder();
 }
 
-// ==========================================
-// 🎨 CREATE COMPONENT V2
-// ==========================================
+// ============================================================
+// 🎨 CREATE COMPONENT V2 CONTAINER
+// ============================================================
 
-function createContainer(
-    category,
-    message
-) {
+function createContainer(category, message) {
+
     const data =
         CATEGORIES[category] ||
         CATEGORIES.home;
@@ -293,40 +236,35 @@ function createContainer(
         message.author.username ||
         "Traveler";
 
-    const avatar =
-        message.author.displayAvatarURL({
-            extension: "png",
-            size: 128
-        });
-
     const container =
         new ContainerBuilder()
-            .setAccentColor(
-                0xA8DCC0
-            );
+            .setAccentColor(0xA8DCC0);
 
-    // ======================================
+    // ========================================================
     // HEADER
-    // ======================================
+    // ========================================================
 
     container.addTextDisplayComponents(
         text(
             [
                 `# ${data.title}`,
                 "",
-                `> ☁️ **${name} · Columbina**`,
-                `> 🖼️ ${avatar}`
+                `> ☁️ **${name} · Columbina**`
             ].join("\n")
         )
     );
+
+    // ========================================================
+    // SEPARATOR
+    // ========================================================
 
     container.addSeparatorComponents(
         separator()
     );
 
-    // ======================================
+    // ========================================================
     // CONTENT
-    // ======================================
+    // ========================================================
 
     container.addTextDisplayComponents(
         text(
@@ -334,13 +272,17 @@ function createContainer(
         )
     );
 
-    // ======================================
-    // FOOTER
-    // ======================================
+    // ========================================================
+    // SEPARATOR
+    // ========================================================
 
     container.addSeparatorComponents(
         separator()
     );
+
+    // ========================================================
+    // FOOTER
+    // ========================================================
 
     container.addTextDisplayComponents(
         text(
@@ -351,13 +293,12 @@ function createContainer(
     return container;
 }
 
-// ==========================================
-// 📋 MENU
-// ==========================================
+// ============================================================
+// 📋 SELECT MENU
+// ============================================================
 
-function createMenu(
-    selected = "home"
-) {
+function createMenu(selected = "home") {
+
     return new ActionRowBuilder()
         .addComponents(
 
@@ -412,7 +353,7 @@ function createMenu(
                             "Mini Game",
 
                         description:
-                            "Slots • Blackjack • Dice • Games",
+                            "Slots • Blackjack • Dice",
 
                         value:
                             "games",
@@ -478,9 +419,9 @@ function createMenu(
         );
 }
 
-// ==========================================
+// ============================================================
 // 🚀 COMMAND
-// ==========================================
+// ============================================================
 
 module.exports = {
 
@@ -496,21 +437,24 @@ module.exports = {
     description:
         "Xem hướng dẫn sử dụng Columbina.",
 
-    async execute(
-        message
-    ) {
+    async execute(message) {
+
+        // ====================================================
+        // 🔐 USER ID
+        // ====================================================
 
         const userId =
             message.author.id;
 
-        // ======================================
-        // 📦 SEND COMPONENT V2
-        // ======================================
+        // ====================================================
+        // 📦 SEND COMPONENTS V2
+        // ====================================================
 
         const msg =
             await message.reply({
 
                 components: [
+
                     createContainer(
                         "home",
                         message
@@ -525,15 +469,20 @@ module.exports = {
                     MessageFlags.IsComponentsV2
             });
 
-        // ======================================
+        // ====================================================
         // 🎛️ COLLECTOR
-        // ======================================
+        // ====================================================
 
         const collector =
             msg.createMessageComponentCollector({
+
                 time:
                     180000
             });
+
+        // ====================================================
+        // 📋 COLLECT
+        // ====================================================
 
         collector.on(
             "collect",
@@ -541,9 +490,9 @@ module.exports = {
 
                 try {
 
-                    // ==================================
+                    // ========================================
                     // 🔐 USER CHECK
-                    // ==================================
+                    // ========================================
 
                     if (
                         interaction.user.id !==
@@ -560,19 +509,28 @@ module.exports = {
                         });
                     }
 
-                    // ==================================
+                    // ========================================
                     // 📋 MENU CHECK
-                    // ==================================
+                    // ========================================
 
                     if (
                         interaction.customId !==
                         "columbina_help_menu"
                     ) {
+
                         return;
                     }
 
+                    // ========================================
+                    // 📌 GET CATEGORY
+                    // ========================================
+
                     const category =
                         interaction.values?.[0];
+
+                    // ========================================
+                    // ❌ INVALID CATEGORY
+                    // ========================================
 
                     if (
                         !category ||
@@ -589,9 +547,9 @@ module.exports = {
                         });
                     }
 
-                    // ==================================
-                    // 🔄 UPDATE
-                    // ==================================
+                    // ========================================
+                    // 🔄 UPDATE COMPONENTS V2
+                    // ========================================
 
                     await interaction.update({
 
@@ -611,14 +569,16 @@ module.exports = {
                             MessageFlags.IsComponentsV2
                     });
 
-                } catch (
-                    error
-                ) {
+                } catch (error) {
 
                     console.error(
                         "[Columbina Help] Interaction Error:",
                         error
                     );
+
+                    // ========================================
+                    // ⚠️ ERROR RESPONSE
+                    // ========================================
 
                     if (
                         !interaction.replied &&
@@ -628,10 +588,11 @@ module.exports = {
                         await interaction.reply({
 
                             content:
-                                "❌ Có lỗi xảy ra.",
+                                "❌ Có lỗi xảy ra khi cập nhật Help Center.",
 
                             flags:
                                 MessageFlags.Ephemeral
+
                         }).catch(
                             () => {}
                         );
@@ -640,9 +601,9 @@ module.exports = {
             }
         );
 
-        // ==========================================
+        // ====================================================
         // ⏰ COLLECTOR END
-        // ==========================================
+        // ====================================================
 
         collector.on(
             "end",
@@ -650,8 +611,14 @@ module.exports = {
 
                 try {
 
+                    // ========================================
+                    // 🧹 REMOVE MENU
+                    // ========================================
+
                     await msg.edit({
+
                         components: [
+
                             createContainer(
                                 "home",
                                 message
@@ -659,7 +626,9 @@ module.exports = {
                         ]
                     });
 
-                } catch {}
+                } catch {
+                    // Message đã bị xóa hoặc không còn tồn tại
+                }
             }
         );
     }
