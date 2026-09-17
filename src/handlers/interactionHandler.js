@@ -42,7 +42,10 @@ const beg =
 // 🛡️ SAFE ERROR RESPONSE
 // ==========================================
 
-async function safeError(interaction, error) {
+async function safeError(
+    interaction,
+    error
+) {
 
     console.error(
         "[InteractionHandler]",
@@ -56,21 +59,31 @@ async function safeError(interaction, error) {
             interaction.deferred
         ) {
 
-            return await interaction.followUp({
-                content:
-                    "🍃 Có lỗi xảy ra khi xử lý thao tác này.",
-                flags: 64
-            }).catch(() => {});
+            return await interaction
+                .followUp({
 
+                    content:
+                        "🍃 Có lỗi xảy ra khi xử lý thao tác này.",
+
+                    flags: 64
+
+                })
+                .catch(() => {});
         }
 
-        return await interaction.reply({
-            content:
-                "🍃 Có lỗi xảy ra khi xử lý thao tác này.",
-            flags: 64
-        }).catch(() => {});
+        return await interaction
+            .reply({
+
+                content:
+                    "🍃 Có lỗi xảy ra khi xử lý thao tác này.",
+
+                flags: 64
+
+            })
+            .catch(() => {});
 
     } catch {
+
         return;
     }
 }
@@ -237,14 +250,6 @@ async function handleInteraction(
                 id === "inventory_category"
             ) {
 
-                /*
-                 * QUAN TRỌNG:
-                 *
-                 * Defer ngay lập tức.
-                 * Không để DB / xử lý item chạy
-                 * trước khi acknowledge Discord.
-                 */
-
                 if (
                     !interaction.deferred &&
                     !interaction.replied
@@ -254,6 +259,19 @@ async function handleInteraction(
                 }
 
                 return await routeInventoryMenu(
+                    interaction
+                );
+            }
+
+            // ==================================
+            // 🛒 SHOP
+            // ==================================
+
+            if (
+                id.startsWith("shop_")
+            ) {
+
+                return await shop.handleInteraction(
                     interaction
                 );
             }
@@ -296,32 +314,15 @@ async function handleInteraction(
             }
 
             // ==================================
-            // 🛒 SHOP BUY MODAL
+            // 🛒 SHOP QUANTITY MODAL
             // ==================================
 
             if (
-                id.startsWith("shop_buy_modal_")
+                id.startsWith("shop_quantity_")
             ) {
 
-                if (
-                    typeof shop.buyItemFromModal ===
-                    "function"
-                ) {
-
-                    return await shop.buyItemFromModal(
-                        interaction
-                    );
-                }
-
-                console.error(
-                    "shop.buyItemFromModal không tồn tại trong shop.js"
-                );
-
-                return safeError(
-                    interaction,
-                    new Error(
-                        "shop.buyItemFromModal is not a function"
-                    )
+                return await shop.handleInteraction(
+                    interaction
                 );
             }
 
@@ -572,10 +573,29 @@ async function updateInventory(
         // 📦 ITEMS
         // ======================================
 
-        const allItems =
-            Object.values(
-                Item
-            );
+        let allItems = [];
+
+        if (
+            Item &&
+            typeof Item.getAll ===
+            "function"
+        ) {
+
+            allItems =
+                Item.getAll();
+
+        } else {
+
+            allItems =
+                Object.values(Item || {});
+        }
+
+        if (
+            !Array.isArray(allItems)
+        ) {
+
+            allItems = [];
+        }
 
         // ======================================
         // 🔎 CATEGORY
@@ -868,14 +888,6 @@ async function updateInventory(
         // 📤 UPDATE
         // ======================================
 
-        /*
-         * Nếu đã deferUpdate()
-         * thì PHẢI dùng editReply().
-         *
-         * Không được dùng interaction.update()
-         * nữa.
-         */
-
         if (
             interaction.deferred
         ) {
@@ -896,7 +908,6 @@ async function updateInventory(
             });
         }
 
-        // fallback
         return await interaction.update({
 
             content: null,

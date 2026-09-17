@@ -2207,7 +2207,6 @@ module.exports = {
 
     ...command,
 
-    // Dùng cho interaction handler khi submit modal
     async buyItemFromModal(
         interaction,
         itemId,

@@ -1,10 +1,12 @@
-
 const {
-    EmbedBuilder,
+    ContainerBuilder,
+    TextDisplayBuilder,
+    SeparatorBuilder,
     ActionRowBuilder,
-    StringSelectMenuBuilder,
     ButtonBuilder,
-    ButtonStyle
+    ButtonStyle,
+    StringSelectMenuBuilder,
+    MessageFlags
 } = require("discord.js");
 
 const User =
@@ -14,40 +16,41 @@ const Item =
     require("../../database/models/Item");
 
 // ==========================================
-// 📦 DANH MỤC ITEM
+// 🎨 COLORS
+// ==========================================
+
+const COLORS = {
+    primary: 0xA8DCC0,
+    success: 0xA8D8A8,
+    warning: 0xFFD166,
+    error: 0xF2A7A7
+};
+
+// ==========================================
+// 📦 DANH MỤC
 // ==========================================
 
 const CATEGORIES = {
     farm: {
-        name: "🌾 Nông sản",
-
-        items: [
-            "apple",
-            "sweet_flower",
-            "sunsettia"
-        ]
+        name: "Nông sản",
+        emoji: "🌾",
+        category: "farming"
     },
 
     fish: {
-        name: "🐟 Hải sản",
-
-        items: [
-            "small_fish",
-            "blue_fish",
-            "golden_fish",
-            "crystal_fish",
-            "wind_fish"
-        ]
+        name: "Hải sản",
+        emoji: "🐟",
+        category: "seafood"
     }
 };
 
 // ==========================================
-// 📦 LẤY ITEM
+// 🔢 GET AMOUNT
 // ==========================================
 
 function getAmount(value) {
     if (typeof value === "number") {
-        return value;
+        return Number(value);
     }
 
     if (
@@ -62,6 +65,44 @@ function getAmount(value) {
     return 0;
 }
 
+// ==========================================
+// 📦 GET ALL ITEMS
+// ==========================================
+
+function getAllItems() {
+    try {
+        if (
+            Item &&
+            typeof Item.getAll === "function"
+        ) {
+            const items =
+                Item.getAll();
+
+            if (Array.isArray(items)) {
+                return items;
+            }
+
+            if (
+                items &&
+                typeof items === "object"
+            ) {
+                return Object.values(items);
+            }
+        }
+    } catch (error) {
+        console.error(
+            "[inventory] Item.getAll:",
+            error
+        );
+    }
+
+    return [];
+}
+
+// ==========================================
+// 📦 GET CATEGORY ITEMS
+// ==========================================
+
 function getCategoryItems(
     user,
     category
@@ -69,39 +110,122 @@ function getCategoryItems(
     const inventory =
         user.inventory || {};
 
-    const ids =
-        CATEGORIES[category]?.items || [];
+    const data =
+        CATEGORIES[category];
 
-    return ids
-        .map(id => {
-            const item =
-                Item.get(id);
+    if (!data) {
+        return [];
+    }
 
-            if (!item) {
-                return null;
+    const allItems =
+        getAllItems();
+
+    return allItems
+        .filter(item => {
+            if (
+                !item ||
+                !item.id
+            ) {
+                return false;
             }
 
-            return {
-                ...item,
+            if (
+                item.category !==
+                data.category
+            ) {
+                return false;
+            }
 
-                amount:
-                    getAmount(
-                        inventory[id]
-                    )
-            };
+            const amount =
+                getAmount(
+                    inventory[item.id]
+                );
+
+            return amount > 0;
         })
-        .filter(
-            item =>
-                item &&
-                item.amount > 0
-        );
+        .map(item => ({
+            ...item,
+
+            amount:
+                getAmount(
+                    inventory[item.id]
+                )
+        }));
 }
 
 // ==========================================
-// 🎨 TẠO EMBED
+// 🔢 TOTAL
 // ==========================================
 
-function createEmbed(
+function getTotalAmount(user) {
+    const inventory =
+        user.inventory || {};
+
+    return Object.values(
+        inventory
+    ).reduce(
+        (total, value) => {
+            return (
+                total +
+                getAmount(value)
+            );
+        },
+        0
+    );
+}
+
+// ==========================================
+// 🧩 TEXT
+// ==========================================
+
+function text(content) {
+    return new TextDisplayBuilder()
+        .setContent(content);
+}
+
+// ==========================================
+// ➖ SEPARATOR
+// ==========================================
+
+function separator() {
+    return new SeparatorBuilder();
+}
+
+// ==========================================
+// 📦 ITEM LINE
+// ==========================================
+
+function formatItemLine(item) {
+    const emoji =
+        item.emoji || "📦";
+
+    const name =
+        String(
+            item.name || item.id
+        );
+
+    const amount =
+        Number(
+            item.amount || 0
+        );
+
+    // Căn tên cho đẹp
+    const paddedName =
+        name.padEnd(
+            14,
+            " "
+        );
+
+    return (
+        `> \`${emoji} ${paddedName}: ×${amount}\``
+    );
+}
+
+// ==========================================
+// 🌾 CATEGORY BLOCK
+// ==========================================
+
+function createCategoryBlock(
     user,
     category
 ) {
@@ -114,84 +238,143 @@ function createEmbed(
             category
         );
 
-    let content;
-
-    if (!items.length) {
-        content =
-            [
-                "● `☁️`",
-
-                "> Chưa có vật phẩm nào.",
-
-                "● `🍃`",
-
-                "> Hãy khám phá Mondstadt nhé!"
-            ].join("\n");
-    } else {
-        content =
-            items
-                .map(item => {
-                    const emoji =
-                        item.emoji ||
-                        "📦";
-
-                    return [
-                        `● \`${emoji}\` **×${item.amount}**`,
-                        `> ${item.name}`
-                    ].join("\n");
-                })
-                .join("\n\n");
+    if (!data) {
+        return "";
     }
 
-    const total =
-        Object.values(
-            user.inventory || {}
-        ).reduce(
-            (sum, amount) =>
-                sum +
-                getAmount(amount),
-            0
+    const lines = [
+        `- \`${data.emoji}\` **${data.name}**`
+    ];
+
+    if (!items.length) {
+        lines.push(
+            "> `☁️ Chưa có vật phẩm`"
         );
+    } else {
+        for (const item of items) {
+            lines.push(
+                formatItemLine(item)
+            );
+        }
+    }
 
-    const username =
-        user.username ||
-        "Traveler";
-
-    return new EmbedBuilder()
-        .setColor("#A8DCC0")
-
-        .setAuthor({
-            name:
-                `☁️ ${username} · Venti`
-        })
-
-        .setTitle(
-            "🍃 Túi Đồ"
-        )
-
-        .setDescription(
-            [
-                `● \`${data.name.split(" ")[0]}\` **${data.name.substring(
-                    data.name.indexOf(" ") + 1
-                )}**`,
-                "",
-                content,
-                "",
-                "● `🎒` **Tổng vật phẩm**",
-                `> ${total} vật phẩm`
-            ].join("\n")
-        )
-
-        .setFooter({
-            text:
-                "☕ Venti · Cozy Inventory"
-        })
-
-        .setTimestamp();
+    return lines.join("\n");
 }
 
 // ==========================================
-// 📂 SELECT MENU
+// 🏠 HOME PANEL
+// ==========================================
+
+function inventoryPanel(
+    userId,
+    user,
+    username,
+    category = "farm"
+) {
+    const data =
+        CATEGORIES[category] ||
+        CATEGORIES.farm;
+
+    const total =
+        getTotalAmount(user);
+
+    const categoryItems =
+        getCategoryItems(
+            user,
+            category
+        );
+
+    const container =
+        new ContainerBuilder()
+            .setAccentColor(
+                COLORS.primary
+            )
+
+            // ==================================
+            // HEADER
+            // ==================================
+
+            .addTextDisplayComponents(
+                text(
+                    [
+                        "# 🍃 Túi Đồ",
+                        `☁️ **${username}** · Venti`,
+                        "",
+                        `> ${data.emoji} Đang xem **${data.name}**`
+                    ].join("\n")
+                )
+            )
+
+            .addSeparatorComponents(
+                separator()
+            )
+
+            // ==================================
+            // CATEGORY
+            // ==================================
+
+            .addTextDisplayComponents(
+                text(
+                    [
+                        createCategoryBlock(
+                            user,
+                            category
+                        ),
+
+                        ""
+                    ].join("\n")
+                )
+            )
+
+            .addSeparatorComponents(
+                separator()
+            )
+
+            // ==================================
+            // TOTAL
+            // ==================================
+
+            .addTextDisplayComponents(
+                text(
+                    [
+                        "- `🎒` **Tổng vật phẩm**",
+
+                        `> \`📦 Số lượng   : ${total} vật phẩm\``,
+
+                        `> \`🌱 Loại item  : ${categoryItems.length}\``
+                    ].join("\n")
+                )
+            )
+
+            .addSeparatorComponents(
+                separator()
+            )
+
+            // ==================================
+            // MENU
+            // ==================================
+
+            .addActionRowComponents(
+                createMenu(category)
+            )
+
+            .addSeparatorComponents(
+                separator()
+            )
+
+            // ==================================
+            // BUTTONS
+            // ==================================
+
+            .addActionRowComponents(
+                createButtons()
+            );
+
+    return container;
+}
+
+// ==========================================
+// 📂 CATEGORY MENU
 // ==========================================
 
 function createMenu(
@@ -207,6 +390,9 @@ function createMenu(
                 .setPlaceholder(
                     "☁️ Chọn danh mục..."
                 )
+
+                .setMinValues(1)
+                .setMaxValues(1)
 
                 .addOptions(
                     {
@@ -247,12 +433,13 @@ function createMenu(
 }
 
 // ==========================================
-// 🔘 BUTTON
+// 🔘 BUTTONS
 // ==========================================
 
 function createButtons() {
     return new ActionRowBuilder()
         .addComponents(
+
             new ButtonBuilder()
                 .setCustomId(
                     "inventory_refresh"
@@ -308,37 +495,305 @@ module.exports = {
         "Xem túi đồ của bạn.",
 
     async execute(message) {
-        const user =
-            User.getOrCreate(
-                message.author.id
+
+        try {
+
+            const userId =
+                message.author.id;
+
+            const user =
+                User.getOrCreate(
+                    userId
+                );
+
+            if (!user) {
+                return message.reply({
+                    content:
+                        "`❌` Không thể tải túi đồ."
+                });
+            }
+
+            const username =
+                message.author.globalName ||
+                message.author.username ||
+                "Traveler";
+
+            // ==================================
+            // 📦 SEND V2
+            // ==================================
+
+            const msg =
+                await message.reply({
+                    components: [
+                        inventoryPanel(
+                            userId,
+                            user,
+                            username,
+                            "farm"
+                        )
+                    ],
+
+                    flags:
+                        MessageFlags.IsComponentsV2
+                });
+
+            // ==================================
+            // 🎮 COLLECTOR
+            // ==================================
+
+            const collector =
+                msg.createMessageComponentCollector({
+                    time: 120000
+                });
+
+            collector.on(
+                "collect",
+                async interaction => {
+
+                    // ==================================
+                    // 🔐 USER CHECK
+                    // ==================================
+
+                    if (
+                        interaction.user.id !==
+                        userId
+                    ) {
+                        return interaction.reply({
+                            content:
+                                "`❌` Đây không phải túi đồ của bạn.",
+
+                            flags:
+                                MessageFlags.Ephemeral
+                        });
+                    }
+
+                    try {
+
+                        const id =
+                            interaction.customId;
+
+                        // ==================================
+                        // 📂 CATEGORY
+                        // ==================================
+
+                        if (
+                            id ===
+                            "inventory_category"
+                        ) {
+
+                            const category =
+                                interaction.values?.[0];
+
+                            if (
+                                !category ||
+                                !CATEGORIES[category]
+                            ) {
+                                return interaction.reply({
+                                    content:
+                                        "`❌` Danh mục không hợp lệ.",
+
+                                    flags:
+                                        MessageFlags.Ephemeral
+                                });
+                            }
+
+                            const latestUser =
+                                User.getOrCreate(
+                                    userId
+                                );
+
+                            return interaction.update({
+                                components: [
+                                    inventoryPanel(
+                                        userId,
+                                        latestUser,
+                                        interaction.user.globalName ||
+                                        interaction.user.username ||
+                                        "Traveler",
+                                        category
+                                    )
+                                ],
+
+                                flags:
+                                    MessageFlags.IsComponentsV2
+                            });
+                        }
+
+                        // ==================================
+                        // 🔄 REFRESH
+                        // ==================================
+
+                        if (
+                            id ===
+                            "inventory_refresh"
+                        ) {
+
+                            const latestUser =
+                                User.getOrCreate(
+                                    userId
+                                );
+
+                            return interaction.update({
+                                components: [
+                                    inventoryPanel(
+                                        userId,
+                                        latestUser,
+                                        interaction.user.globalName ||
+                                        interaction.user.username ||
+                                        "Traveler",
+                                        "farm"
+                                    )
+                                ],
+
+                                flags:
+                                    MessageFlags.IsComponentsV2
+                            });
+                        }
+
+                        // ==================================
+                        // ❌ CLOSE
+                        // ==================================
+
+                        if (
+                            id ===
+                            "inventory_close"
+                        ) {
+
+                            collector.stop(
+                                "closed"
+                            );
+
+                            return interaction.update({
+                                components: [
+                                    new ContainerBuilder()
+                                        .setAccentColor(
+                                            COLORS.primary
+                                        )
+
+                                        .addTextDisplayComponents(
+                                            text(
+                                                [
+                                                    "# 🍃 Túi đồ đã đóng",
+                                                    "",
+                                                    "> ☁️ Hẹn gặp lại tại Mondstadt!",
+                                                    "",
+                                                    "🌱 Chúc bạn có một chuyến phiêu lưu thật vui."
+                                                ].join("\n")
+                                            )
+                                        )
+                                ],
+
+                                flags:
+                                    MessageFlags.IsComponentsV2
+                            });
+                        }
+
+                        // ==================================
+                        // ❓ UNKNOWN
+                        // ==================================
+
+                        return interaction.reply({
+                            content:
+                                "`❌` Tương tác không hợp lệ.",
+
+                            flags:
+                                MessageFlags.Ephemeral
+                        });
+
+                    } catch (error) {
+
+                        console.error(
+                            "[inventory interaction]",
+                            error
+                        );
+
+                        if (
+                            interaction.replied ||
+                            interaction.deferred
+                        ) {
+                            return interaction
+                                .followUp({
+                                    content:
+                                        "`❌` Có lỗi xảy ra khi xử lý túi đồ.",
+
+                                    flags:
+                                        MessageFlags.Ephemeral
+                                })
+                                .catch(
+                                    () => {}
+                                );
+                        }
+
+                        return interaction
+                            .reply({
+                                content:
+                                    "`❌` Có lỗi xảy ra khi xử lý túi đồ.",
+
+                                flags:
+                                    MessageFlags.Ephemeral
+                            })
+                            .catch(
+                                () => {}
+                            );
+                    }
+                }
             );
 
-        const displayUser = {
-            ...user,
+            // ==================================
+            // ⏱️ END
+            // ==================================
 
-            username:
-                message.author.globalName ||
-                message.author.username
-        };
+            collector.on(
+                "end",
+                async () => {
 
-        return message.reply({
-            embeds: [
-                createEmbed(
-                    displayUser,
-                    "farm"
-                )
-            ],
+                    try {
 
-            components: [
-                createMenu("farm"),
-                createButtons()
-            ]
-        });
+                        await msg.edit({
+                            components: []
+                        });
+
+                    } catch {}
+                }
+            );
+
+            return msg;
+
+        } catch (error) {
+
+            console.error(
+                "[inventory]",
+                error
+            );
+
+            return message
+                .reply({
+                    content:
+                        "`❌` Không thể mở túi đồ."
+                })
+                .catch(
+                    () => {}
+                );
+        }
     },
 
-    createEmbed,
-    createMenu,
-    createButtons,
+    // ======================================
+    // 📤 EXPORT
+    // ======================================
+
+    inventoryPanel,
+
     getCategoryItems,
+
+    getAllItems,
+
+    getTotalAmount,
+
+    getAmount,
+
+    createMenu,
+
+    createButtons,
+
     CATEGORIES
 };

@@ -224,5 +224,20 @@ async function handleInteraction(
 
 module.exports = {
     execute,
-    handleInteraction
+    handleInteraction,
+
+    buyItemFromModal(
+        interaction,
+        itemId,
+        userId,
+        quantity
+    ) {
+
+        return SHOP.buyItemFromModal(
+            interaction,
+            itemId,
+            userId,
+            quantity
+        );
+    }
 };
