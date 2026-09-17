@@ -1,8 +1,10 @@
-
 const {
-    EmbedBuilder,
+    ContainerBuilder,
+    TextDisplayBuilder,
+    SeparatorBuilder,
     ActionRowBuilder,
-    StringSelectMenuBuilder
+    StringSelectMenuBuilder,
+    MessageFlags
 } = require("discord.js");
 
 // ==========================================
@@ -29,23 +31,23 @@ const CATEGORIES = {
             "> `📈 Vstats`        ・ Xem thống kê\n\n" +
 
             "- `💰` **Tài chính**\n" +
-            "> `💰 Vbalance`      ・ Xem số dư\n" +
-            "> `💸 Vpay @user <amount>` ・ Chuyển Mora\n" +
-            "> `🏦 Vdeposit <amount>` ・ Gửi ngân hàng\n" +
-            "> `🏦 Vwithdraw <amount>` ・ Rút ngân hàng\n" +
-            "> `🛒 Vshop`         ・ Xem cửa hàng\n" +
+            "> `💰 Vbalance`             ・ Xem số dư\n" +
+            "> `💸 Vpay @user <amount>`  ・ Chuyển Mora\n" +
+            "> `🏦 Vdeposit <amount>`    ・ Gửi ngân hàng\n" +
+            "> `🏦 Vwithdraw <amount>`   ・ Rút ngân hàng\n" +
+            "> `🛒 Vshop`                ・ Xem cửa hàng\n" +
             "> `💰 Vbuy <item> [amount]` ・ Mua vật phẩm\n" +
-            "> `💸 Vsell`         ・ Bán vật phẩm\n\n" +
+            "> `💸 Vsell`                ・ Bán vật phẩm\n\n" +
 
             "- `🎮` **Mini Game**\n" +
-            "> `🎰 Vslots <amount>`       ・ Slot Machine\n" +
-            "> `🪙 Vcoinflip <amount>`    ・ Coin Flip\n" +
-            "> `🎲 Vdice <amount>`        ・ Dice\n" +
-            "> `🃏 Vblackjack <amount>`   ・ Blackjack\n" +
-            "> `🎯 Vtaixiu <amount>`      ・ Tài Xỉu\n" +
-            "> `💣 Vbomb <amount>`        ・ Bomb Game\n" +
+            "> `🎰 Vslots <amount>`           ・ Slot Machine\n" +
+            "> `🪙 Vcoinflip <amount>`        ・ Coin Flip\n" +
+            "> `🎲 Vdice <amount>`            ・ Dice\n" +
+            "> `🃏 Vblackjack <amount>`       ・ Blackjack\n" +
+            "> `🎯 Vtaixiu <amount>`          ・ Tài Xỉu\n" +
+            "> `💣 Vbomb <amount>`            ・ Bomb Game\n" +
             "> `🔢 Vguess <amount> [attempts]` ・ Đoán số\n" +
-            "> `✊ Vrps <amount>`         ・ Kéo Búa Bao\n\n" +
+            "> `✊ Vrps <amount>`             ・ Kéo Búa Bao\n\n" +
 
             "- `🌿` **Phiêu lưu**\n" +
             "> `🎣 Vfish`         ・ Câu cá\n" +
@@ -258,10 +260,27 @@ const CATEGORIES = {
 };
 
 // ==========================================
-// 🎨 CREATE EMBED
+// 🧩 TEXT HELPER
 // ==========================================
 
-function createEmbed(
+function text(content) {
+    return new TextDisplayBuilder()
+        .setContent(content);
+}
+
+// ==========================================
+// ─ SEPARATOR
+// ==========================================
+
+function separator() {
+    return new SeparatorBuilder();
+}
+
+// ==========================================
+// 🎨 CREATE COMPONENT V2
+// ==========================================
+
+function createContainer(
     category,
     message
 ) {
@@ -271,48 +290,65 @@ function createEmbed(
 
     const name =
         message.author.globalName ||
-        message.author.username;
+        message.author.username ||
+        "Traveler";
 
-    return new EmbedBuilder()
+    const avatar =
+        message.author.displayAvatarURL({
+            extension: "png",
+            size: 128
+        });
 
-        // Đồng bộ màu với Vstats
-        .setColor("#A8DCC0")
+    const container =
+        new ContainerBuilder()
+            .setAccentColor(
+                0xA8DCC0
+            );
 
-        // Đồng bộ Author với Vstats
-        .setAuthor({
-            name:
-                `☁️ ${name} · Columbina`,
-            iconURL:
-                message.author.displayAvatarURL({
-                    extension: "png",
-                    size: 128
-                })
-        })
+    // ======================================
+    // HEADER
+    // ======================================
 
-        .setTitle(
-            data.title
+    container.addTextDisplayComponents(
+        text(
+            [
+                `# ${data.title}`,
+                "",
+                `> ☁️ **${name} · Columbina**`,
+                `> 🖼️ ${avatar}`
+            ].join("\n")
         )
+    );
 
-        .setDescription(
+    container.addSeparatorComponents(
+        separator()
+    );
+
+    // ======================================
+    // CONTENT
+    // ======================================
+
+    container.addTextDisplayComponents(
+        text(
             data.description
         )
+    );
 
-        // Đồng bộ thumbnail với Vstats
-        .setThumbnail(
-            message.author.displayAvatarURL({
-                extension: "png",
-                size: 256
-            })
+    // ======================================
+    // FOOTER
+    // ======================================
+
+    container.addSeparatorComponents(
+        separator()
+    );
+
+    container.addTextDisplayComponents(
+        text(
+            `> ${data.footer}`
         )
+    );
 
-        // Đồng bộ footer
-        .setFooter({
-            text:
-                data.footer
-        })
-
-        // Đồng bộ timestamp
-        .setTimestamp();
+    return container;
 }
 
 // ==========================================
@@ -340,85 +376,103 @@ function createMenu(
                     {
                         label:
                             "Trang chủ",
+
                         description:
                             "Tổng quan hành trình",
+
                         value:
                             "home",
+
                         emoji:
                             "🏠",
+
                         default:
-                            selected ===
-                            "home"
+                            selected === "home"
                     },
 
                     {
                         label:
                             "Economy",
+
                         description:
                             "Mora • Daily • Work • Shop",
+
                         value:
                             "economy",
+
                         emoji:
                             "💰",
+
                         default:
-                            selected ===
-                            "economy"
+                            selected === "economy"
                     },
 
                     {
                         label:
                             "Mini Game",
+
                         description:
                             "Slots • Blackjack • Dice • Games",
+
                         value:
                             "games",
+
                         emoji:
                             "🎮",
+
                         default:
-                            selected ===
-                            "games"
+                            selected === "games"
                     },
 
                     {
                         label:
                             "Adventure",
+
                         description:
                             "Fishing • Farming • Quest",
+
                         value:
                             "adventure",
+
                         emoji:
                             "🌿",
+
                         default:
-                            selected ===
-                            "adventure"
+                            selected === "adventure"
                     },
 
                     {
                         label:
                             "Hành trình",
+
                         description:
                             "Profile • Stats • Inventory",
+
                         value:
                             "profile",
+
                         emoji:
                             "👤",
+
                         default:
-                            selected ===
-                            "profile"
+                            selected === "profile"
                     },
 
                     {
                         label:
                             "Thông tin",
+
                         description:
                             "Thông tin Columbina",
+
                         value:
                             "info",
+
                         emoji:
                             "📖",
+
                         default:
-                            selected ===
-                            "info"
+                            selected === "info"
                     }
                 )
         );
@@ -449,21 +503,31 @@ module.exports = {
         const userId =
             message.author.id;
 
+        // ======================================
+        // 📦 SEND COMPONENT V2
+        // ======================================
+
         const msg =
             await message.reply({
-                embeds: [
-                    createEmbed(
-                        "home",
-                        message
-                    )
-                ],
 
                 components: [
+                    createContainer(
+                        "home",
+                        message
+                    ),
+
                     createMenu(
                         "home"
                     )
-                ]
+                ],
+
+                flags:
+                    MessageFlags.IsComponentsV2
             });
+
+        // ======================================
+        // 🎛️ COLLECTOR
+        // ======================================
 
         const collector =
             msg.createMessageComponentCollector({
@@ -487,10 +551,12 @@ module.exports = {
                     ) {
 
                         return interaction.reply({
+
                             content:
                                 "❌ Đây không phải Help Center của bạn.",
-                            ephemeral:
-                                true
+
+                            flags:
+                                MessageFlags.Ephemeral
                         });
                     }
 
@@ -514,33 +580,35 @@ module.exports = {
                     ) {
 
                         return interaction.reply({
+
                             content:
                                 "❌ Danh mục không hợp lệ.",
-                            ephemeral:
-                                true
+
+                            flags:
+                                MessageFlags.Ephemeral
                         });
                     }
 
                     // ==================================
-                    // 🔄 UPDATE EMBED
+                    // 🔄 UPDATE
                     // ==================================
 
-                    await interaction.deferUpdate();
-
-                    await msg.edit({
-
-                        embeds: [
-                            createEmbed(
-                                category,
-                                message
-                            )
-                        ],
+                    await interaction.update({
 
                         components: [
+
+                            createContainer(
+                                category,
+                                message
+                            ),
+
                             createMenu(
                                 category
                             )
-                        ]
+                        ],
+
+                        flags:
+                            MessageFlags.IsComponentsV2
                     });
 
                 } catch (
@@ -551,6 +619,23 @@ module.exports = {
                         "[Columbina Help] Interaction Error:",
                         error
                     );
+
+                    if (
+                        !interaction.replied &&
+                        !interaction.deferred
+                    ) {
+
+                        await interaction.reply({
+
+                            content:
+                                "❌ Có lỗi xảy ra.",
+
+                            flags:
+                                MessageFlags.Ephemeral
+                        }).catch(
+                            () => {}
+                        );
+                    }
                 }
             }
         );
@@ -566,7 +651,12 @@ module.exports = {
                 try {
 
                     await msg.edit({
-                        components: []
+                        components: [
+                            createContainer(
+                                "home",
+                                message
+                            )
+                        ]
                     });
 
                 } catch {}
@@ -574,4 +664,3 @@ module.exports = {
         );
     }
 };
-
