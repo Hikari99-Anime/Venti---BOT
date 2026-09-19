@@ -60,9 +60,11 @@ function createDefaultFarm() {
                 id: index + 1,
                 unlocked:
                     index < DEFAULT_UNLOCKED_PLOTS,
+                tilled: false,
                 seed: null,
                 plantedAt: null,
-                readyAt: null
+                readyAt: null,
+                watered: false
             })
         )
     };
@@ -97,6 +99,9 @@ function normalizeFarm(farm) {
                     Boolean(oldPlot.unlocked) ||
                     i <= DEFAULT_UNLOCKED_PLOTS,
 
+                tilled:
+                    Boolean(oldPlot.tilled),
+
                 seed:
                     oldPlot.seed || null,
 
@@ -104,7 +109,10 @@ function normalizeFarm(farm) {
                     oldPlot.plantedAt || null,
 
                 readyAt:
-                    oldPlot.readyAt || null
+                    oldPlot.readyAt || null,
+
+                watered:
+                    Boolean(oldPlot.watered)
             });
         } else {
             normalized.push({
@@ -113,9 +121,11 @@ function normalizeFarm(farm) {
                 unlocked:
                     i <= DEFAULT_UNLOCKED_PLOTS,
 
+                tilled: false,
                 seed: null,
                 plantedAt: null,
-                readyAt: null
+                readyAt: null,
+                watered: false
             });
         }
     }
@@ -208,28 +218,16 @@ function isSeedItem(item) {
     }
 
     /*
-     * Hệ thống items hiện tại của bạn:
-     *
-     * apple
-     * orange
-     * wheat
-     * carrot
-     * ...
-     *
-     * đều dùng:
-     *
-     * category: "farming"
-     *
-     * Vì vậy farming được xem là seed.
+     * Hạt giống (category: "seed") là item riêng biệt
+     * với nông sản thu hoạch (category: "farming").
+     * Mỗi hạt giống có "cropId" trỏ tới nông sản mà
+     * nó trồng ra (xem items.js).
      */
 
     return (
-        item.category === "farming" ||
         item.category === "seed" ||
         item.type === "seed" ||
-        item.itemType === "seed" ||
-        String(item.id).endsWith("_seed") ||
-        String(item.id).includes("_seed")
+        item.itemType === "seed"
     );
 }
 
@@ -256,6 +254,59 @@ function getSeeds(userId) {
 
         return amount > 0;
     });
+}
+
+// =====================================================
+// ⛏️ NÔNG CỤ (CUỐC / BÌNH TƯỚI / NƯỚC)
+// =====================================================
+
+function hasHoe(userId) {
+    const inventory =
+        getInventory(userId);
+
+    return (
+        getAmount(inventory.hoe) > 0
+    );
+}
+
+function hasWateringCan(userId) {
+    const inventory =
+        getInventory(userId);
+
+    return (
+        getAmount(
+            inventory.watering_can
+        ) > 0
+    );
+}
+
+function getWaterAmount(userId) {
+    const inventory =
+        getInventory(userId);
+
+    return getAmount(
+        inventory.water
+    );
+}
+
+// =====================================================
+// ⭐ RATING (SAO NÔNG SẢN)
+// =====================================================
+
+function ratingStars(rating) {
+    const value =
+        Math.max(
+            1,
+            Math.min(
+                5,
+                Number(rating || 1)
+            )
+        );
+
+    return (
+        "⭐".repeat(value) +
+        "☆".repeat(5 - value)
+    );
 }
 
 // =====================================================
@@ -432,6 +483,15 @@ function getPlotStatus(plot) {
     }
 
     if (!plot.seed) {
+        if (!plot.tilled) {
+            return {
+                emoji: "🟤",
+                label: "Chưa cày",
+                description:
+                    "Cần cày đất trước khi trồng."
+            };
+        }
+
         return {
             emoji: "🟫",
             label: "Đất trống",
@@ -535,7 +595,7 @@ function farmPanel(
             .addTextDisplayComponents(
                 text(
                     [
-                        "# 🍃 Trang Trại Venti",
+                        "# 🍃 Trang Trại Columbina",
                         `☁️ **${authorName}** · Windrise`,
                         "",
                         "> 🌱 Chăm cây · ⏳ Chờ lớn · 🌾 Thu hoạch"
@@ -733,7 +793,9 @@ function emptyPlotPanel(
                 text(
                     [
                         `# 🪴 Ô đất #${plot.id}`,
-                        "> 🟫 **Đất trống**"
+                        plot.tilled
+                            ? "> 🟫 **Đất trống**"
+                            : "> 🟤 **Đất chưa cày**"
                     ].join("\n")
                 )
             )
@@ -741,6 +803,66 @@ function emptyPlotPanel(
             .addSeparatorComponents(
                 separator()
             );
+
+    // ================================================
+    // 🟤 CHƯA CÀY ĐẤT
+    // ================================================
+
+    if (!plot.tilled) {
+        const owned =
+            hasHoe(userId);
+
+        container
+            .addTextDisplayComponents(
+                text(
+                    [
+                        "### ⛏️ Cày đất",
+                        owned
+                            ? "> Đất này cần được cày trước khi trồng cây."
+                            : "> ❌ Bạn chưa có **Cuốc**.",
+                        owned
+                            ? ""
+                            : "> 🛍️ Hãy vào **Vshop** mục **Nông cụ** để mua Cuốc."
+                    ]
+                        .filter(Boolean)
+                        .join("\n")
+                )
+            )
+
+            .addSeparatorComponents(
+                separator()
+            )
+
+            .addActionRowComponents(
+                new ActionRowBuilder()
+                    .addComponents(
+                        new ButtonBuilder()
+                            .setCustomId(
+                                `farm_till_${userId}_${plot.id}`
+                            )
+                            .setLabel(
+                                "Cày đất"
+                            )
+                            .setEmoji("⛏️")
+                            .setStyle(
+                                ButtonStyle.Success
+                            )
+                            .setDisabled(
+                                !owned
+                            )
+                    )
+            )
+
+            .addSeparatorComponents(
+                separator()
+            )
+
+            .addActionRowComponents(
+                backButton(userId)
+            );
+
+        return container;
+    }
 
     if (!seeds.length) {
         container
@@ -838,6 +960,17 @@ function seedMenu(
                         inventory[seed.id]
                     );
 
+                const crop =
+                    Item.get(
+                        seed.cropId ||
+                        String(seed.id).replace(/_seed$/, "")
+                    );
+
+                const stars =
+                    crop
+                        ? `${crop.rating || 1}⭐ `
+                        : "";
+
                 return {
                     label:
                         String(
@@ -848,7 +981,7 @@ function seedMenu(
                         ),
 
                     description:
-                        `Có ${amount} • Lớn trong ${formatTime(
+                        `${stars}Có ${amount} • Lớn trong ${formatTime(
                             Number(
                                 seed.growTime ||
                                 30000
@@ -958,7 +1091,7 @@ function plantedPlotPanel(
             [
                 "### 🌾 Nông sản",
                 crop
-                    ? `> ${crop.emoji || "🌾"} **${crop.name}**`
+                    ? `> ${crop.emoji || "🌾"} **${crop.name}** · ${ratingStars(crop.rating)}`
                     : "> ❌ Không tìm thấy nông sản."
             ].join("\n")
         )
@@ -999,6 +1132,11 @@ function plantedPlotPanel(
                 )
         );
     } else {
+        const canWater =
+            !plot.watered &&
+            hasWateringCan(userId) &&
+            getWaterAmount(userId) > 0;
+
         container.addActionRowComponents(
             new ActionRowBuilder()
                 .addComponents(
@@ -1012,9 +1150,46 @@ function plantedPlotPanel(
                         .setEmoji("🔄")
                         .setStyle(
                             ButtonStyle.Secondary
+                        ),
+
+                    new ButtonBuilder()
+                        .setCustomId(
+                            `farm_water_${userId}_${plot.id}`
+                        )
+                        .setLabel(
+                            plot.watered
+                                ? "Đã tưới"
+                                : "Tưới nước"
+                        )
+                        .setEmoji("💧")
+                        .setStyle(
+                            ButtonStyle.Primary
+                        )
+                        .setDisabled(
+                            !canWater
                         )
                 )
         );
+
+        if (
+            !plot.watered &&
+            !hasWateringCan(userId)
+        ) {
+            container.addTextDisplayComponents(
+                text(
+                    "> ❌ Bạn chưa có **Bình tưới**. Hãy vào **Vshop** mục **Nông cụ** để mua."
+                )
+            );
+        } else if (
+            !plot.watered &&
+            getWaterAmount(userId) <= 0
+        ) {
+            container.addTextDisplayComponents(
+                text(
+                    "> ❌ Bạn đã hết **Nước**. Hãy vào **Vshop** mục **Nông cụ** để mua thêm."
+                )
+            );
+        }
     }
 
     container
@@ -1149,6 +1324,7 @@ async function showPlot(
         now >= readyAt;
 
     const cropId =
+        seed.cropId ||
         seed.seedType ||
         String(seed.id)
             .replace(
@@ -1177,259 +1353,6 @@ async function showPlot(
 }
 
 // =====================================================
-// 🌱 PLANT SEED
-// =====================================================
-
-async function plantSeed(
-    interaction,
-    userId,
-    plotId,
-    seedId
-) {
-    const farm =
-        getFarm(userId);
-
-    const plot =
-        getPlot(
-            farm,
-            plotId
-        );
-
-    // ================================================
-    // 🪴 CHECK PLOT
-    // ================================================
-
-    if (
-        !plot ||
-        !plot.unlocked
-    ) {
-        return interaction.reply({
-            content:
-                "`❌` Ô đất chưa được mở.",
-            flags:
-                MessageFlags.Ephemeral
-        });
-    }
-
-    if (plot.seed) {
-        return interaction.reply({
-            content:
-                "`🌱` Ô đất này đang có cây.",
-            flags:
-                MessageFlags.Ephemeral
-        });
-    }
-
-    // ================================================
-    // 🌱 GET SEED
-    // ================================================
-
-    const seed =
-        Item.get(seedId);
-
-    if (!seed) {
-        console.log(
-            "[farm] Invalid seed:",
-            {
-                seedId,
-                reason:
-                    "Item not found"
-            }
-        );
-
-        return interaction.reply({
-            content:
-                "`❌` Hạt giống không tồn tại.",
-            flags:
-                MessageFlags.Ephemeral
-        });
-    }
-
-    // ================================================
-    // 🌱 VALIDATE SEED
-    // ================================================
-
-    /*
-     * QUAN TRỌNG:
-     *
-     * Item của bạn đang dùng:
-     *
-     * category: "farming"
-     *
-     * Ví dụ:
-     *
-     * apple
-     * orange
-     * wheat
-     * carrot
-     *
-     * Vì vậy category farming
-     * được xem là seed.
-     */
-
-    const validSeed =
-        isSeedItem(seed);
-
-    if (!validSeed) {
-        console.log(
-            "[farm] Invalid seed:",
-            {
-                seedId,
-                seed,
-                reason:
-                    "Not a farming seed"
-            }
-        );
-
-        return interaction.reply({
-            content:
-                "`❌` Item này không phải hạt giống.",
-            flags:
-                MessageFlags.Ephemeral
-        });
-    }
-
-    // ================================================
-    // 🎒 CHECK INVENTORY
-    // ================================================
-
-    const inventory =
-        getInventory(userId);
-
-    const amount =
-        getAmount(
-            inventory[seed.id]
-        );
-
-    if (amount <= 0) {
-        return interaction.reply({
-            content:
-                "`❌` Bạn không còn hạt giống này.",
-            flags:
-                MessageFlags.Ephemeral
-        });
-    }
-
-    // ================================================
-    // ➖ REMOVE SEED
-    // ================================================
-
-    const removed =
-        removeItem(
-            userId,
-            seed.id,
-            1
-        );
-
-    if (!removed) {
-        return interaction.reply({
-            content:
-                "`❌` Không thể trừ hạt giống khỏi inventory.",
-            flags:
-                MessageFlags.Ephemeral
-        });
-    }
-
-    // ================================================
-    // ⏱️ GROW TIME
-    // ================================================
-
-    const growTime =
-        Math.max(
-            1000,
-            Number(
-                seed.growTime ||
-                30000
-            )
-        );
-
-    const plantedAt =
-        Date.now();
-
-    const readyAt =
-        plantedAt +
-        growTime;
-
-    // ================================================
-    // 🌱 SAVE FARM
-    // ================================================
-
-    plot.seed =
-        seed.id;
-
-    plot.plantedAt =
-        plantedAt;
-
-    plot.readyAt =
-        readyAt;
-
-    User.updateFarm(
-        userId,
-        farm
-    );
-
-    // ================================================
-    // 📦 SUCCESS PANEL
-    // ================================================
-
-    const container =
-        new ContainerBuilder()
-            .setAccentColor(
-                COLORS.success
-            )
-
-            .addTextDisplayComponents(
-                text(
-                    [
-                        "# 🌱 Trồng cây thành công!",
-                        `> 🪴 Ô đất **#${plot.id}**`
-                    ].join("\n")
-                )
-            )
-
-            .addSeparatorComponents(
-                separator()
-            )
-
-            .addTextDisplayComponents(
-                text(
-                    [
-                        "### 🌱 Hạt giống",
-                        `> ${seed.emoji || "🌱"} **${seed.name}**`,
-                        "",
-                        "### ⏳ Thời gian trưởng thành",
-                        `> **${formatTime(
-                            growTime
-                        )}**`,
-                        "",
-                        "### 🕐 Hoàn thành",
-                        `> <t:${Math.floor(
-                            readyAt / 1000
-                        )}:R>`,
-                        "",
-                        "🍃 Hãy quay lại khi cây đã trưởng thành."
-                    ].join("\n")
-                )
-            )
-
-            .addSeparatorComponents(
-                separator()
-            )
-
-            .addActionRowComponents(
-                backButton(userId)
-            );
-
-    return interaction.update({
-        components: [
-            container
-        ],
-        flags:
-            MessageFlags.IsComponentsV2
-    });
-}
-
-// =====================================================
 // 🎲 RANDOM
 // =====================================================
 
@@ -1441,6 +1364,33 @@ function randomInt(
         Math.random() *
         (max - min + 1)
     ) + min;
+}
+
+// =====================================================
+// 📊 CẬP NHẬT THỐNG KÊ
+// =====================================================
+
+function updateHarvestStats(
+    userId,
+    amount
+) {
+    const user =
+        ensureUser(userId);
+
+    const stats = {
+        ...(user.stats || {})
+    };
+
+    stats.farm =
+        Number(stats.farm || 0) +
+        Number(amount || 0);
+
+    User.update(
+        userId,
+        {
+            stats
+        }
+    );
 }
 
 // =====================================================
@@ -1480,6 +1430,7 @@ function harvestPlot(
     }
 
     const cropId =
+        seed.cropId ||
         seed.seedType ||
         String(seed.id)
             .replace(
@@ -1522,14 +1473,35 @@ function harvestPlot(
         amount
     );
 
+    // ================================================
+    // 🌱 TỶ LỆ RA HẠT GIỐNG
+    //
+    // Mỗi lần thu hoạch có 30% cơ hội
+    // nhận thêm 1 hạt giống cùng loại.
+    // ================================================
+
+    const bonusSeed =
+        Math.random() < 0.3;
+
+    if (bonusSeed) {
+        addItem(
+            userId,
+            seed.id,
+            1
+        );
+    }
+
+    plot.tilled = false;
     plot.seed = null;
     plot.plantedAt = null;
     plot.readyAt = null;
+    plot.watered = false;
 
     return {
         crop,
         seed,
-        amount
+        amount,
+        bonusSeed
     };
 }
 
@@ -1655,7 +1627,7 @@ async function harvest(
                 text(
                     [
                         "### 🎒 Nông sản nhận được",
-                        `> ${result.crop.emoji || "🌾"} **${result.crop.name} ×${result.amount}**`,
+                        `> ${result.crop.emoji || "🌾"} **${result.crop.name} ×${result.amount}** · ${ratingStars(result.crop.rating)}`,
                         "",
                         "### 💰 Giá bán",
                         `> **${sellPrice.toLocaleString(
@@ -1665,7 +1637,16 @@ async function harvest(
                         "### 🌱 Hạt giống đã dùng",
                         `> ${result.seed.emoji || "🌱"} **${result.seed.name} ×1**`,
                         "",
-                        "🎒 Nông sản đã được thêm vào inventory."
+                        ...(
+                            result.bonusSeed
+                                ? [
+                                    "🎁 **May mắn!** Bạn nhận thêm **1 hạt giống** cùng loại.",
+                                    ""
+                                ]
+                                : []
+                        ),
+                        "🎒 Nông sản đã được thêm vào inventory.",
+                        "🟤 Ô đất cần được cày lại trước khi trồng vụ mới."
                     ].join("\n")
                 )
             )
@@ -1736,6 +1717,19 @@ async function plantSeed(
         }
 
         // ==========================================
+        // 🟤 CHECK TILLED
+        // ==========================================
+
+        if (!plot.tilled) {
+            return interaction.reply({
+                content:
+                    "`🟤` Ô đất này chưa được cày. Hãy cày đất trước khi trồng cây.",
+                flags:
+                    MessageFlags.Ephemeral
+            });
+        }
+
+        // ==========================================
         // 🌱 GET ITEM
         // ==========================================
 
@@ -1763,18 +1757,11 @@ async function plantSeed(
         // ==========================================
         // 🌱 VALIDATE SEED
         //
-        // Hệ thống items hiện tại:
-        // category: "farming"
-        // chính là item có thể trồng.
+        // Chỉ item category: "seed" mới trồng được.
         // ==========================================
 
         const isSeed =
-            seed.category === "farming" ||
-            seed.category === "seed" ||
-            seed.type === "seed" ||
-            seed.itemType === "seed" ||
-            String(seed.id).endsWith("_seed") ||
-            String(seed.id).includes("_seed");
+            isSeedItem(seed);
 
         if (!isSeed) {
             console.log(
@@ -1871,6 +1858,9 @@ async function plantSeed(
         plot.readyAt =
             readyAt;
 
+        plot.watered =
+            false;
+
         User.updateFarm(
             userId,
             farm
@@ -1966,6 +1956,331 @@ async function plantSeed(
         );
     }
 }
+
+// =====================================================
+// ⛏️ CÀY ĐẤT
+// =====================================================
+
+async function till(
+    interaction,
+    userId,
+    plotId
+) {
+    const farm =
+        getFarm(userId);
+
+    const plot =
+        getPlot(
+            farm,
+            plotId
+        );
+
+    if (
+        !plot ||
+        !plot.unlocked
+    ) {
+        return interaction.reply({
+            content:
+                "`❌` Ô đất chưa được mở.",
+            flags:
+                MessageFlags.Ephemeral
+        });
+    }
+
+    if (plot.tilled) {
+        return interaction.reply({
+            content:
+                "`⛏️` Ô đất này đã được cày.",
+            flags:
+                MessageFlags.Ephemeral
+        });
+    }
+
+    if (!hasHoe(userId)) {
+        return interaction.reply({
+            content:
+                "`❌` Bạn chưa có **Cuốc**.\n> 🛍️ Hãy vào **Vshop** mục **Nông cụ** để mua.",
+            flags:
+                MessageFlags.Ephemeral
+        });
+    }
+
+    plot.tilled = true;
+
+    User.updateFarm(
+        userId,
+        farm
+    );
+
+    return showPlot(
+        interaction,
+        userId,
+        plotId
+    );
+}
+
+// =====================================================
+// 💧 TƯỚI NƯỚC
+// =====================================================
+
+async function waterPlot(
+    interaction,
+    userId,
+    plotId
+) {
+    const farm =
+        getFarm(userId);
+
+    const plot =
+        getPlot(
+            farm,
+            plotId
+        );
+
+    if (
+        !plot ||
+        !plot.unlocked ||
+        !plot.seed
+    ) {
+        return interaction.reply({
+            content:
+                "`❌` Ô đất không có cây để tưới.",
+            flags:
+                MessageFlags.Ephemeral
+        });
+    }
+
+    if (plot.watered) {
+        return interaction.reply({
+            content:
+                "`💧` Ô đất này đã được tưới rồi.",
+            flags:
+                MessageFlags.Ephemeral
+        });
+    }
+
+    const now =
+        Date.now();
+
+    const readyAt =
+        Number(plot.readyAt || 0);
+
+    if (now >= readyAt) {
+        return interaction.reply({
+            content:
+                "`🌾` Cây đã trưởng thành, không cần tưới nữa.",
+            flags:
+                MessageFlags.Ephemeral
+        });
+    }
+
+    if (!hasWateringCan(userId)) {
+        return interaction.reply({
+            content:
+                "`❌` Bạn chưa có **Bình tưới**.\n> 🛍️ Hãy vào **Vshop** mục **Nông cụ** để mua.",
+            flags:
+                MessageFlags.Ephemeral
+        });
+    }
+
+    if (getWaterAmount(userId) <= 0) {
+        return interaction.reply({
+            content:
+                "`❌` Bạn đã hết **Nước**.\n> 🛍️ Hãy vào **Vshop** mục **Nông cụ** để mua thêm.",
+            flags:
+                MessageFlags.Ephemeral
+        });
+    }
+
+    removeItem(
+        userId,
+        "water",
+        1
+    );
+
+    // Tưới nước rút ngắn 25% thời gian còn lại.
+    const remaining =
+        readyAt - now;
+
+    plot.readyAt =
+        readyAt -
+        Math.floor(
+            remaining * 0.25
+        );
+
+    plot.watered = true;
+
+    User.updateFarm(
+        userId,
+        farm
+    );
+
+    return showPlot(
+        interaction,
+        userId,
+        plotId
+    );
+}
+
+// =====================================================
+// ⚡ THU HOẠCH TẤT CẢ
+// =====================================================
+
+async function quickHarvest(
+    interaction,
+    userId
+) {
+    const farm =
+        getFarm(userId);
+
+    const now =
+        Date.now();
+
+    const results = [];
+
+    for (const plot of farm.plots) {
+        if (
+            !plot.unlocked ||
+            !plot.seed
+        ) {
+            continue;
+        }
+
+        if (
+            now <
+            Number(plot.readyAt || 0)
+        ) {
+            continue;
+        }
+
+        const result =
+            harvestPlot(
+                userId,
+                farm,
+                plot
+            );
+
+        if (result) {
+            results.push(result);
+        }
+    }
+
+    if (!results.length) {
+        return interaction.reply({
+            content:
+                "`🌱` Hiện chưa có cây nào sẵn sàng thu hoạch.",
+            flags:
+                MessageFlags.Ephemeral
+        });
+    }
+
+    User.updateFarm(
+        userId,
+        farm
+    );
+
+    const totalAmount =
+        results.reduce(
+            (sum, r) => sum + r.amount,
+            0
+        );
+
+    updateHarvestStats(
+        userId,
+        totalAmount
+    );
+
+    if (
+        Quest &&
+        typeof Quest.addProgress ===
+            "function"
+    ) {
+        Quest.addProgress(
+            userId,
+            "farm",
+            totalAmount
+        );
+    }
+
+    const bonusSeedCount =
+        results.filter(
+            r => r.bonusSeed
+        ).length;
+
+    const summary = new Map();
+
+    for (const result of results) {
+        const key = result.crop.id;
+
+        const entry =
+            summary.get(key) || {
+                crop: result.crop,
+                amount: 0
+            };
+
+        entry.amount += result.amount;
+
+        summary.set(key, entry);
+    }
+
+    const lines =
+        Array.from(summary.values())
+            .map(entry =>
+                `> ${entry.crop.emoji || "🌾"} **${entry.crop.name} ×${entry.amount}** · ${ratingStars(entry.crop.rating)}`
+            );
+
+    const container =
+        new ContainerBuilder()
+            .setAccentColor(
+                COLORS.success
+            )
+
+            .addTextDisplayComponents(
+                text(
+                    [
+                        "# ⚡ Thu hoạch tất cả thành công!",
+                        `> 🪴 Đã thu hoạch **${results.length}** ô đất`
+                    ].join("\n")
+                )
+            )
+
+            .addSeparatorComponents(
+                separator()
+            )
+
+            .addTextDisplayComponents(
+                text(
+                    [
+                        "### 🎒 Nông sản nhận được",
+                        lines.join("\n"),
+                        "",
+                        bonusSeedCount
+                            ? `🎁 **May mắn!** Nhận thêm **${bonusSeedCount}** hạt giống.`
+                            : "",
+                        "🟤 Các ô đất cần được cày lại trước khi trồng vụ mới."
+                    ]
+                        .filter(line => line !== "")
+                        .join("\n")
+                )
+            )
+
+            .addSeparatorComponents(
+                separator()
+            )
+
+            .addActionRowComponents(
+                backButton(userId)
+            );
+
+    return interaction.update({
+        components: [
+            container
+        ],
+        flags:
+            MessageFlags.IsComponentsV2
+    });
+}
+
 // ==========================================
 // 🚜 FARM COMMAND
 // ==========================================
@@ -2102,6 +2417,54 @@ async function farmCommand(message) {
                             userId,
                             plotId,
                             seedId
+                        );
+                    }
+
+                    // ==================================
+                    // ⛏️ CÀY ĐẤT
+                    // ==================================
+
+                    if (
+                        id.startsWith(
+                            `farm_till_${userId}_`
+                        )
+                    ) {
+                        const prefix =
+                            `farm_till_${userId}_`;
+
+                        const plotId =
+                            id.slice(
+                                prefix.length
+                            );
+
+                        return till(
+                            interaction,
+                            userId,
+                            plotId
+                        );
+                    }
+
+                    // ==================================
+                    // 💧 TƯỚI NƯỚC
+                    // ==================================
+
+                    if (
+                        id.startsWith(
+                            `farm_water_${userId}_`
+                        )
+                    ) {
+                        const prefix =
+                            `farm_water_${userId}_`;
+
+                        const plotId =
+                            id.slice(
+                                prefix.length
+                            );
+
+                        return waterPlot(
+                            interaction,
+                            userId,
+                            plotId
                         );
                     }
 

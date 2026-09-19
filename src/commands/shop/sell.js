@@ -261,7 +261,7 @@ function createCategoryEmbed(
         .setColor("#57F287")
 
         .setTitle(
-            "💸 Venti Market"
+            "💸 Columbina Market"
         )
 
         .setDescription(
@@ -284,7 +284,7 @@ function createCategoryEmbed(
 
         .setFooter({
             text:
-                "Venti Market • Chỉ hiển thị vật phẩm bạn đang có."
+                "Columbina Market • Chỉ hiển thị vật phẩm bạn đang có."
         });
 }
 
@@ -411,7 +411,7 @@ function createItemsEmbed(
         .setColor("#57F287")
 
         .setTitle(
-            `${getCategoryName(category)} • Venti Market`
+            `${getCategoryName(category)} • Columbina Market`
         )
 
         .setDescription(
@@ -420,7 +420,7 @@ function createItemsEmbed(
 
         .setFooter({
             text:
-                "Venti Market • Chọn vật phẩm để tiếp tục."
+                "Columbina Market • Chọn vật phẩm để tiếp tục."
         });
 }
 
@@ -556,7 +556,7 @@ function createSellItemEmbed(
 
         .setFooter({
             text:
-                "Venti Market • Giá bán tính theo từng cái."
+                "Columbina Market • Giá bán tính theo từng cái."
         });
 }
 
@@ -1075,14 +1075,14 @@ async function openSellMenu(
                                     `> 💵 Nhận được: **+${money(total)} Mora**`,
                                     `> 🎒 Còn lại: **${remaining}**`,
                                     "",
-                                    "● 🍃 **Venti Market**",
+                                    "● 🍃 **Columbina Market**",
                                     "> Giao dịch đã được hoàn tất."
                                 ].join("\n")
                             )
 
                             .setFooter({
                                 text:
-                                    "Venti Market"
+                                    "Columbina Market"
                             });
 
                     return interaction.update({

@@ -569,14 +569,14 @@ async function createEmbed(
                 data.color
             )
             .setTitle(
-                `${data.emoji} Venti Leaderboard`
+                `${data.emoji} Columbina Leaderboard`
             )
             .setDescription(
                 description
             )
             .setFooter({
                 text:
-                    "Venti • Top 10 Travelers"
+                    "Columbina • Top 10 Travelers"
             })
             .setTimestamp();
 

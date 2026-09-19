@@ -20,7 +20,7 @@ module.exports = {
     ],
 
     description:
-        "Kiểm tra độ trễ của Venti.",
+        "Kiểm tra độ trễ của Columbina.",
 
     usage:
         "Vping",
@@ -68,7 +68,7 @@ module.exports = {
 
                 .setFooter({
                     text:
-                        "🍃 Venti • May the wind be swift."
+                        "🍃 Columbina • May the wind be swift."
                 })
 
                 .setTimestamp();

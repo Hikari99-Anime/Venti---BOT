@@ -50,7 +50,7 @@ module.exports = async function fishButton(interaction) {
             new EmbedBuilder()
                 .setColor("#8FD3FF")
                 .setAuthor({
-                    name: "Venti • Inventory",
+                    name: "Columbina • Inventory",
                     iconURL:
                         interaction.user.displayAvatarURL()
                 })

@@ -8,7 +8,7 @@ function baseEmbed() {
     return new EmbedBuilder()
         .setColor(config.colors.primary)
         .setFooter({
-            text: "Venti • Wandering Bard of Mondstadt"
+            text: "Columbina • Wandering Bard of Mondstadt"
         })
         .setTimestamp();
 }

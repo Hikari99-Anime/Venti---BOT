@@ -16,7 +16,7 @@ const Item =
     require("../../database/models/Item");
 
 // ═══════════════════════════════════════
-// 🍃 VENTI • SHOP
+// 🍃 COLUMBINA • SHOP
 // ═══════════════════════════════════════
 
 // ======================================
@@ -103,28 +103,28 @@ const SEED_PURCHASE_LIMIT = 5;
 // ======================================
 
 const SEED_IDS = [
-    "apple",
-    "orange",
-    "wheat",
-    "tomato",
-    "carrot",
-    "potato",
-    "corn",
-    "cabbage",
-    "lettuce",
-    "strawberry",
-    "blueberry",
-    "grape",
-    "peach",
-    "pear",
-    "lemon",
-    "watermelon",
-    "pineapple",
-    "coconut",
-    "eggplant",
-    "chili",
-    "golden_apple",
-    "crystal_berry"
+    "apple_seed",
+    "orange_seed",
+    "wheat_seed",
+    "tomato_seed",
+    "carrot_seed",
+    "potato_seed",
+    "corn_seed",
+    "cabbage_seed",
+    "lettuce_seed",
+    "strawberry_seed",
+    "blueberry_seed",
+    "grape_seed",
+    "peach_seed",
+    "pear_seed",
+    "lemon_seed",
+    "watermelon_seed",
+    "pineapple_seed",
+    "coconut_seed",
+    "eggplant_seed",
+    "chili_seed",
+    "golden_apple_seed",
+    "crystal_berry_seed"
 ];
 
 // ======================================
@@ -136,6 +136,16 @@ const ROD_IDS = [
     "iron_rod",
     "golden_rod",
     "wind_rod"
+];
+
+// ======================================
+// 🧰 TOOL IDS
+// ======================================
+
+const TOOL_IDS = [
+    "hoe",
+    "watering_can",
+    "water"
 ];
 
 // ======================================
@@ -312,7 +322,7 @@ const command = {
     aliases: ["vshop"],
 
     description:
-        "🛒 Cửa hàng của Venti.",
+        "🛒 Cửa hàng của Columbina.",
 
     usage: "Vshop",
 
@@ -481,7 +491,7 @@ const command = {
                             return interaction.update({
 
                                 content:
-                                    "🍃 Venti đã đóng cửa hàng.",
+                                    "🍃 Columbina đã đóng cửa hàng.",
 
                                 embeds: [],
 
@@ -532,7 +542,7 @@ const command = {
             return message
                 .reply({
                     content:
-                        "🍃 Không thể mở Venti Shop."
+                        "🍃 Không thể mở Columbina Shop."
                 })
                 .catch(() => {});
         }
@@ -556,14 +566,14 @@ function homeEmbed(userId) {
         .setColor("#A8DCC0")
 
         .setAuthor({
-            name: "☁️ Venti · Shop"
+            name: "☁️ Columbina · Shop"
         })
 
-        .setTitle("🍃 Venti Shop")
+        .setTitle("🍃 Columbina Shop")
 
         .setDescription(
 
-            "☁️ `🍃` **Một góc nhỏ của cửa hàng Venti**\n\n" +
+            "☁️ `🍃` **Một góc nhỏ của cửa hàng Columbina**\n\n" +
 
             "- `🌱` **Hạt giống**\n" +
             "> Hạt giống ngẫu nhiên dành riêng cho bạn.\n\n" +
@@ -581,7 +591,7 @@ function homeEmbed(userId) {
         )
 
         .setFooter({
-            text: "☁️ Venti • Cozy Corner 🍃"
+            text: "☁️ Columbina • Cozy Corner 🍃"
         })
 
         .setTimestamp();
@@ -630,6 +640,14 @@ function categoryRow(userId) {
                             "Mở khóa ô đất.",
                         value: "plots",
                         emoji: "🟫"
+                    },
+
+                    {
+                        label: "Nông cụ",
+                        description:
+                            "Cuốc, bình tưới & nước.",
+                        value: "tools",
+                        emoji: "🧰"
                     }
 
                 ])
@@ -678,6 +696,19 @@ function getItems(category, userId) {
         );
     }
 
+    if (category === "tools") {
+
+        const allItems = Item.getAll();
+
+        if (!Array.isArray(allItems)) {
+            return [];
+        }
+
+        return allItems.filter(item =>
+            TOOL_IDS.includes(String(item.id))
+        );
+    }
+
     return [];
 }
 
@@ -697,7 +728,7 @@ function createCategoryEmbed(
     const balance =
         Number(user?.balance || 0);
 
-    let title = "🍃 Venti Shop";
+    let title = "🍃 Columbina Shop";
     let intro = "";
     let icon = "🍃";
 
@@ -736,6 +767,15 @@ function createCategoryEmbed(
 
         intro =
             "☁️ `🟫` **Mở rộng trang trại và tạo thêm không gian trồng trọt.**";
+    }
+
+    if (category === "tools") {
+
+        title = "🧰 Nông Cụ";
+        icon = "🧰";
+
+        intro =
+            "☁️ `🧰` **Cuốc để cày đất, Bình tưới & Nước để chăm cây.**";
     }
 
     const lines = [];
@@ -807,6 +847,23 @@ function createCategoryEmbed(
 
             lines.push("");
         }
+
+        if (category === "tools") {
+
+            lines.push(
+                `- ${emoji} **${item.name}**`
+            );
+
+            lines.push(
+                `> \`💰 Giá       : ${price.toLocaleString()} Mora\``
+            );
+
+            lines.push(
+                `> \`📝 ${item.description || "Nông cụ hữu ích cho trang trại."}\``
+            );
+
+            lines.push("");
+        }
     }
 
     if (!lines.length) {
@@ -820,7 +877,7 @@ function createCategoryEmbed(
         .setColor("#A8DCC0")
 
         .setAuthor({
-            name: `☁️ Venti · ${title}`
+            name: `☁️ Columbina · ${title}`
         })
 
         .setTitle(`${icon} ${title}`)
@@ -840,7 +897,7 @@ function createCategoryEmbed(
         )
 
         .setFooter({
-            text: "☁️ Venti • Cozy Corner 🍃"
+            text: "☁️ Columbina • Cozy Corner 🍃"
         })
 
         .setTimestamp();
@@ -880,7 +937,7 @@ async function showCategory(
 
                     .setFooter({
                         text:
-                            "☁️ Venti • Cozy Corner 🍃"
+                            "☁️ Columbina • Cozy Corner 🍃"
                     })
 
             ],
@@ -961,7 +1018,9 @@ async function showCategory(
                             ? "🌱"
                             : category === "rods"
                                 ? "🎣"
-                                : "🟫"
+                                : category === "tools"
+                                    ? "🧰"
+                                    : "🟫"
                         } Chọn sản phẩm...`
                     )
 
@@ -1154,7 +1213,7 @@ async function showItem(
 
                 .setAuthor({
                     name:
-                        "☁️ Venti · Hạt giống"
+                        "☁️ Columbina · Hạt giống"
                 })
 
                 .setTitle(
@@ -1178,7 +1237,7 @@ async function showItem(
 
                 .setFooter({
                     text:
-                        "☁️ Venti • Cozy Corner 🍃"
+                        "☁️ Columbina • Cozy Corner 🍃"
                 })
 
                 .setTimestamp();
@@ -1260,7 +1319,7 @@ async function showItem(
 
     lines.push(
         "",
-        `📝 ${item.description || "Sản phẩm của Venti Shop."}`
+        `📝 ${item.description || "Sản phẩm của Columbina Shop."}`
     );
 
     return interaction.update({
@@ -1277,7 +1336,7 @@ async function showItem(
 
                 .setAuthor({
                     name:
-                        "☁️ Venti · Shop"
+                        "☁️ Columbina · Shop"
                 })
 
                 .setTitle(
@@ -1290,7 +1349,7 @@ async function showItem(
 
                 .setFooter({
                     text:
-                        "☁️ Venti • Cozy Corner 🍃"
+                        "☁️ Columbina • Cozy Corner 🍃"
                 })
 
                 .setTimestamp()
@@ -1628,7 +1687,7 @@ async function buyItem(
 
                 .setAuthor({
                     name:
-                        "☁️ Venti · Shop"
+                        "☁️ Columbina · Shop"
                 })
 
                 .setTitle(
@@ -1651,7 +1710,7 @@ async function buyItem(
                         "",
                         "🎒 **Đã thêm vào Inventory.**",
                         "",
-                        "☕ `🍃` **Cảm ơn bạn đã ghé shop của Venti.**"
+                        "☕ `🍃` **Cảm ơn bạn đã ghé shop của Columbina.**"
                     ]
                         .filter(Boolean)
                         .join("\n")
@@ -1659,7 +1718,7 @@ async function buyItem(
 
                 .setFooter({
                     text:
-                        "☁️ Venti • Cozy Corner 🍃"
+                        "☁️ Columbina • Cozy Corner 🍃"
                 })
 
                 .setTimestamp()
@@ -1775,7 +1834,7 @@ async function buyPlot(
 
                 .setAuthor({
                     name:
-                        "☁️ Venti · Farm"
+                        "☁️ Columbina · Farm"
                 })
 
                 .setTitle(
@@ -1798,7 +1857,7 @@ async function buyPlot(
 
                 .setFooter({
                     text:
-                        "☁️ Venti • Cozy Corner 🍃"
+                        "☁️ Columbina • Cozy Corner 🍃"
                 })
 
                 .setTimestamp()

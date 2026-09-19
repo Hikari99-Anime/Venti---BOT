@@ -22,7 +22,7 @@ async function execute(interaction) {
                 "`Vslots` `Vcoinflip` `Vdice` `Vblackjack` `Vguess`"
         },
         venti: {
-            title: "🍃 Venti",
+            title: "🍃 Columbina",
             description:
                 "`Vprofile` `Vinventory` `Vshop` `Vleaderboard`"
         }
@@ -33,11 +33,11 @@ async function execute(interaction) {
     const embed = new EmbedBuilder()
         .setColor(config.colors.primary)
         .setAuthor({
-            name: `Venti • ${page.title}`
+            name: `Columbina • ${page.title}`
         })
         .setDescription(page.description)
         .setFooter({
-            text: "Venti • Wandering Bard of Mondstadt"
+            text: "Columbina • Wandering Bard of Mondstadt"
         })
         .setTimestamp();
 

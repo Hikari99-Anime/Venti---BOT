@@ -666,7 +666,7 @@ function createFishEmbed(
                 `> ${fish.emoji} **${fish.name}**`,
                 `> \`${raritySymbol}\` Độ hiếm: **${fish.rarity}**`,
                 "",
-                `> \`💰\` Giá trị: **${fish.value.toLocaleString()} Venti**`,
+                `> \`💰\` Giá trị: **${fish.value.toLocaleString()} Mora**`,
                 `> \`✨\` XP: **+${fish.xp}**`
             ].join("\n")
         )
@@ -709,7 +709,7 @@ function createFishEmbed(
                     ? "💥 • Cần câu đã hỏng!"
                     : xpData.leveledUp
                         ? `🌟 • Level Up! Bạn đạt Level ${xpData.level}`
-                        : "🍃 • Venti • May the wind guide your catch."
+                        : "🍃 • Columbina • May the wind guide your catch."
         })
 
         .setTimestamp();
@@ -745,7 +745,7 @@ function createNoRodEmbed() {
 
         .setFooter({
             text:
-                "🍃 • Venti Fishing • May the wind guide you."
+                "🍃 • Columbina Fishing • May the wind guide you."
         });
 }
 

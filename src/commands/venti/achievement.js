@@ -563,7 +563,7 @@ function createEmbed(
 
         .setFooter({
             text:
-                "♡ Venti • Achievement System"
+                "♡ Columbina • Achievement System"
         })
 
         .setTimestamp();

@@ -189,7 +189,7 @@ function createProfileEmbed(
         })
 
         .setTitle(
-            "👤 Venti Profile"
+            "👤 Columbina Profile"
         )
 
         .setDescription(
@@ -340,7 +340,7 @@ function createProfileEmbed(
 
         .setFooter({
             text:
-                `Venti • Traveler ID: ${message.author.id}`
+                `Columbina • Traveler ID: ${message.author.id}`
         })
 
         .setTimestamp();

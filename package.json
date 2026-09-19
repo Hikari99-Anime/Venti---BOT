@@ -1,7 +1,7 @@
 {
   "name": "venti",
   "version": "1.0.0",
-  "description": "Venti - Aesthetic Discord Minigame & Economy Bot",
+  "description": "Columbina - Aesthetic Discord Minigame & Economy Bot",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

@@ -317,7 +317,7 @@ function createBotGameComponents(user, bet, gameId) {
                 separator(),
 
                 text(
-                    `> \`🍃\` **Venti • Kéo Búa Bao**`
+                    `> \`🍃\` **Columbina • Kéo Búa Bao**`
                 )
 
             ]
@@ -364,7 +364,7 @@ function createInviteComponents(
                 separator(),
 
                 text(
-                    `> \`🍃\` **Venti • PvP**`
+                    `> \`🍃\` **Columbina • PvP**`
                 )
 
             ]
@@ -421,7 +421,7 @@ function createPvpGameComponents(game, bet) {
                 separator(),
 
                 text(
-                    `> \`🍃\` **Venti • PvP Kéo Búa Bao**`
+                    `> \`🍃\` **Columbina • PvP Kéo Búa Bao**`
                 )
 
             ]
@@ -483,7 +483,7 @@ function createBotResultComponents(
 
                     `- \`🏆\` **Kết quả**\n` +
                     `> \`👤 Bạn   : ${choices[playerChoice].emoji} ${choices[playerChoice].label}\`\n` +
-                    `> \`🤖 Venti : ${choices[botChoice].emoji} ${choices[botChoice].label}\`\n\n` +
+                    `> \`🤖 Columbina : ${choices[botChoice].emoji} ${choices[botChoice].label}\`\n\n` +
 
                     `> ${title}\n` +
                     `> ${moneyText}\n\n` +
@@ -493,7 +493,7 @@ function createBotResultComponents(
                     `> \`🏆 Wins    : ${stats.wins}\`\n` +
                     `> \`💀 Losses  : ${stats.losses}\`\n\n` +
 
-                    `> \`🍃\` **Venti • Kéo Búa Bao**`
+                    `> \`🍃\` **Columbina • Kéo Búa Bao**`
                 )
 
             ]
@@ -570,7 +570,7 @@ function createPvpResultComponents(
                     `> \`👤 Người 1 : 🎮 ${p1Stats.games} • 🏆 ${p1Stats.wins} • 💀 ${p1Stats.losses}\`\n` +
                     `> \`👤 Người 2 : 🎮 ${p2Stats.games} • 🏆 ${p2Stats.wins} • 💀 ${p2Stats.losses}\`\n\n` +
 
-                    `> \`🍃\` **Venti • PvP Kéo Búa Bao**`
+                    `> \`🍃\` **Columbina • PvP Kéo Búa Bao**`
                 )
 
             ]
@@ -602,7 +602,7 @@ function createTimeoutComponents(
                     `- \`💰\` **Tài chính**\n` +
                     `> \`💵 Tiền cược : ${refunded ? "Đã hoàn lại" : "Đã mất"}\`\n\n` +
 
-                    `> \`🍃\` **Venti • Kéo Búa Bao**`
+                    `> \`🍃\` **Columbina • Kéo Búa Bao**`
                 )
 
             ]
@@ -635,7 +635,7 @@ function createDeclinedComponents(
                     `- \`💰\` **Tài chính**\n` +
                     `> \`💵 Tiền cược : ${money(bet)} Mora/người\`\n\n` +
 
-                    `> \`🍃\` **Venti • PvP**`
+                    `> \`🍃\` **Columbina • PvP**`
                 )
 
             ]
@@ -662,7 +662,7 @@ function createCancelComponents(userId) {
                     `- \`🛑\` **Đã hủy lời mời**\n` +
                     `> <@${userId}> đã hủy lời thách đấu.\n\n` +
 
-                    `> \`🍃\` **Venti • PvP**`
+                    `> \`🍃\` **Columbina • PvP**`
                 )
 
             ]
@@ -693,7 +693,7 @@ function createMoneyErrorComponents() {
                     `- \`💰\` **Yêu cầu**\n` +
                     `> \`💵\` Cả hai người chơi phải có đủ tiền cược.\n\n` +
 
-                    `> \`🍃\` **Venti • PvP**`
+                    `> \`🍃\` **Columbina • PvP**`
                 )
 
             ]
@@ -780,7 +780,7 @@ module.exports = {
     ],
 
     description:
-        "Chơi Kéo Búa Bao với Venti hoặc người chơi khác.",
+        "Chơi Kéo Búa Bao với Columbina hoặc người chơi khác.",
 
     async execute(
         message,

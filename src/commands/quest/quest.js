@@ -259,7 +259,7 @@ function createQuestEmbed(
 
             .setAuthor({
                 name:
-                    `● \`${username}\` · Venti`
+                    `● \`${username}\` · Columbina`
             })
 
             .setTitle(
@@ -345,7 +345,7 @@ function createQuestEmbed(
 
     embed.setFooter({
         text:
-            "● `🍃` Venti · Daily Quest"
+            "● `🍃` Columbina · Daily Quest"
     });
 
     embed.setTimestamp();

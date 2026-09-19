@@ -39,12 +39,12 @@ function loadEvents(client) {
 
             if (interaction.replied || interaction.deferred) {
                 await interaction.followUp({
-                    content: "🍃 Venti gặp một cơn gió ngược...",
+                    content: "🍃 Columbina gặp một cơn gió ngược...",
                     ephemeral: true
                 }).catch(() => {});
             } else {
                 await interaction.reply({
-                    content: "🍃 Venti gặp một cơn gió ngược...",
+                    content: "🍃 Columbina gặp một cơn gió ngược...",
                     ephemeral: true
                 }).catch(() => {});
             }

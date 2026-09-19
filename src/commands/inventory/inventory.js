@@ -41,6 +41,18 @@ const CATEGORIES = {
         name: "Hải sản",
         emoji: "🐟",
         category: "seafood"
+    },
+
+    seeds: {
+        name: "Hạt giống",
+        emoji: "🌱",
+        category: "seed"
+    },
+
+    tools: {
+        name: "Nông cụ",
+        emoji: "🧰",
+        category: "tool"
     }
 };
 
@@ -298,7 +310,7 @@ function inventoryPanel(
                 text(
                     [
                         "# 🍃 Túi Đồ",
-                        `☁️ **${username}** · Venti`,
+                        `☁️ **${username}** · Columbina`,
                         "",
                         `> ${data.emoji} Đang xem **${data.name}**`
                     ].join("\n")
@@ -427,6 +439,40 @@ function createMenu(
 
                         default:
                             category === "fish"
+                    },
+
+                    {
+                        label:
+                            "Hạt giống",
+
+                        description:
+                            "Hạt giống để trồng cây",
+
+                        value:
+                            "seeds",
+
+                        emoji:
+                            "🌱",
+
+                        default:
+                            category === "seeds"
+                    },
+
+                    {
+                        label:
+                            "Nông cụ",
+
+                        description:
+                            "Cuốc, bình tưới & nước",
+
+                        value:
+                            "tools",
+
+                        emoji:
+                            "🧰",
+
+                        default:
+                            category === "tools"
                     }
                 )
         );

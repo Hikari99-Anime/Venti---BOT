@@ -227,7 +227,7 @@ module.exports = {
 
                         .setFooter({
                             text:
-                                "☁️ Venti • Cozy Corner 🍃"
+                                "☁️ Columbina • Cozy Corner 🍃"
                         })
 
                 ]
@@ -347,7 +347,7 @@ module.exports = {
 
                 .setAuthor({
                     name:
-                        `☁️ ${senderName} · Venti`,
+                        `☁️ ${senderName} · Columbina`,
 
                     iconURL:
                         message.author.displayAvatarURL({
@@ -410,7 +410,7 @@ module.exports = {
 
                 .setFooter({
                     text:
-                        "☁️ Venti • Cozy Corner 🍃"
+                        "☁️ Columbina • Cozy Corner 🍃"
                 })
 
                 .setTimestamp();

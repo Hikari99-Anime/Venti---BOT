@@ -1,7 +1,7 @@
 const items = {
 
     // ═══════════════════════════════════════
-    // 🌱 NÔNG SẢN / HẠT GIỐNG
+    // 🌾 NÔNG SẢN (thu hoạch được)
     // category: farming
     // ═══════════════════════════════════════
 
@@ -10,11 +10,8 @@ const items = {
         name: "Táo",
         emoji: "🍎",
         category: "farming",
-        buyPrice: 120,
         sellPrice: 75,
-        growTime: 60000,
-        minHarvest: 2,
-        maxHarvest: 4
+        rating: 1
     },
 
     orange: {
@@ -22,11 +19,8 @@ const items = {
         name: "Cam",
         emoji: "🍊",
         category: "farming",
-        buyPrice: 180,
         sellPrice: 113,
-        growTime: 75000,
-        minHarvest: 2,
-        maxHarvest: 4
+        rating: 2
     },
 
     wheat: {
@@ -34,11 +28,8 @@ const items = {
         name: "Lúa mì",
         emoji: "🌾",
         category: "farming",
-        buyPrice: 160,
         sellPrice: 100,
-        growTime: 45000,
-        minHarvest: 2,
-        maxHarvest: 4
+        rating: 2
     },
 
     tomato: {
@@ -46,11 +37,8 @@ const items = {
         name: "Cà chua",
         emoji: "🍅",
         category: "farming",
-        buyPrice: 220,
         sellPrice: 138,
-        growTime: 90000,
-        minHarvest: 2,
-        maxHarvest: 4
+        rating: 2
     },
 
     carrot: {
@@ -58,11 +46,8 @@ const items = {
         name: "Cà rốt",
         emoji: "🥕",
         category: "farming",
-        buyPrice: 200,
         sellPrice: 125,
-        growTime: 75000,
-        minHarvest: 2,
-        maxHarvest: 4
+        rating: 2
     },
 
     potato: {
@@ -70,11 +55,8 @@ const items = {
         name: "Khoai tây",
         emoji: "🥔",
         category: "farming",
-        buyPrice: 240,
         sellPrice: 150,
-        growTime: 90000,
-        minHarvest: 2,
-        maxHarvest: 5
+        rating: 2
     },
 
     corn: {
@@ -82,11 +64,8 @@ const items = {
         name: "Bắp",
         emoji: "🌽",
         category: "farming",
-        buyPrice: 280,
         sellPrice: 175,
-        growTime: 120000,
-        minHarvest: 2,
-        maxHarvest: 4
+        rating: 2
     },
 
     cabbage: {
@@ -94,11 +73,8 @@ const items = {
         name: "Bắp cải",
         emoji: "🥬",
         category: "farming",
-        buyPrice: 300,
         sellPrice: 188,
-        growTime: 135000,
-        minHarvest: 2,
-        maxHarvest: 4
+        rating: 2
     },
 
     lettuce: {
@@ -106,11 +82,8 @@ const items = {
         name: "Xà lách",
         emoji: "🥬",
         category: "farming",
-        buyPrice: 320,
         sellPrice: 200,
-        growTime: 150000,
-        minHarvest: 2,
-        maxHarvest: 4
+        rating: 3
     },
 
     strawberry: {
@@ -118,11 +91,8 @@ const items = {
         name: "Dâu tây",
         emoji: "🍓",
         category: "farming",
-        buyPrice: 450,
         sellPrice: 282,
-        growTime: 180000,
-        minHarvest: 2,
-        maxHarvest: 4
+        rating: 3
     },
 
     blueberry: {
@@ -130,11 +100,8 @@ const items = {
         name: "Việt quất",
         emoji: "🫐",
         category: "farming",
-        buyPrice: 500,
         sellPrice: 313,
-        growTime: 195000,
-        minHarvest: 2,
-        maxHarvest: 4
+        rating: 3
     },
 
     grape: {
@@ -142,11 +109,8 @@ const items = {
         name: "Nho",
         emoji: "🍇",
         category: "farming",
-        buyPrice: 550,
         sellPrice: 344,
-        growTime: 210000,
-        minHarvest: 2,
-        maxHarvest: 4
+        rating: 3
     },
 
     peach: {
@@ -154,11 +118,8 @@ const items = {
         name: "Đào",
         emoji: "🍑",
         category: "farming",
-        buyPrice: 600,
         sellPrice: 375,
-        growTime: 225000,
-        minHarvest: 2,
-        maxHarvest: 4
+        rating: 3
     },
 
     pear: {
@@ -166,11 +127,8 @@ const items = {
         name: "Lê",
         emoji: "🍐",
         category: "farming",
-        buyPrice: 620,
         sellPrice: 388,
-        growTime: 240000,
-        minHarvest: 2,
-        maxHarvest: 4
+        rating: 3
     },
 
     lemon: {
@@ -178,11 +136,8 @@ const items = {
         name: "Chanh",
         emoji: "🍋",
         category: "farming",
-        buyPrice: 680,
         sellPrice: 425,
-        growTime: 270000,
-        minHarvest: 2,
-        maxHarvest: 4
+        rating: 4
     },
 
     watermelon: {
@@ -190,11 +145,8 @@ const items = {
         name: "Dưa hấu",
         emoji: "🍉",
         category: "farming",
-        buyPrice: 1000,
         sellPrice: 625,
-        growTime: 300000,
-        minHarvest: 2,
-        maxHarvest: 3
+        rating: 4
     },
 
     pineapple: {
@@ -202,11 +154,8 @@ const items = {
         name: "Dứa",
         emoji: "🍍",
         category: "farming",
-        buyPrice: 1200,
         sellPrice: 750,
-        growTime: 330000,
-        minHarvest: 2,
-        maxHarvest: 3
+        rating: 4
     },
 
     coconut: {
@@ -214,11 +163,8 @@ const items = {
         name: "Dừa",
         emoji: "🥥",
         category: "farming",
-        buyPrice: 1400,
         sellPrice: 875,
-        growTime: 360000,
-        minHarvest: 2,
-        maxHarvest: 3
+        rating: 4
     },
 
     eggplant: {
@@ -226,11 +172,8 @@ const items = {
         name: "Cà tím",
         emoji: "🍆",
         category: "farming",
-        buyPrice: 1500,
         sellPrice: 938,
-        growTime: 390000,
-        minHarvest: 2,
-        maxHarvest: 3
+        rating: 4
     },
 
     chili: {
@@ -238,11 +181,8 @@ const items = {
         name: "Ớt",
         emoji: "🌶️",
         category: "farming",
-        buyPrice: 1600,
         sellPrice: 1000,
-        growTime: 420000,
-        minHarvest: 2,
-        maxHarvest: 3
+        rating: 5
     },
 
     golden_apple: {
@@ -250,11 +190,8 @@ const items = {
         name: "Táo vàng",
         emoji: "🍏",
         category: "farming",
-        buyPrice: 3500,
         sellPrice: 2188,
-        growTime: 480000,
-        minHarvest: 2,
-        maxHarvest: 3
+        rating: 5
     },
 
     crystal_berry: {
@@ -262,11 +199,300 @@ const items = {
         name: "Quả mọng pha lê",
         emoji: "💎",
         category: "farming",
-        buyPrice: 5000,
         sellPrice: 3125,
+        rating: 5
+    },
+
+
+    // ═══════════════════════════════════════
+    // 🌱 HẠT GIỐNG (trồng ra nông sản)
+    // category: seed
+    // ═══════════════════════════════════════
+
+    apple_seed: {
+        id: "apple_seed",
+        name: "Hạt giống Táo",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "apple",
+        buyPrice: 50,
+        growTime: 60000,
+        minHarvest: 2,
+        maxHarvest: 4,
+        description: "Trồng ra Táo."
+    },
+
+    orange_seed: {
+        id: "orange_seed",
+        name: "Hạt giống Cam",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "orange",
+        buyPrice: 70,
+        growTime: 75000,
+        minHarvest: 2,
+        maxHarvest: 4,
+        description: "Trồng ra Cam."
+    },
+
+    wheat_seed: {
+        id: "wheat_seed",
+        name: "Hạt giống Lúa mì",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "wheat",
+        buyPrice: 60,
+        growTime: 45000,
+        minHarvest: 2,
+        maxHarvest: 4,
+        description: "Trồng ra Lúa mì."
+    },
+
+    tomato_seed: {
+        id: "tomato_seed",
+        name: "Hạt giống Cà chua",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "tomato",
+        buyPrice: 90,
+        growTime: 90000,
+        minHarvest: 2,
+        maxHarvest: 4,
+        description: "Trồng ra Cà chua."
+    },
+
+    carrot_seed: {
+        id: "carrot_seed",
+        name: "Hạt giống Cà rốt",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "carrot",
+        buyPrice: 80,
+        growTime: 75000,
+        minHarvest: 2,
+        maxHarvest: 4,
+        description: "Trồng ra Cà rốt."
+    },
+
+    potato_seed: {
+        id: "potato_seed",
+        name: "Hạt giống Khoai tây",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "potato",
+        buyPrice: 100,
+        growTime: 90000,
+        minHarvest: 2,
+        maxHarvest: 5,
+        description: "Trồng ra Khoai tây."
+    },
+
+    corn_seed: {
+        id: "corn_seed",
+        name: "Hạt giống Bắp",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "corn",
+        buyPrice: 110,
+        growTime: 120000,
+        minHarvest: 2,
+        maxHarvest: 4,
+        description: "Trồng ra Bắp."
+    },
+
+    cabbage_seed: {
+        id: "cabbage_seed",
+        name: "Hạt giống Bắp cải",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "cabbage",
+        buyPrice: 120,
+        growTime: 135000,
+        minHarvest: 2,
+        maxHarvest: 4,
+        description: "Trồng ra Bắp cải."
+    },
+
+    lettuce_seed: {
+        id: "lettuce_seed",
+        name: "Hạt giống Xà lách",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "lettuce",
+        buyPrice: 130,
+        growTime: 150000,
+        minHarvest: 2,
+        maxHarvest: 4,
+        description: "Trồng ra Xà lách."
+    },
+
+    strawberry_seed: {
+        id: "strawberry_seed",
+        name: "Hạt giống Dâu tây",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "strawberry",
+        buyPrice: 180,
+        growTime: 180000,
+        minHarvest: 2,
+        maxHarvest: 4,
+        description: "Trồng ra Dâu tây."
+    },
+
+    blueberry_seed: {
+        id: "blueberry_seed",
+        name: "Hạt giống Việt quất",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "blueberry",
+        buyPrice: 200,
+        growTime: 195000,
+        minHarvest: 2,
+        maxHarvest: 4,
+        description: "Trồng ra Việt quất."
+    },
+
+    grape_seed: {
+        id: "grape_seed",
+        name: "Hạt giống Nho",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "grape",
+        buyPrice: 220,
+        growTime: 210000,
+        minHarvest: 2,
+        maxHarvest: 4,
+        description: "Trồng ra Nho."
+    },
+
+    peach_seed: {
+        id: "peach_seed",
+        name: "Hạt giống Đào",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "peach",
+        buyPrice: 240,
+        growTime: 225000,
+        minHarvest: 2,
+        maxHarvest: 4,
+        description: "Trồng ra Đào."
+    },
+
+    pear_seed: {
+        id: "pear_seed",
+        name: "Hạt giống Lê",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "pear",
+        buyPrice: 250,
+        growTime: 240000,
+        minHarvest: 2,
+        maxHarvest: 4,
+        description: "Trồng ra Lê."
+    },
+
+    lemon_seed: {
+        id: "lemon_seed",
+        name: "Hạt giống Chanh",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "lemon",
+        buyPrice: 270,
+        growTime: 270000,
+        minHarvest: 2,
+        maxHarvest: 4,
+        description: "Trồng ra Chanh."
+    },
+
+    watermelon_seed: {
+        id: "watermelon_seed",
+        name: "Hạt giống Dưa hấu",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "watermelon",
+        buyPrice: 400,
+        growTime: 300000,
+        minHarvest: 2,
+        maxHarvest: 3,
+        description: "Trồng ra Dưa hấu."
+    },
+
+    pineapple_seed: {
+        id: "pineapple_seed",
+        name: "Hạt giống Dứa",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "pineapple",
+        buyPrice: 480,
+        growTime: 330000,
+        minHarvest: 2,
+        maxHarvest: 3,
+        description: "Trồng ra Dứa."
+    },
+
+    coconut_seed: {
+        id: "coconut_seed",
+        name: "Hạt giống Dừa",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "coconut",
+        buyPrice: 560,
+        growTime: 360000,
+        minHarvest: 2,
+        maxHarvest: 3,
+        description: "Trồng ra Dừa."
+    },
+
+    eggplant_seed: {
+        id: "eggplant_seed",
+        name: "Hạt giống Cà tím",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "eggplant",
+        buyPrice: 600,
+        growTime: 390000,
+        minHarvest: 2,
+        maxHarvest: 3,
+        description: "Trồng ra Cà tím."
+    },
+
+    chili_seed: {
+        id: "chili_seed",
+        name: "Hạt giống Ớt",
+        emoji: "🌱",
+        category: "seed",
+        cropId: "chili",
+        buyPrice: 640,
+        growTime: 420000,
+        minHarvest: 2,
+        maxHarvest: 3,
+        description: "Trồng ra Ớt."
+    },
+
+    golden_apple_seed: {
+        id: "golden_apple_seed",
+        name: "Hạt giống Táo vàng",
+        emoji: "✨",
+        category: "seed",
+        cropId: "golden_apple",
+        buyPrice: 1400,
+        growTime: 480000,
+        minHarvest: 2,
+        maxHarvest: 3,
+        description: "Trồng ra Táo vàng."
+    },
+
+    crystal_berry_seed: {
+        id: "crystal_berry_seed",
+        name: "Hạt giống Quả mọng pha lê",
+        emoji: "💎",
+        category: "seed",
+        cropId: "crystal_berry",
+        buyPrice: 2000,
         growTime: 540000,
         minHarvest: 2,
-        maxHarvest: 3
+        maxHarvest: 3,
+        description: "Trồng ra Quả mọng pha lê."
     },
 
 
@@ -544,6 +770,42 @@ const items = {
         buyPrice: 50000,
         sellPrice: 25000,
         rodLevel: 4
+    },
+
+
+    // ═══════════════════════════════════════
+    // 🧰 NÔNG CỤ
+    // category: tool
+    // ═══════════════════════════════════════
+
+    hoe: {
+        id: "hoe",
+        name: "Cuốc",
+        emoji: "⛏️",
+        category: "tool",
+        buyPrice: 800,
+        sellPrice: 0,
+        description: "Dùng để cày đất trước khi trồng cây. Mua 1 lần, dùng mãi mãi."
+    },
+
+    watering_can: {
+        id: "watering_can",
+        name: "Bình tưới",
+        emoji: "🪣",
+        category: "tool",
+        buyPrice: 1200,
+        sellPrice: 0,
+        description: "Dùng kèm Nước để tưới cây, giúp cây lớn nhanh hơn. Mua 1 lần, dùng mãi mãi."
+    },
+
+    water: {
+        id: "water",
+        name: "Nước",
+        emoji: "💧",
+        category: "tool",
+        buyPrice: 20,
+        sellPrice: 0,
+        description: "Dùng kèm Bình tưới để tưới cây, mỗi lần tưới tốn 1 Nước."
     }
 };
 

@@ -24,7 +24,7 @@ async function execute(interaction) {
             inline: false
         })
         .setFooter({
-            text: "Venti • Wandering Bard of Mondstadt"
+            text: "Columbina • Wandering Bard of Mondstadt"
         })
         .setTimestamp();
 

@@ -202,7 +202,7 @@
 
                     .setAuthor({
                         name:
-                            `☁️ ${name} · Venti`,
+                            `☁️ ${name} · Columbina`,
                         iconURL:
                             message.author.displayAvatarURL({
                                 extension: "png",
@@ -258,7 +258,7 @@
 
                     .setFooter({
                         text:
-                            "☁️ Venti • Cozy Corner 🍃"
+                            "☁️ Columbina • Cozy Corner 🍃"
                     })
 
                     .setTimestamp();

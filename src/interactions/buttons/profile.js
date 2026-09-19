@@ -55,7 +55,7 @@ async function execute(interaction) {
         )
         .setThumbnail(interaction.user.displayAvatarURL())
         .setFooter({
-            text: "Venti • Wandering Bard of Mondstadt"
+            text: "Columbina • Wandering Bard of Mondstadt"
         })
         .setTimestamp();
 

@@ -97,7 +97,7 @@ async function execute(interaction) {
     }
 
     if (id === "help_venti") {
-        title = "🍃 Venti";
+        title = "🍃 Columbina";
         description = "Everything you need for your adventure.";
         fields = [
             {
@@ -122,12 +122,12 @@ async function execute(interaction) {
     const embed = new EmbedBuilder()
         .setColor(config.colors.primary)
         .setAuthor({
-            name: `Venti • ${title}`
+            name: `Columbina • ${title}`
         })
         .setDescription(description)
         .addFields(fields)
         .setFooter({
-            text: "Venti • Wandering Bard of Mondstadt"
+            text: "Columbina • Wandering Bard of Mondstadt"
         })
         .setTimestamp();
 
@@ -146,14 +146,14 @@ async function helpPage() {
     const embed = new EmbedBuilder()
         .setColor(config.colors.primary)
         .setAuthor({
-            name: "Venti • Help"
+            name: "Columbina • Help"
         })
         .setDescription(
             "🍃 **Welcome, traveler!**\n" +
             "Choose a category below and let the wind guide you."
         )
         .setFooter({
-            text: "Venti • Wandering Bard of Mondstadt"
+            text: "Columbina • Wandering Bard of Mondstadt"
         })
         .setTimestamp();
 
@@ -172,7 +172,7 @@ async function helpPage() {
 
         new ButtonBuilder()
             .setCustomId("help_venti")
-            .setLabel("Venti")
+            .setLabel("Columbina")
             .setEmoji("🍃")
             .setStyle(ButtonStyle.Secondary)
     );

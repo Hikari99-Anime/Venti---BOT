@@ -712,7 +712,7 @@ async function updateInventory(
                         `☁️ ${
                             interaction.user.globalName ||
                             interaction.user.username
-                        } · Venti`
+                        } · Columbina`
 
                 })
 
@@ -747,7 +747,7 @@ async function updateInventory(
                 .setFooter({
 
                     text:
-                        "☕ Venti · Cozy Inventory"
+                        "☕ Columbina · Cozy Inventory"
 
                 })
 
